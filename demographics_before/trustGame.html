@@ -1,0 +1,154 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Please continue by making your choices
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        <div class="row">
+            <div class="col">
+                Imagine the following situation:
+                <br></br>
+                You have been randomly and 
+                anonymously paired with {{ partner_type }}.
+                One of you will be randomly selected to be Participant A, 
+                the other will be Participant B. 
+                Participant A will begin with $1,000, 
+                while Participant B begins without an additional amount. </br>
+                Participant A can send any amount that is a multiple of 
+                $100 (e.g, $0, $100, $200, …, $900, $1,000) to Participant B. 
+                The amount that Participant B receives will be tripled. 
+                Participant B can then decide to return any amount that is a multiple of $100. 
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col">
+                {{ formfield 'amount_to_send' }}
+            </div>
+        </div>
+
+        <hr>
+        <div class="row">
+            <div class="col">
+                Suppose you were selected to be Participant B and had the choice to return 
+                any amount of the tripled amount that you received.     
+                
+                <div class="ms-3">
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_100.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_100 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_200.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_200 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_300.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_300 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_400.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_400 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_500.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_500 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_600.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_600 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_700.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_700 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_800.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_800 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_900.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_900 }}
+                        </div>
+                    </div>
+                    <div class="row align-items-center mb-3">
+                        <div class="col-auto">
+                            <label class="col-form-label mb-0">{{ form.return_amount_1000.label }}</label>
+                        </div>
+                        <div class="col-auto">
+                            {{ form.return_amount_1000 }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+
+{% if testing %}
+    <br></br>
+    <button id="skipBtn" class="btn btn-secondary" onclick="skipPage()">
+    Skip for testing</button>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function skipPage() {
+            document.getElementById('id_amount_to_send').value = 100;
+            document.getElementById('id_return_amount_100').value = 100;
+            document.getElementById('id_return_amount_200').value = 200;
+            document.getElementById('id_return_amount_300').value = 300;
+            document.getElementById('id_return_amount_400').value = 400;
+            document.getElementById('id_return_amount_500').value = 500;
+            document.getElementById('id_return_amount_600').value = 600;
+            document.getElementById('id_return_amount_700').value = 700;
+            document.getElementById('id_return_amount_800').value = 800;
+            document.getElementById('id_return_amount_900').value = 900;
+            document.getElementById('id_return_amount_1000').value = 1000;
+        }
+</script>
+
+{% endblock %}

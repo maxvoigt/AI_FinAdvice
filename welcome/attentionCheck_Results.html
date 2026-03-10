@@ -1,0 +1,36 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Thank you for considering this experiment.
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        <div>
+            <p>
+                Unfortunately, the experiment has terminated because you failed to pass the screening.
+            </p>
+            <p>
+                Please return your submission on Prolific. 
+                This ensures that neither your Prolific score nor your ability to 
+                participate in more studies on Prolific is affected.
+                Returning your submission also allows another Prolific member to participate in this study. 
+            </p>
+            <p>
+                Please find further details on returning your submission 
+                <a href="https://participant-help.prolific.co/hc/en-gb/articles/360021984873">here</a>.
+            </p>
+            <p>
+                Thank you for considering this study. You can now close this window and leave the website.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

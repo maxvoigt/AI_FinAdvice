@@ -1,0 +1,79 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    A few questions about you
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        <p>
+            Please answer the following questions as truthfully as possible.
+        </p>
+        <hr>
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.age.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.age }}
+            </div>
+        </div>
+        
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.gender.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.gender }}
+            </div>
+        </div>
+        
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.income.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.income }}
+            </div>
+        </div>
+
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.financial_knowledge.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.financial_knowledge }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+
+{% if testing %}
+    <br></br>
+    <button id="skipBtn" class="btn btn-secondary" onclick="skipPage()">
+    Skip for testing</button>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function skipPage() {
+            document.getElementById('id_age').value = 32;
+            document.getElementById('id_gender').value = 'Male';
+            document.getElementById('id_income').value = 2;
+            // Correctly select the radio button with value "1" for financial_knowledge
+            let radios = document.getElementsByName('financial_knowledge');
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].value == "1") {
+                    radios[i].checked = true;
+                }
+            }
+        }
+</script>
+
+{% endblock %}

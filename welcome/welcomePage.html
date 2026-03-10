@@ -1,0 +1,52 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Welcome to the experiment!
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        <p>
+            <strong>
+                In this experiment, you can earn a bonus
+            </strong>
+            on top of the completion fee.
+            Your bonus depends on your 
+            choices            
+            as well as on chance.
+            It is thus important that you read the explanations carefully. 
+        </p>
+
+        <p>
+            Before explaining how the experiment works, we need to 
+            ensure that you are human and speak English on the next pages.
+            In addition, there will be attention checks during the experiment.
+            You will be excluded from the experiment and receive no payment 
+            if you fail one of these tests.
+        </p> 
+        
+        
+        {{ formfield 'prolID' }}
+        
+        {{ if testing }}
+        <p>
+            <span style="color:red;">Note:</span>
+            For testing, your can use "ABCDEF123456GHIJKL7890MN".
+        </p>
+        {{ endif }}
+        
+        <p>
+            All data will be kept confidential by the researchers. Personal information will not be stored with the data. You are free to withdraw at any time. By clicking “I agree” below, you indicate that you are at least 18 years old, have read and understood this page, and agree to participate in this research study.
+        </p>
+
+    </div>
+</div>
+
+<button id="next_button" class="otree-btn-next btn btn-primary">I agree</button>
+
+
+
+{% endblock %}
