@@ -3,6 +3,7 @@ from otree.api import *
 import pandas as pd
 import re
 import ast
+import numpy as np
 
 doc = """
 Your app description
@@ -12,10 +13,12 @@ Your app description
 class C(BaseConstants):
     NAME_IN_URL = 'investmentGame'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 1
+    NUM_ROUNDS = 25
     NUM_PREVRROUNDS = 10
     NUM_INVESTMENT_ROUNDS = 15
     INITIAL_WEALTH = 10000
+    UPDATE_INTERVAL = 350 # time in ms to update the chart
+    INVESTMENT_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#d62728']
 
     # Get asset parameters from global/assetParameters.csv
     # Columns: probIncrease, priceIncrease, priceDecrease (from returnSimulation.m)
@@ -80,17 +83,13 @@ class Player(BasePlayer):
     )
 
     # Save details of the investment chocie
-    currentPeriod = models.IntegerField(initial=-9)
-
-    investmentOption1Holdings = models.StringField(initial="[]")
-    investmentOption2Holdings = models.StringField(initial="[]")
-    investmentOption3Holdings = models.StringField(initial="[]")
-    investmentOption4Holdings = models.StringField(initial="[]")
-    investmentOption5Holdings = models.StringField(initial="[]")
-
-    beliefsPeriod1 = models.LongStringField(initial="{}")
-
-    #returnSeries = self.participant.priceChart
+    investmentOption1Holdings = models.FloatField(initial=0, blank=True)
+    investmentOption2Holdings = models.FloatField(initial=0, blank=True)
+    investmentOption3Holdings = models.FloatField(initial=0, blank=True)
+    investmentOption4Holdings = models.FloatField(initial=0, blank=True)
+    investmentOption5Holdings = models.FloatField(initial=0, blank=True)
+    totalWealth = models.FloatField(initial=10000)
+    riskFreeHoldings = models.FloatField(initial=0)
    
 
 def _normalize_attention_text(text: str) -> str:
@@ -137,6 +136,9 @@ def check_attention_answer(text: str, max_distance: int = 2) -> bool:
 
 # PAGES
 class explanations(Page):
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
 
     @staticmethod
     def vars_for_template(player):
@@ -160,6 +162,9 @@ class explanations(Page):
             'probIncrease': float(df.iloc[0]['probIncrease']) * 100,
         })
 
+        # Get Information for table
+
+
         return {
             'totalRounds': C.NUM_PREVRROUNDS + C.NUM_INVESTMENT_ROUNDS,
             'obsRounds': C.NUM_PREVRROUNDS,
@@ -167,6 +172,7 @@ class explanations(Page):
             'firstRound': -(C.NUM_PREVRROUNDS - 1),
             'asset_rows': asset_rows,
             'treatment': player.participant.treatment,
+            'updateInterval': C.UPDATE_INTERVAL,
         }
     
     @staticmethod
@@ -177,6 +183,11 @@ class explanations(Page):
 
 class compQuestions(Page):
     form_model = 'player'
+
+
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
 
     @staticmethod
     def get_form_fields(player):
@@ -224,10 +235,20 @@ class atnQuest(Page):
         }
 
 
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
+
 class attentionScreen(Page):
-    pass
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
+
+
 
 class invPage(Page):
+    form_model = 'player'
+    form_fields = ['investmentOption1Holdings', 'investmentOption2Holdings', 'investmentOption3Holdings', 'investmentOption4Holdings', 'investmentOption5Holdings']
     # TEST
     '''
     @staticmethod
@@ -239,62 +260,208 @@ class invPage(Page):
 
     @staticmethod
     def js_vars(player):
-        tmpOption1Prices = player.participant.investmentOption1Prices
-        tmpOption2Prices = player.participant.investmentOption2Prices
-        tmpOption3Prices = player.participant.investmentOption3Prices
-        tmpOption4Prices = player.participant.investmentOption4Prices
-        tmpOption5Prices = player.participant.investmentOption5Prices
+        # Get asset prices for all periods
+        option1Prices = player.participant.investmentOption1Prices
+        option2Prices = player.participant.investmentOption2Prices
+        option3Prices = player.participant.investmentOption3Prices
+        option4Prices = player.participant.investmentOption4Prices
+        option5Prices = player.participant.investmentOption5Prices
 
-        tmp_all_prices = (
-            tmpOption1Prices + tmpOption2Prices + tmpOption3Prices +
-            tmpOption4Prices + tmpOption5Prices
+        # Get all prices for all periods to determine min and max
+        tmp_currentPrices = (
+            option1Prices[:player.round_number] +
+            option2Prices[:player.round_number] +
+            option3Prices[:player.round_number] +
+            option4Prices[:player.round_number] +
+            option5Prices[:player.round_number]
         )
-        price_min = min(tmp_all_prices)
-        price_max = max(tmp_all_prices)
 
-        print(price_min, price_max)
+        price_max = (np.floor(max(tmp_currentPrices) / 100) + 1) * 100
 
-        return {
-            'treatment': player.participant.treatment,
-            'investmentOption1Prices': player.participant.investmentOption1Prices,
-            'investmentOption2Prices': player.participant.investmentOption2Prices,
-            'investmentOption3Prices': player.participant.investmentOption3Prices,
-            'investmentOption4Prices': player.participant.investmentOption4Prices,
-            'investmentOption5Prices': player.participant.investmentOption5Prices,
-            'currentPeriod': player.currentPeriod,
-            'firstRound': -(C.NUM_PREVRROUNDS - 1),
-            'obsRounds': C.NUM_PREVRROUNDS,
-            'investRounds': C.NUM_INVESTMENT_ROUNDS,
-            'price_min': price_min,
-            'price_max': price_max,
-            'initialWealth': C.INITIAL_WEALTH,
+        # Prepare thisPrices and prevPrices as dictionaries
+        thisPrices = {
+            '1': option1Prices[player.round_number - 1],
+            '2': option2Prices[player.round_number - 1],
+            '3': option3Prices[player.round_number - 1],
+            '4': option4Prices[player.round_number - 1],
+            '5': option5Prices[player.round_number - 1],
         }
 
+        # Default values for prevPrices set to np.nan
+        prevPrices = {
+            '1': np.nan,
+            '2': np.nan,
+            '3': np.nan,
+            '4': np.nan,
+            '5': np.nan,
+        }
+
+        if player.round_number > 1:
+            prevPrices = {
+                '1': option1Prices[:player.round_number - 1],
+                '2': option2Prices[:player.round_number - 1],
+                '3': option3Prices[:player.round_number - 1],
+                '4': option4Prices[:player.round_number - 1],
+                '5': option5Prices[:player.round_number - 1],
+            }
+
+        oldHoldings = {
+            '1': 0,
+            '2': 0,
+            '3': 0,
+            '4': 0,
+            '5': 0,
+        }
+
+        totalWealth = player.totalWealth
+
+        if player.round_number > 1:
+            prev_player = player.in_previous_rounds()[-1]
+            oldHoldings = {
+                '1': prev_player.investmentOption1Holdings,
+                '2': prev_player.investmentOption2Holdings,
+                '3': prev_player.investmentOption3Holdings,
+                '4': prev_player.investmentOption4Holdings,
+                '5': prev_player.investmentOption5Holdings,
+            }
+            totalWealth = prev_player.totalWealth
+        
+        currentValues = {}
+        for i in range(1, 6):
+            # Use string keys as in oldHoldings, thisPrices
+            opt = str(i)
+            currentValues[opt] = thisPrices[opt] * oldHoldings[opt]
+
+        totalCurrentValue = sum(currentValues.values())
+
+        currentShares = {}
+        for i in range(1, 6):
+            opt = str(i)
+            currentShares[opt] = "—" if totalCurrentValue == 0 else f"{round(currentValues[opt] / totalCurrentValue * 100, 2):.2f}%"
+
+        # Get old holdings
+        return {
+            'currentPeriod': player.round_number - C.NUM_PREVRROUNDS,
+            'treatment': player.participant.treatment,
+            'firstRound': -(C.NUM_PREVRROUNDS - 1),
+            'maxRounds': C.NUM_INVESTMENT_ROUNDS,
+            'obsRounds': C.NUM_PREVRROUNDS,
+            'prevPrices': prevPrices,
+            'thisPrices': thisPrices,
+            'currentValues': currentValues, # Note: Old holdings at new price
+            'totalCurrentValue': totalCurrentValue,
+            'currentShares': currentShares,
+            'totalCurrentShares': "—" if totalCurrentValue == 0 else "100.00%",
+            'totalWealth': totalWealth,
+            'price_max': price_max,
+            'investmentColors': C.INVESTMENT_COLORS,
+            'roundType': "Investment" if player.round_number > C.NUM_PREVRROUNDS else "Observation",
+            'updateInterval': C.UPDATE_INTERVAL,
+            'oldHoldings': oldHoldings,
+        }
 
     @staticmethod
-    def live_method(player, data):
-        if data.get('type') == 'beliefs':
-            player.beliefsPeriod1 = data['payload']
-            return {player.id_in_group: {}}
+    def vars_for_template(player):
+        oldHoldings = {
+            '1': 0,
+            '2': 0,
+            '3': 0,
+            '4': 0,
+            '5': 0,
+        }
 
-        period   = data['period']
-        holdings = data.get('holdings')   # list of 5 ints, or None for obs periods
+        riskFreeHoldings = player.riskFreeHoldings
 
-        if holdings is not None:
-            for option_num in range(1, 6):
-                field        = f'investmentOption{option_num}Holdings'
-                current_list = ast.literal_eval(getattr(player, field))
-                current_list.append(holdings[option_num - 1])
-                setattr(player, field, str(current_list))
+        if player.round_number > 1:
+            prev_player = player.in_previous_rounds()[-1]
+            oldHoldings = {
+                '1': prev_player.investmentOption1Holdings,
+                '2': prev_player.investmentOption2Holdings,
+                '3': prev_player.investmentOption3Holdings,
+                '4': prev_player.investmentOption4Holdings,
+                '5': prev_player.investmentOption5Holdings,
+            }
 
-        next_period = period + 1
-        player.currentPeriod = next_period
+            riskFreeHoldings = prev_player.riskFreeHoldings
+        
+        lastPrices = {
+            '1': player.participant.investmentOption1Prices[:player.round_number][0] if player.round_number == 1 else player.participant.investmentOption1Prices[:player.round_number][-2],
+            '2': player.participant.investmentOption2Prices[:player.round_number][0] if player.round_number == 1 else player.participant.investmentOption2Prices[:player.round_number][-2],
+            '3': player.participant.investmentOption3Prices[:player.round_number][0] if player.round_number == 1 else player.participant.investmentOption3Prices[:player.round_number][-2],
+            '4': player.participant.investmentOption4Prices[:player.round_number][0] if player.round_number == 1 else player.participant.investmentOption4Prices[:player.round_number][-2],
+            '5': player.participant.investmentOption5Prices[:player.round_number][0] if player.round_number == 1 else player.participant.investmentOption5Prices[:player.round_number][-2],
+        }
 
-        first_round        = -(C.NUM_PREVRROUNDS - 1)
-        last_invest_period = first_round + C.NUM_PREVRROUNDS + C.NUM_INVESTMENT_ROUNDS - 1
-        done = next_period > last_invest_period
+        totalValue = 0
+        for i in range(len(C.INVESTMENT_COLORS)):
+            totalValue += oldHoldings[str(i + 1)] * lastPrices[str(i + 1)]
 
-        return {player.id_in_group: {'nextPeriod': next_period, 'done': done}}
+        # Build option metadata so the template doesn't need to index lists
+        options = [
+            dict(
+                num=i + 1,
+                label=f'Alternative {i + 1}',
+                color=C.INVESTMENT_COLORS[i],
+                lastPrices = round(lastPrices[str(i + 1)], 2),
+                oldHoldings=oldHoldings[str(i + 1)],
+                currentValue = lastPrices[str(i + 1)] * oldHoldings[str(i + 1)],
+                currentShare = "—" if totalValue == 0 else f"{round(lastPrices[str(i + 1)] * oldHoldings[str(i + 1)] / totalValue * 100, 2)}%",
+            )
+            for i in range(len(C.INVESTMENT_COLORS))
+        ]
+
+        newWealth = totalValue + riskFreeHoldings
+
+        print(newWealth, riskFreeHoldings)
+
+        return {
+            'currentPeriod': player.round_number - C.NUM_PREVRROUNDS,
+            'totalRounds': C.NUM_INVESTMENT_ROUNDS,
+            'options': options,
+            'totalValue': totalValue,
+            'totalShare': "—" if totalValue == 0 else "100.00%",
+            'totalWealth': newWealth,
+        }
+
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        currentWealth = player.totalWealth
+        if player.round_number > 1:
+            prev_player = player.in_previous_rounds()[-1]
+            currentWealth = prev_player.totalWealth
+
+        ## Costs for the investment positions
+        costBasis = {
+            '1': player.investmentOption1Holdings * player.participant.investmentOption1Prices[player.round_number - 1],
+            '2': player.investmentOption2Holdings * player.participant.investmentOption2Prices[player.round_number - 1],
+            '3': player.investmentOption3Holdings * player.participant.investmentOption3Prices[player.round_number - 1],
+            '4': player.investmentOption4Holdings * player.participant.investmentOption4Prices[player.round_number - 1],
+            '5': player.investmentOption5Holdings * player.participant.investmentOption5Prices[player.round_number - 1],
+        }
+        totalCostBasis = sum(costBasis.values())
+
+        riskFreeHoldings = currentWealth - totalCostBasis
+
+        ## Update the total wealth
+        newPortfolioValue = {
+            '1': player.investmentOption1Holdings * player.participant.investmentOption1Prices[player.round_number],
+            '2': player.investmentOption2Holdings * player.participant.investmentOption2Prices[player.round_number],
+            '3': player.investmentOption3Holdings * player.participant.investmentOption3Prices[player.round_number],
+            '4': player.investmentOption4Holdings * player.participant.investmentOption4Prices[player.round_number],
+            '5': player.investmentOption5Holdings * player.participant.investmentOption5Prices[player.round_number],
+        }
+
+        totalNewPortfolioValue = sum(newPortfolioValue.values())
+
+        newTotalWealth = totalNewPortfolioValue + riskFreeHoldings
+
+        ## Update the total wealth
+        player.totalWealth = newTotalWealth
+        player.riskFreeHoldings = riskFreeHoldings
+
+        return {
+            'totalWealth': newTotalWealth,
+        }
 
 
 page_sequence = [
