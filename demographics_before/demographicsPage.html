@@ -7,12 +7,32 @@
 
 {% block content %}
 
+<div class="d-none">
+    {{ formfield_errors 'income_choice' }}
+</div>
+
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
-        <p>
-            Please answer the following questions as truthfully as possible.
-        </p>
-        <hr>
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.gender.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.gender }}
+            </div>
+        </div>
+
+        <div id="gender_other_row" class="row align-items-center mb-3 collapse">
+            <div class="col-auto" style="padding-left: 2em;">
+                <label class="col-form-label mb-0">
+                    {{ form.gender_other.label }}
+                </label>
+            </div>
+            <div class="col-auto">
+                {{ form.gender_other }}
+            </div>
+        </div>
+
         <div class="row align-items-center mb-3">
             <div class="col-auto">
                 <label class="col-form-label mb-0">{{ form.age.label }}</label>
@@ -24,30 +44,78 @@
         
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.gender.label }}</label>
+                <label class="col-form-label mb-0">{{ form.territory.label }}</label>
             </div>
             <div class="col-auto">
-                {{ form.gender }}
+                {{ form.territory }}
             </div>
         </div>
         
+        <hr>
+        <p>We are now asking about your financial situation for the year 2025. It may help to have your latest tax records at hand. 
+        </p>
+        
         <div class="row align-items-center mb-3">
-            <div class="col-auto">
+            <div class="col-12">
                 <label class="col-form-label mb-0">{{ form.income.label }}</label>
             </div>
-            <div class="col-auto">
+            <div class="col-3" style="padding-left: 2em;">
                 {{ form.income }}
+            </div>
+            <div class="col-auto">
+                <!-- UI-only checkbox; the real submitted value comes from {{ form.income_choice }} -->
+                <input id="income_choice_checkbox" type="checkbox" />
+                <label for="income_choice_checkbox">Prefer not to say</label>
+
+                <div class="d-none">
+                    {{ form.income_choice }}
+                </div>
+            </div>
+        </div>
+
+        <div id="income_bracket_row" class="row align-items-center mb-3 collapse">
+            <div class="col-12" style="padding-left: 2em;">
+                <label class="col-form-label mb-0">
+                    {{ form.income_bracket.label }}
+                </label>
+            </div>
+            <div class="col-12" style="padding-left: 2em;">
+                {{ form.income_bracket }}
             </div>
         </div>
 
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.financial_knowledge.label }}</label>
+                <label class="col-form-label mb-0">{{ form.householdSize.label }}</label>
             </div>
             <div class="col-auto">
-                {{ form.financial_knowledge }}
+                {{ form.householdSize }}
             </div>
         </div>
+
+        <hr>
+        <p>
+            Finally, we would like to ask you a few questions about how you make financial decisions in your daily life.
+        </p>
+
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.patience.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.patience }}
+            </div>
+        </div>
+        
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.finRiskTaking.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.finRiskTaking }}
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -63,17 +131,157 @@
 {% block scripts %}
 <script>
     function skipPage() {
-            document.getElementById('id_age').value = 32;
-            document.getElementById('id_gender').value = 'Male';
-            document.getElementById('id_income').value = 2;
-            // Correctly select the radio button with value "1" for financial_knowledge
-            let radios = document.getElementsByName('financial_knowledge');
-            for (let i = 0; i < radios.length; i++) {
-                if (radios[i].value == "1") {
-                    radios[i].checked = true;
+        // Demographics fields (example test values)
+        let age = document.getElementById('id_age');
+        if (age) age.value = 32;
+
+        let gender = document.getElementById('id_gender');
+        if (gender) gender.value = 1; // 1 = 'Male'
+
+        let genderOther = document.getElementById('id_gender_other');
+        if (genderOther) genderOther.value = "";
+
+        let territory = document.getElementById('id_territory');
+        if (territory) territory.value = 5; // 5 = Ontario
+
+        let income = document.getElementById('id_income');
+        if (income) income.value = 42000;
+
+        // Set the income_choice checkbox or radio group
+        let incomeChoiceCheckbox = document.getElementById('income_choice_checkbox');
+        if (incomeChoiceCheckbox) incomeChoiceCheckbox.checked = false; // 'No' by default
+
+        let incomeChoiceRadios = document.getElementsByName('income_choice');
+        if (incomeChoiceRadios && incomeChoiceRadios.length) {
+            // Set "No" (False) if there are two radio buttons; assumes value "0" is False
+            for (let i = 0; i < incomeChoiceRadios.length; i++) {
+                if (
+                    incomeChoiceRadios[i].value === "0" ||
+                    incomeChoiceRadios[i].value === "false" ||
+                    incomeChoiceRadios[i].value === "False"
+                ) {
+                    incomeChoiceRadios[i].checked = true;
                 }
             }
         }
+
+        let incomeBracket = document.getElementById('id_income_bracket');
+        if (incomeBracket) incomeBracket.value = 3; // Example: $30k–49k
+
+        let householdSize = document.getElementById('id_householdSize');
+        if (householdSize) householdSize.value = 2;
+
+        // "Patience" scale
+        let patience = document.getElementById('id_patience');
+        if (patience) patience.value = 3;
+
+        // "Financial risk taking" scale
+        let finRisk = document.getElementById('id_finRiskTaking');
+        if (finRisk) finRisk.value = 2;
+    }
+
+    $(document).ready(function() {
+        
+        let gender = document.getElementById('id_gender');
+
+        gender.addEventListener('change', function() {
+            if (gender.value == 3) {
+                document.getElementById('gender_other_row').classList.add('show');
+            } else {
+                document.getElementById('gender_other_row').classList.remove('show');
+            }
+        });
+
+        if (gender.value == 3) {
+            document.getElementById('gender_other_row').classList.add('show');
+        } else {
+            document.getElementById('gender_other_row').classList.remove('show');
+        }
+
+        let income = document.getElementById('id_income');
+        let checkbox = document.getElementById('income_choice_checkbox');
+        let bracketRow = document.getElementById('income_bracket_row');
+        // oTree may render BooleanField either as a checkbox or as a 2-option radio group
+        // (depending on widget / bootstrap integration). We keep it hidden and sync it
+        // with the UI checkbox above.
+        let incomeChoiceInputs = document.querySelectorAll('input[name="income_choice"]');
+
+        // If there are no `input[name="income_choice"]` elements, fall back to `#id_income_choice`.
+        if (!incomeChoiceInputs || incomeChoiceInputs.length === 0) {
+            const fallback = document.getElementById('id_income_choice');
+            if (fallback) incomeChoiceInputs = [fallback];
+        }
+
+        // Keep only actual selectable boolean controls (radio/checkbox).
+        incomeChoiceInputs = [...incomeChoiceInputs].filter(
+            (el) => el.type === 'checkbox' || el.type === 'radio'
+        );
+
+        const trueValues = new Set(['true', 'True', '1', 'on', 'yes']);
+
+        function isFormValuePreferNotToSay() {
+            if (!incomeChoiceInputs || incomeChoiceInputs.length === 0) return false;
+
+            // Checkbox case: there's only one input and its checked value indicates True/False.
+            if (incomeChoiceInputs.length === 1 && incomeChoiceInputs[0].type === 'checkbox') {
+                return !!incomeChoiceInputs[0].checked;
+            }
+
+            // Radio case: choose whichever input is checked and see if its value maps to True.
+            for (let input of incomeChoiceInputs) {
+                if (input.checked) {
+                    return trueValues.has(input.value);
+                }
+            }
+            return false;
+        }
+
+        function setFormValuePreferNotToSay(preferNotToSay) {
+            if (!incomeChoiceInputs || incomeChoiceInputs.length === 0) return;
+
+            for (let input of incomeChoiceInputs) {
+                if (input.type === 'checkbox') {
+                    input.checked = preferNotToSay;
+                } else {
+                    // radio: check the True option when preferNotToSay, otherwise check the False option
+                    const inputIsTrue = trueValues.has(input.value);
+                    input.checked = preferNotToSay ? inputIsTrue : !inputIsTrue;
+                }
+            }
+        }
+
+        function syncUIFromForm() {
+            const preferNotToSay = isFormValuePreferNotToSay();
+            checkbox.checked = preferNotToSay;
+
+            income.readOnly = preferNotToSay;
+            bracketRow.classList.toggle('show', preferNotToSay);
+        }
+
+        function syncFormFromUI() {
+            setFormValuePreferNotToSay(checkbox.checked);
+        }
+
+        // Restore state after oTree validation errors / reloads
+        syncUIFromForm();
+
+        // If user types income while "prefer not to say" is checked → uncheck both
+        income.addEventListener('input', function() {
+            if (income.value !== '' && checkbox.checked) {
+                checkbox.checked = false;
+                syncFormFromUI();
+                syncUIFromForm();
+            }
+        });
+
+        // UI checkbox drives the hidden BooleanField checkbox.
+        checkbox.addEventListener('change', function() {
+            syncFormFromUI();
+            syncUIFromForm();
+        });
+    });
+
+
 </script>
 
 {% endblock %}

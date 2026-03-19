@@ -31,6 +31,7 @@ PARTICIPANT_FIELDS = [
     'investmentOption3Prices',
     'investmentOption4Prices',
     'investmentOption5Prices',
+    'trustGameOrder',
 ]
 SESSION_FIELDS = []
 

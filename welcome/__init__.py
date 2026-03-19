@@ -42,6 +42,11 @@ def creating_session(subsession):
             player.treatment = treatment
             player.participant.treatment = treatment
 
+            # Assign order of trust game
+            trustGameOrder = random.choice([0, 1])
+            player.trustGameOrder = trustGameOrder
+            player.participant.trustGameOrder = trustGameOrder
+
             # Assign price chart
             priceChart = int(np.floor(usableID / C.NUM_TREATMENTS))
             print(treatment, priceChart)
@@ -78,9 +83,10 @@ def recaptcha_valid(response_token):
 
 
 class Player(BasePlayer):
-    prolID = models.StringField(label='Please enter your Prolific ID below.', min_length=24, max_length=24)
+    prolID = models.StringField(label='Please enter your Prolific ID:', min_length=24, max_length=24)
     treatment = models.IntegerField()
     priceChart = models.IntegerField()
+    trustGameOrder = models.IntegerField()
 
     # ReCaptcha Verification
     captchaVerified = models.BooleanField(initial=False)

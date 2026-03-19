@@ -2,7 +2,7 @@
 {% load otree static %}
 
 {% block title %}
-    Welcome to the experiment!
+    Many thanks for taking the time to participate in this survey! 
 {% endblock %}
 
 {% block content %}
@@ -11,23 +11,24 @@
     <div class="col">
         <p>
             <strong>
-                In this experiment, you can earn a bonus
+                In this survey, you can earn a bonus
             </strong>
-            on top of the completion fee.
-            Your bonus depends on your 
-            choices            
-            as well as on chance.
-            It is thus important that you read the explanations carefully. 
+             on top of the completion fee. 
+             Your bonus depends on your choices as well as on chance. 
+             It is thus important that you read the explanations carefully.
         </p>
 
         <p>
-            Before explaining how the experiment works, we need to 
-            ensure that you are human and speak English on the next pages.
-            In addition, there will be attention checks during the experiment.
-            You will be excluded from the experiment and receive no payment 
-            if you fail one of these tests.
+            Before explaining how the survey works, 
+            we need to ensure that you are human and speak English on the next pages. 
+            In addition, there will be an attention check during the survey. 
+            You will be excluded from the survey and receive no payment if you fail 
+            one of these tests.
         </p> 
         
+        <p>
+            We expect that the survey takes around 25 minutes to complete, but there is no time limit.
+        </p>
         
         {{ formfield 'prolID' }}
         
@@ -37,16 +38,85 @@
             For testing, your can use "ABCDEF123456GHIJKL7890MN".
         </p>
         {{ endif }}
-        
+
         <p>
-            All data will be kept confidential by the researchers. Personal information will not be stored with the data. You are free to withdraw at any time. By clicking “I agree” below, you indicate that you are at least 18 years old, have read and understood this page, and agree to participate in this research study.
+            To participate in this survey, you must agree with our participation rules and privacy policy.
         </p>
+
+        <button type=”button” class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#participationRulesModal">
+            Show participation rules and privacy policy
+        </button>
+        <br></br>
+        <p>
+            All data will be kept confidential by the researchers. 
+            Personal information will not be stored with the data. 
+            You are free to withdraw at any time. 
+            By clicking “I agree” below, 
+            you indicate that you are at least 18 years old, 
+            have read and understood this page including the participation rules and privacy policy, 
+            and agree to participate in this survey.
+        </p>
+
 
     </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary">I agree</button>
+<button id=”next_button” class="otree-btn-next btn btn-primary">I agree</button>
 
 
+<!-- Modal -->
+<div class="modal fade" id="participationRulesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Participation rules and privacy policy</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p>
+                This survey was developed as part of a research project at HEC Montréal.
+            </p>
+            <p>
+                Please answer all questions in this survey as honestly as possible. Some questions may require more thought than others, so take the time you need to respond carefully.
+            </p>
+            <ul>
+                <li>
+                    To navigate through the survey, please only use the “Continue” button at the bottom of the screen.
+                </li>
+                <li>
+                    Please do not use your browser’s navigation buttons (especially the “Back” button).
+                </li>
+                <li>
+                    Once you move forward during the survey, there is no option to go back.
+                </li>
+            </ul>
+            <p>
+                The information collected will be anonymous and will remain strictly confidential. Your data will only be used to advance knowledge and to present overall results in academic or professional forums.
+            </p>
+            <p>
+                Collected data may be shared with other researchers for non-commercial research purposes in projects other than this one. The online data collection provider agrees not to disclose any personal information or other information about participants to any other users or third parties, unless you explicitly consent or if required by law.
+            </p>
+            <p>
+                Your participation is completely voluntary. You are free to refuse to participate and may stop answering questions at any time. By completing this questionnaire, you are considered to have given your consent to participate in our research project and for the potential use of data collected from this questionnaire in future research. Because the questionnaire is anonymous, it will not be possible to withdraw your data from the study after you have submitted your responses.
+            </p>
+            <p>
+                If you have any questions about this research, please contact the principal researcher:
+            </p>
+            <address>
+                <strong>Philippe d’Astous</strong><br>
+                Associate Professor, HEC Montréal<br>
+                <span class="d-block">(514) 340-7120</span>
+                <a href="mailto:philippe.dastous@hec.ca">philippe.dastous@hec.ca</a>
+            </address>
+            <p>
+                HEC Montréal’s Research Ethics Board (REB)has determined that the data collected for this study meets the ethics standards for research involving humans. If you have any questions related to ethics, please contact the REB secretariat at <a href="tel:+15143406051">(514) 340-6051</a> or by email at <a href="mailto:cer@hec.ca">cer@hec.ca</a>.
+            </p>
+        </div>
+        <div class="modal-footer justify-content-center d-flex">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 {% endblock %}

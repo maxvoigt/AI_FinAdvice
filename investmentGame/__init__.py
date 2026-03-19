@@ -135,6 +135,10 @@ def check_attention_answer(text: str, max_distance: int = 2) -> bool:
 
 
 # PAGES
+class startPage(Page):
+    def is_displayed(player):
+        return player.round_number == 1
+        
 class explanations(Page):
     @staticmethod
     def is_displayed(player):
@@ -465,6 +469,7 @@ class invPage(Page):
 
 
 page_sequence = [
+    startPage,
     explanations,
     compQuestions, 
     atnQuest,

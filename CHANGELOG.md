@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-03-18
+
+### welcome — Add Participation Rules Modal
+
+- `welcome/welcomePage.html`: Added "View participation rules" button below the consent paragraph; added Bootstrap modal (`#participationRulesModal`) with an empty body for the rules text, a scrollable dialog, and a Close button
+
 ## 2026-03-06
 
 ### investmentGame — Gate "Okay" Button on Modal Completion + Persist Beliefs
@@ -32,3 +38,12 @@
 - `buttonClick()` — for investment periods validates budget, commits `holdings`/`cash`, sends `{period, holdings: [...]}` via `liveSend`; for observation periods sends `{period, holdings: null}`
 - `liveRecv(data)` — submits oTree form when `data.done`; otherwise advances period and re-enables button
 - Highcharts plotBand shades observation phase (−9.5 → 0.5) with "Observation" label
+
+## 2026-03-19
+
+### demographics — Restore income-choice after errors
+
+- `demographics_before/demographicsPage.html`: Render the real `income_choice` field (hidden) and sync it with the UI checkbox, so the selection survives oTree validation errors/reloads
+
+- `demographics_before/demographicsPage.html`: Update JS syncing logic to treat `income_choice` as a BooleanField (checked => prefer not to say)
+- `demographics_before/__init__.py`: Fix `error_message()` validation logic for boolean `income_choice` and handle `0` as a valid bracket value
