@@ -38,7 +38,7 @@ def creating_session(subsession):
             usableID = player.participant.id_in_session - 1
 
             # Assign treatment
-            treatment = usableID % C.NUM_TREATMENTS
+            treatment = usableID % C.NUM_TREATMENTS ## 0 - No Advice,1 - FP; 2 - FP + ChatGPT; 3 - ChatGPT
             player.treatment = treatment
             player.participant.treatment = treatment
 

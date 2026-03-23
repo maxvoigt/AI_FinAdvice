@@ -47,3 +47,12 @@
 
 - `demographics_before/demographicsPage.html`: Update JS syncing logic to treat `income_choice` as a BooleanField (checked => prefer not to say)
 - `demographics_before/__init__.py`: Fix `error_message()` validation logic for boolean `income_choice` and handle `0` as a valid bracket value
+
+## 2026-03-23
+
+### investmentGame — Capture Highcharts SVG without exporting module
+
+- `investmentGame/invPage.html`: Removed the CDN `exporting.js` dependency (403) and updated `captureChart()` to serialize the SVG from the DOM instead of calling `chart.getSVG()`
+- `investmentGame/invPage.html`: Render the copied chart image in the beliefs modal as a smaller preview (`max-width: 70%`) while keeping aspect ratio
+- `investmentGame/invPage.html`: Refactored the beliefs modal layout with clearer introductory text, prediction fields first, and a collapsed "Show price chart (optional)" section so the chart is explicitly optional
+- `investmentGame/invPage.html`: Added collapse event handlers so the chart toggle button text switches between "Show price chart" and "Hide price chart"

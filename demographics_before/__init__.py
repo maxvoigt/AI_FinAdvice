@@ -186,10 +186,8 @@ class demographicsPage(Page):
         income = values.get('income')
         bracket = values.get('income_bracket')
         gender = values.get('gender')
-        print(gender)
         gender_other = values.get('gender_other')
-        print("gender_other: ", gender_other)
-
+        
         # `income_choice` is a BooleanField:
         # - True  => user prefers not to say income amount => must choose `income_bracket`
         # - False => user enters an amount            => must choose `income`
@@ -207,6 +205,11 @@ class demographicsPage(Page):
             if not (isinstance(gender_other, str) and gender_other.strip()):
                 return "Please specify your gender."
 
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        player.participant.age = player.age
+        player.participant.gender = player.gender
+        player.participant.riskAversion = player.finRiskTaking
 
 class trustGame(Page):
     form_model = 'player'

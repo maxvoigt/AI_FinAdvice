@@ -32,6 +32,9 @@ PARTICIPANT_FIELDS = [
     'investmentOption4Prices',
     'investmentOption5Prices',
     'trustGameOrder',
+    'age',
+    'gender',
+    'riskAversion',
 ]
 SESSION_FIELDS = []
 
@@ -58,3 +61,6 @@ RECAPTCHA_SECRET_KEY = "6LeTI9QpAAAAAFBa_ZB8DdTVjTSLeZcD3QE_pbmy"
 # Once deployed to server, use
 #RECAPTCHA_SITE_KEY = environ.get('RECAPTCHA_SITE_KEY', '')
 #RECAPTCHA_SECRET_KEY = environ.get('RECAPTCHA_SECRET_KEY', '')
+
+## OPEN AI KEY
+api_key = environ.get("OPENAI_API_KEY")

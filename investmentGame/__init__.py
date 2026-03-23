@@ -4,11 +4,115 @@ import pandas as pd
 import re
 import ast
 import numpy as np
+from openai import OpenAI
+from otree.settings import api_key
+import json
+
 
 doc = """
 Your app description
 """
 
+client = OpenAI(api_key=api_key)
+
+def generate_text(prompt):
+    response = client.responses.create(
+        model="gpt-5-mini",
+        input=prompt,
+        max_output_tokens=2500,
+        reasoning={"effort": "medium"}, # ensure some reasoning is done
+        #temperature=0,  # reduces randomness
+    )
+    return response.output_text
+
+def generate_prompt(player, wealth, age, gender, riskAversion, prices, chart):
+    ageRanges = [[18,34], [35,50], [51,100]]
+    useRange = ageRanges[0] if age < 35 else ageRanges[1] if age < 51 else ageRanges[2]
+    minAge = useRange[0]
+    maxAge = useRange[1]
+
+    genderChoices = {
+        1: 'male',
+        2: 'female',
+        3: 'prefer to self-describe',
+        4: 'prefer not to say',
+    }
+    useGender = genderChoices[gender]
+
+    riskAversionQuestion = "Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?"
+    riskAversionChoices = {
+        1: 'I am willing to take substantial financial risks expecting to earn substantial returns.',
+        2: 'I am willing to take above average financial risks expecting to earn above-average returns.',
+        3: 'I am willing to take average financial risks expecting to earn average returns.',
+        4: 'I am willing to take below average financial risks expecting to earn below-average returns.',
+        5: 'I am not willing to take any risk, knowing I will earn a small but certain return.',
+    }
+
+    useRiskAversion = riskAversionChoices[riskAversion]
+
+    assetParameters = C.assetParameters.copy()
+
+    # Format the dataframe: rows = Options 1-5; columns ordered as instructed
+    assetParameters = assetParameters[['priceIncrease', 'priceDecrease', 'probIncrease']]
+
+    # Rename columns to be more descriptive for the prompt
+    assetParameters.columns = ['Price Increase', 'Price Decrease', 'Prob. Price Increase']
+
+    # Add Option 5 as a perfectly negatively correlated copy of Option 1
+    option5 = assetParameters.iloc[0].copy()
+    assetParameters.loc[4] = option5.values  # Option 5 is row index 4 (Python 0-based)
+    assetParameters.index = [f'Option {i}' for i in range(1, 6)]
+    assetParameters_json = assetParameters.to_dict(orient="index")
+
+    assetPrices_json = prices.to_dict(orient="list")
+
+    prompt = f"""
+    You are a financial advisor certified in Canada, giving advice to a real human—your client—as part of this research study.
+    You are given the following information:
+    - The current investable wealth of your client is ${wealth}.
+    - Your client is between ${minAge} and ${maxAge} years old.
+    - Your client's gender is ${useGender}.
+    - Your client was asked the following question: '{riskAversionQuestion}' The client's answer was ${useRiskAversion}.
+
+    Your client has the following investment options, which are known in an identical way to your client:
+    {json.dumps(assetParameters_json, indent=2)}.
+    Any wealth not invested in the investment options is invested in a risk-free asset with a return of 0%.
+
+    The price development of the investment options is as follows:
+    {json.dumps(assetPrices_json, indent=2)}.
+
+    Your client has seen a chart of the investment options (provided separately).
+
+    Generate a short personalized investment advice for your client. The advice should contain 
+    the client's target allocation to each investment option as well as in cash.
+    The allocation should be in dollar and percentage, as well as the number of units for the investment options. 
+    The number of units should be based on the current price of the investment options.
+    The advice should be in a format that is easy to understand and follow, and can contain 
+    a justification if it is useful. Start the advice by briefly summarizing the 
+    situation. Do not include any other text than the advice, and do not include any text that hints at follow-up questions.
+
+    Ensure that the advice looks nice when displayed in HTML, 
+    that is, include HTML tags to allow for a nice rendering.
+    Do not use headings or tables. 
+    """
+
+    input_data = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_text",
+                    "text": prompt
+                },
+                {
+                    "type": "input_image",
+                    "image_url": chart  # base64 string with data:image/png;base64,...
+                }
+            ]
+        }
+    ]
+
+    return input_data
 
 class C(BaseConstants):
     NAME_IN_URL = 'investmentGame'
@@ -19,6 +123,7 @@ class C(BaseConstants):
     INITIAL_WEALTH = 10000
     UPDATE_INTERVAL = 350 # time in ms to update the chart
     INVESTMENT_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#d62728']
+    ADVICE_ROUNDS = [1, 5, 10]
 
     # Get asset parameters from global/assetParameters.csv
     # Columns: probIncrease, priceIncrease, priceDecrease (from returnSimulation.m)
@@ -90,6 +195,17 @@ class Player(BasePlayer):
     investmentOption5Holdings = models.FloatField(initial=0, blank=True)
     totalWealth = models.FloatField(initial=10000)
     riskFreeHoldings = models.FloatField(initial=0)
+    
+    # Save details of the performance predictions
+    performancePrediction1 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 1, on average?")
+    performancePrediction2 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 2, on average?")
+    performancePrediction3 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 3, on average?")
+    performancePrediction4 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 4, on average?")
+    performancePrediction5 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 5, on average?")
+    
+    # Save details of the financial advice
+    advice = models.LongStringField(initial="", blank=True)
+    chart_image = models.LongStringField(blank=True)
    
 
 def _normalize_attention_text(text: str) -> str:
@@ -167,8 +283,6 @@ class explanations(Page):
         })
 
         # Get Information for table
-
-
         return {
             'totalRounds': C.NUM_PREVRROUNDS + C.NUM_INVESTMENT_ROUNDS,
             'obsRounds': C.NUM_PREVRROUNDS,
@@ -252,7 +366,14 @@ class attentionScreen(Page):
 
 class invPage(Page):
     form_model = 'player'
-    form_fields = ['investmentOption1Holdings', 'investmentOption2Holdings', 'investmentOption3Holdings', 'investmentOption4Holdings', 'investmentOption5Holdings']
+
+    @staticmethod
+    def get_form_fields(player):
+        if player.round_number - C.NUM_PREVRROUNDS in C.ADVICE_ROUNDS:
+            return ['investmentOption1Holdings', 'investmentOption2Holdings', 'investmentOption3Holdings', 'investmentOption4Holdings', 'investmentOption5Holdings', 'chart_image', 'performancePrediction1', 'performancePrediction2', 'performancePrediction3', 'performancePrediction4', 'performancePrediction5']
+        else:
+            return ['investmentOption1Holdings', 'investmentOption2Holdings', 'investmentOption3Holdings', 'investmentOption4Holdings', 'investmentOption5Holdings', 'chart_image']
+
     # TEST
     '''
     @staticmethod
@@ -343,7 +464,6 @@ class invPage(Page):
             opt = str(i)
             currentShares[opt] = "—" if totalCurrentValue == 0 else f"{round(currentValues[opt] / totalCurrentValue * 100, 2):.2f}%"
 
-        # Get old holdings
         return {
             'currentPeriod': player.round_number - C.NUM_PREVRROUNDS,
             'treatment': player.participant.treatment,
@@ -362,6 +482,7 @@ class invPage(Page):
             'roundType': "Investment" if player.round_number > C.NUM_PREVRROUNDS else "Observation",
             'updateInterval': C.UPDATE_INTERVAL,
             'oldHoldings': oldHoldings,
+            'adviceRounds': C.ADVICE_ROUNDS,
         }
 
     @staticmethod
@@ -416,16 +537,81 @@ class invPage(Page):
 
         newWealth = totalValue + riskFreeHoldings
 
-        print(newWealth, riskFreeHoldings)
+        ## Get characteristics of the investment options
+        df = C.assetParameters
+        asset_rows = [
+            {
+                'option_num': i + 1,
+                'priceIncrease': float(df.iloc[i]['priceIncrease']) * 100,
+                'priceDecrease': float(df.iloc[i]['priceDecrease']) * 100,
+                'probIncrease': float(df.iloc[i]['probIncrease']) * 100,  # display as percentage
+                'color': C.INVESTMENT_COLORS[i],
+            }
+            for i in range(len(df))
+        ]
+
+        # Add Investment Option 5 --> Perfectly negatively correlated with Investment Option 1
+        asset_rows.append({
+            'option_num': 5,
+            'priceIncrease': float(df.iloc[0]['priceIncrease']) * 100,
+            'priceDecrease': float(df.iloc[0]['priceDecrease']) * 100,
+            'probIncrease': float(df.iloc[0]['probIncrease']) * 100,
+            'color': C.INVESTMENT_COLORS[-1],
+        })
 
         return {
+            'treatment': player.participant.treatment,
             'currentPeriod': player.round_number - C.NUM_PREVRROUNDS,
             'totalRounds': C.NUM_INVESTMENT_ROUNDS,
             'options': options,
             'totalValue': totalValue,
             'totalShare': "—" if totalValue == 0 else "100.00%",
             'totalWealth': newWealth,
+            'adviceRounds': C.ADVICE_ROUNDS,
+            'asset_rows': asset_rows,
         }
+    
+    @staticmethod
+    def live_method(player, chart_image):
+        if player.participant.treatment != 3:
+            return {
+                player.id_in_group: ""
+            }
+
+        ## Send prompt to OpenAI --> needs to be done here to have the chart image available
+        player.chart_image = chart_image
+
+        ## Generate the investment advice
+        advice = ""
+        if player.round_number - C.NUM_PREVRROUNDS in C.ADVICE_ROUNDS:
+            tmpAge = player.participant.age
+            tmpGender = player.participant.gender
+            tmpRiskAversion = player.participant.riskAversion
+
+            prev_player = player.in_previous_rounds()[-1]
+            totalWealth = prev_player.totalWealth
+
+            prices_data = {
+                f"Option {i}": getattr(player.participant, f"investmentOption{i}Prices")[:player.round_number + 1]
+                for i in range(1, 6)
+            }
+            tmpPrices = pd.DataFrame(prices_data)
+            tmpPrices.index.name = "Year"
+
+
+            prompt = generate_prompt(player, totalWealth, tmpAge, tmpGender, tmpRiskAversion, tmpPrices, player.chart_image)
+            #print(prompt)
+            
+            #advice = generate_text(prompt)
+            #player.advice = advice
+            
+            if not player.advice:
+                advice = generate_text(prompt)
+                player.advice = advice
+            
+            return {
+                player.id_in_group: player.advice}
+        
 
     @staticmethod
     def before_next_page(player, timeout_happened):

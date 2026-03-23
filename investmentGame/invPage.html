@@ -2,8 +2,7 @@
 {% load otree static %}
 
 {% block title %}
-    Your Investment Task
-    <h5>You are in Period {{ currentPeriod }} of {{ totalRounds }}.</h5>
+    Your Investment Task <span style="font-size:60%;">(Period {{ currentPeriod }} of {{ totalRounds }})</span>
 {% endblock %}
 
 {% block content %}
@@ -14,6 +13,7 @@
     {{ formfield_errors 'investmentOption3Holdings' }}
     {{ formfield_errors 'investmentOption4Holdings' }}
     {{ formfield_errors 'investmentOption5Holdings' }}
+    {{ formfield 'chart_image' }}
 </div>
 
 <div class="container-fluid bg-light my-3 px-3 py-3 rounded border">
@@ -21,18 +21,16 @@
     <!-- Price chart (full width) -->
     <div class="card mb-3">
         <div class="card-body p-2">
-            <div id="myChart"></div>
+            <div id="myChart" style="max-height: 350px;"></div>
         </div>
     </div>
     
     <!-- Period information -->
-    <div id="observationInfo" class="alert alert-warning mb-3 d-none text-center">
-        You are in period {{ currentPeriod }} of {{ totalRounds }}.<br>
+    <div id="observationInfo" class="alert alert-warning mb-3 d-none text-center" style="padding-top: 0.375rem; padding-bottom: 0.375rem;">
         You can currently observe the price development of the investment options.
     </div>
-    <div id="investmentInfo" class="alert alert-warning mb-3 d-none text-center">
-        You are in period {{ currentPeriod }} of {{ totalRounds }}.
-        You can adjust your holdings of the investment options. <br>
+    <div id="investmentInfo" class="alert alert-warning mb-3 d-none text-center" style="padding-top: 0.375rem; padding-bottom: 0.375rem;">
+        You can adjust your holdings of the investment options below. <br>
         Currently, you have $<span id="totalValAlert">{{ totalValue |to2 }}</span> of your wealth of $<span id="totalWealthAlertText">{{ totalWealth |to2 }}</span> invested.
     </div>
 
@@ -42,7 +40,7 @@
         <!-- Portfolio table -->
         <div class="card flex-grow-1">
             <div class="card-body p-2">
-                <table class="table table-striped table-hover align-middle mb-0 text-center">
+                <table class="table table-sm table-striped table-hover align-middle mb-0 text-center">
                     <thead>
                         <tr>
                             <tr>
@@ -128,7 +126,139 @@
     </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary">Next period</button>
+<button id="showAdviceBtn" type="button" class="btn btn-success d-none" data-bs-toggle="modal" data-bs-target="#adviceModal">Show advice</button>
+<button id="next_button" class="otree-btn-next btn btn-primary" disabled>Next period</button>
+<button id="helpBtn" type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#investmentOptionDetailsModal">Investment option details</button>
+
+<!-- DEFINE MODALS -->
+
+<!-- Beliefs modal -->
+{% if currentPeriod in adviceRounds %}
+<div class="modal fade" id="beliefsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="beliefsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="beliefsModalLabel">Please answer the questions below before proceeding</h1>
+        </div>
+        <div class="modal-body">
+            <p class="text-muted small mb-3">
+                Note: You can review the price chart by clicking the "Show price chart" button below.
+            </p>
+
+            <div class="row">
+                <div class="col-auto ms-4 mb-3">
+                    {{ formfield 'performancePrediction1' }}
+                </div>
+                <div class="col-auto ms-4 mb-3">
+                    {{ formfield 'performancePrediction2' }}
+                </div>
+                <div class="col-auto ms-4 mb-3">
+                    {{ formfield 'performancePrediction3' }}
+                </div>
+                <div class="col-auto ms-4 mb-3">
+                    {{ formfield 'performancePrediction4' }}
+                </div>
+                <div class="col-auto ms-4 mb-3">
+                    {{ formfield 'performancePrediction5' }}
+                </div>
+            </div>
+
+            <div class="collapse mb-3" id="optionalChartPanel">
+                <div class="col-10 offset-1 py-2 px-2 border rounded bg-white">
+                    <div id="chartCopy"></div>
+                </div>
+            </div>
+            
+            <button class="btn btn-outline-secondary btn-sm mb-2" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#optionalChartPanel"
+                    aria-expanded="false" aria-controls="optionalChartPanel"
+                    id="toggleChartBtn">
+                Show price chart
+            </button>
+            
+            <hr>
+            <div class="alert alert-warning mb-0 mt-2 py-2">
+                    In this period, you have the option to receive <strong>investment advice from ChatGPT</strong>.<br>
+                    You can access the advice by clicking the "Show advice" button on the bottom of the page.
+                    ChatGPT has seen exactly the same price changes as you, knows the characteristics of the investment options,
+                    and broadly knows about you.
+            </div>
+        </div>
+        <div class="modal-footer align-items-center justify-content-center">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Submit answers</button>
+        </div>
+      </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Advice Modal -->
+<div class="modal fade" id="adviceModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="adviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="adviceModalLabel">Your advice</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <span id="adviceText"></span>
+        </div>
+        <div class="modal-footer align-items-center justify-content-center">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- Investment option details modal -->
+<div class="modal fade" id="investmentOptionDetailsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="investmentOptionDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="adviceModalLabel">Your investment options</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p>
+                Each of the five investment options has a starting price of $100 in Period -9. 
+                Afterwards, the price of each investment option can either increase or decrease.
+                The following table shows by how much the price of each investment option can increase or decrease,
+                as well as the chance of a price increase:
+            </p>
+
+            <table class="table table-striped table-hover align-middle mt-3 text-center">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Price increase by</th>
+                        <th>Price decrease by</th>
+                        <th>Probability of price increase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in asset_rows %}
+                    <tr>
+                        <th style="color: {{ row.color }};">Investment Option {{ row.option_num }}</th>
+                        <td>
+                            {{ row.priceIncrease|to2 }}%
+                        </td>
+                        <td>
+                            {{ row.priceDecrease|to2 }}%
+                        </td>
+                        <td>
+                            {{ row.probIncrease|to2 }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer align-items-center justify-content-center">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+        </div>
+      </div>
+    </div>
+</div>
 
 
 
@@ -150,13 +280,26 @@
     const currentShares = js_vars.currentShares;
     const totalCurrentShares = js_vars.totalCurrentShares;
     const totalWealth = js_vars.totalWealth;
-
+    const adviceRounds = js_vars.adviceRounds;
+    let imageBase64 = "";
+    
     if (currentPeriod == -9) {
         var allPrices = thisPrices;
     } else {
         var allPrices = prevPrices;
     }
     
+
+    /* Receive advice */
+    function liveRecv(data) {
+        if (js_vars.treatment != 3) {
+            return;
+        }
+        // your code goes here
+        document.getElementById('adviceText').innerHTML = data;
+        document.getElementById('showAdviceBtn').classList.remove('d-none');
+        document.getElementById('next_button').disabled = false;
+    }
 
     /* Initialize chart */
     function initChart() {
@@ -191,7 +334,7 @@
         }
 
         chart = Highcharts.chart('myChart', {
-            chart: {type: 'line', animation: true},
+            chart: {type: 'line', animation: true, spacingBottom: 4},
             title: {text: 'Prices of the Investment Options'},
             xAxis: {
                 title: {text: 'Period'},
@@ -213,17 +356,33 @@
                 layout: 'horizontal',
                 align: 'center',
                 verticalAlign: 'bottom',
+                y: -8,
+                margin: 4,
+                padding: 2,
+                itemMarginTop: 0,
+                itemMarginBottom: 0,
                 itemWidth: 160
             },
-            series: series
+            series: series,
+            tooltip: {
+                valueDecimals: 2,
+                valuePrefix: '$',
+                headerFormat: '<b>Period {point.key}</b><br/>',
+                pointFormat: '<span style="color:{series.color}"><b>{point.y}</b></span>'
+                }
         });
     }
 
     function updateChart() {
         console.log("updateChart");
         for (var i = 0; i < 5; i++) {
-            chart.series[i].addPoint([currentPeriod, thisPrices[String(i + 1)]], true, false, true);
+            chart.series[i].addPoint([currentPeriod, thisPrices[String(i + 1)]], false, false, true);
         }
+        chart.redraw();
+
+        setTimeout(() => {
+            captureChart();
+        }, 1000);
     }
 
     function updateTable() {
@@ -242,6 +401,53 @@
         $('#totalNewShare').text(totalCurrentShares);
 
         $('#totalValAlert').text(formatNumber2(totalCurrentValue));
+    }
+
+    // Capture the chart after the update
+    function captureChart() {
+        // We avoid Highcharts' exporting module (which provides `getSVG()`) and instead
+        // serialize the SVG that is already in the DOM.
+        const chartInstance = (typeof chart !== 'undefined' && chart) ? chart : (Highcharts.charts && Highcharts.charts[0]);
+        if (!chartInstance) return;
+
+        const svgEl = document.querySelector('#myChart svg') || chartInstance.container.querySelector('svg');
+        if (!svgEl) return;
+
+        let svg = new XMLSerializer().serializeToString(svgEl);
+        // Ensure SVG has the proper namespace for serialization into a data URL.
+        if (!svg.includes('xmlns=')) {
+            svg = svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+        }
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        const img = new Image();
+        const svgBlob = new Blob([svg], {type: "image/svg+xml;charset=utf-8"});
+        const url = URL.createObjectURL(svgBlob);
+
+        img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const base64 = canvas.toDataURL("image/png");
+            document.getElementById('id_chart_image').value = base64;
+            imageBase64 = base64;
+
+            // Render a smaller preview copy in the modal.
+            if (adviceRounds.includes(currentPeriod)) {
+            document.getElementById('chartCopy').innerHTML =
+                '<img src="' + base64 + '" alt="Chart copy" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" />';
+            }
+
+            URL.revokeObjectURL(url);
+
+            updateAdvice();
+
+        };
+
+        img.src = url;
     }
 
     // Calculate if the total new value is greater than the total wealth
@@ -306,6 +512,17 @@
         highlightChangedCells(optNum);
     }
 
+    function updateAdvice() {
+        // In the advice rounds, call the live method to generate the investment advice
+        if (js_vars.treatment != 3) {
+            return;
+        }
+        if (adviceRounds.includes(currentPeriod)) {
+            document.getElementById('next_button').disabled = true;
+            liveSend(imageBase64);
+        }
+    }
+
     // Input controls
     function stepHolding(num, delta) {
         const input = document.getElementById('newH' + num);
@@ -346,7 +563,7 @@
     // ── Init ───────────────────────────────────────────────────────────────
     $(document).ready(function() {
         initChart();
-        
+
         if (currentPeriod > -9) {
             setTimeout(updateAll, js_vars.updateInterval);
         }
@@ -373,320 +590,60 @@
         forminputs.investmentOption4Holdings.value = oldHoldings["4"];
         forminputs.investmentOption5Holdings.value = oldHoldings["5"];
 
-        /*
-        updateTableForPeriod(currentPeriod);
-        updateCurrentPeriodText(currentPeriod);
-
-        if (currentPeriod == 1){
-            const modal = new bootstrap.Modal(document.getElementById('startInvestingModal'), {
-                backdrop: 'static',
-                keyboard: false
-            });
-
-            modal.show();
-
-            $('#startInvestingModalPeriod').text(currentPeriod);
-
-            for (let n = 1; n <= 5; n++) {
-                document.getElementById('startInvestingModalReturn' + n)
-                    .addEventListener('input', checkModalComplete);
-                document.getElementById('startInvestingModalRisk' + n)
-                    .addEventListener('change', checkModalComplete);
-            }
-
-            document.getElementById('startInvestingModalOkBtn').addEventListener('click', function() {
-                const payload = {};
-                for (let n = 1; n <= 5; n++) {
-                    payload['return' + n] = parseFloat(document.getElementById('startInvestingModalReturn' + n).value);
-                    payload['risk' + n]   = parseInt(document.getElementById('startInvestingModalRisk' + n).value);
+        // Open modal in advice rounds
+        setTimeout(function() {
+            if (adviceRounds.includes(currentPeriod)) {
+                $('#beliefsModal').modal('show');
+                
+                const toggleChartBtn = document.getElementById('toggleChartBtn');
+                const optionalChartPanel = document.getElementById('optionalChartPanel');
+                if (toggleChartBtn && optionalChartPanel) {
+                    optionalChartPanel.addEventListener('shown.bs.collapse', function () {
+                        toggleChartBtn.textContent = 'Hide price chart';
+                    });
+                    optionalChartPanel.addEventListener('hidden.bs.collapse', function () {
+                        toggleChartBtn.textContent = 'Show price chart';
+                    });
                 }
-                liveSend({type: 'beliefs', payload: JSON.stringify(payload)});
-                bootstrap.Modal.getInstance(document.getElementById('startInvestingModal')).hide();
-            });
-        }
-        */
+
+                // --- Add on-change validation for performance prediction inputs ---
+                function validatePerformancePredictions() {
+                    let allValid = true;
+                    for (let i = 1; i <= 5; i++) {
+                        const input = document.getElementById('id_performancePrediction' + i);
+                        if (!input) {
+                            allValid = false;
+                            continue;
+                        }
+                        // Simple numeric validity check; expand as needed.
+                        const val = input.value;
+                        if (val === "" || isNaN(Number(val))) {
+                            allValid = false;
+                            input.classList.add('is-invalid');
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+                    }
+                    // Only enable the Submit button if all are valid
+                    const submitBtn = document.querySelector('#beliefsModal .modal-footer button.btn-primary');
+                    if (submitBtn) {
+                        submitBtn.disabled = !allValid;
+                    }
+                }
+
+                // Attach event listeners for "onchange" to the performance prediction fields
+                for (let i = 1; i <= 5; i++) {
+                    const input = document.getElementById('id_performancePrediction' + i);
+                    if (input) {
+                        input.addEventListener('input', validatePerformancePredictions);
+                    }
+                }
+            }
+        }, js_vars.updateInterval * 5);
+
+        document.getElementById('next_button').disabled = false;
     });
 
-    /*
-    // ── State ──────────────────────────────────────────────────────────────
-    var currentPeriod = js_vars.currentPeriod;
-    var firstRound    = js_vars.firstRound;
-    var obsRounds     = js_vars.obsRounds;
-    var investRounds  = js_vars.investRounds;
-    var initialWealth = js_vars.initialWealth;
-
-    var allPrices = [
-        js_vars.investmentOption1Prices,
-        js_vars.investmentOption2Prices,
-        js_vars.investmentOption3Prices,
-        js_vars.investmentOption4Prices,
-        js_vars.investmentOption5Prices,
-    ];
-
-    var holdings      = [0, 0, 0, 0, 0];   // confirmed holdings after each investment submit
-    var cash          = initialWealth;       // cash not in portfolio
-    var currentPrices = [0, 0, 0, 0, 0];
-    var costBasis     = [0, 0, 0, 0, 0];   // amount paid for current holdings
-
-    var chart = null;
-
-    // ── Helpers ────────────────────────────────────────────────────────────
-    function isObsPeriod(period) {
-        return (period - firstRound) < obsRounds;
-    }
-
-    function lastInvestPeriod() {
-        return firstRound + obsRounds + investRounds - 1;
-    }
-
-    function getPrices(period) {
-        var idx = period - firstRound;
-        return allPrices.map(function(p) { return p[idx]; });
-    }
-
-    function getNewHoldings() {
-        var result = [];
-        for (var i = 1; i <= 5; i++) {
-            var v = Math.max(0, Math.floor(parseFloat($('#newH' + i).val()) || 0));
-            result.push(v);
-        }
-        return result;
-    }
-
-    function fmt(n) {
-        return n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    }
-
-    // ── Table update ───────────────────────────────────────────────────────
-    function updateTableForPeriod(period) {
-        currentPrices = getPrices(period);
-
-        // Recompute total wealth: cash + current portfolio at new prices
-        var portfolioValue = 0;
-        for (var i = 0; i < 5; i++) {
-            portfolioValue += holdings[i] * currentPrices[i];
-        }
-        var totalWealth = cash + portfolioValue;
-
-        // Update price, holdings, current-value, and gain/loss columns
-        var totalCurVal = 0;
-        var totalGL = 0;
-        var anyHoldings = false;
-        for (var i = 0; i < 5; i++) {
-            var n = i + 1;
-            var cv = holdings[i] * currentPrices[i];
-            totalCurVal += cv;
-            $('#price'    + n).text(fmt(currentPrices[i]));
-            $('#holdings' + n).text(holdings[i]);
-            $('#curVal'   + n).text(fmt(cv));
-            // Set new-holdings inputs to current holdings
-            $('#newH' + n).val(holdings[i]);
-            // Gain/loss
-            var glSpan = $('#gl' + n);
-            if (holdings[i] === 0) {
-                glSpan.text('—').css('color', '');
-            } else {
-                var gl = cv - costBasis[i];
-                glSpan.text((gl >= 0 ? '+' : '') + fmt(gl));
-                glSpan.css('color', gl >= 0 ? 'green' : 'red');
-                totalGL += gl;
-                anyHoldings = true;
-            }
-        }
-        $('#totalCurVal').text(fmt(totalCurVal));
-        if (!anyHoldings) {
-            $('#totalGL').text('—').css('color', '');
-        } else {
-            $('#totalGL').text((totalGL >= 0 ? '+' : '') + fmt(totalGL));
-            $('#totalGL').css('color', totalGL >= 0 ? 'green' : 'red');
-        }
-
-        // Disable inputs during observation periods
-        var obs = isObsPeriod(period);
-        $('[id^="newH"]').prop('disabled', obs);
-
-        // Sync wealth display
-        $('#totalWealth').text(fmt(totalWealth));
-        // Set cash display based on confirmed cash, not prospective
-        cash = totalWealth - portfolioValue;  // recalibrate cash to match new prices
-        updateNewValues();
-    }
-
-    function updateNewValues() {
-        var newH = getNewHoldings();
-        var newPortfolioValue = 0;
-        for (var i = 0; i < 5; i++) {
-            var nv = newH[i] * currentPrices[i];
-            newPortfolioValue += nv;
-            $('#newVal' + (i + 1)).text(fmt(nv));
-        }
-        $('#totalNewVal').text(fmt(newPortfolioValue));
-
-        // Total wealth stays fixed; derive cash remaining from new holdings
-        var portfolioValue = 0;
-        for (var i = 0; i < 5; i++) {
-            portfolioValue += holdings[i] * currentPrices[i];
-        }
-        var totalWealth = cash + portfolioValue;
-
-        var cashRemaining = totalWealth - newPortfolioValue;
-        var overBudget    = cashRemaining < -0.001;
-
-        $('#invested').text(fmt(newPortfolioValue));
-        $('#cashRemaining').text(fmt(cashRemaining));
-
-        var pct = Math.min(100, (newPortfolioValue / totalWealth) * 100) || 0;
-        $('#investedBar').css('width', pct + '%');
-
-        if (overBudget) {
-            $('#budgetAlert').show();
-            $('#cashLabel').addClass('text-danger').removeClass('text-body');
-            $('#actionBtn').prop('disabled', true);
-        } else {
-            $('#budgetAlert').hide();
-            $('#cashLabel').removeClass('text-danger').addClass('text-body');
-            $('#actionBtn').prop('disabled', false);
-        }
-    }
-
-    // ── Period text / badge ────────────────────────────────────────────────
-    function updateCurrentPeriodText(period) {
-        var obs     = isObsPeriod(period);
-        var isLast  = (period === lastInvestPeriod());
-
-        $('#periodNum').text(period);
-
-        if (obs) {
-            $('#periodDesc').text('You are in the observation phase and cannot yet make investment choices.');
-            $('#actionBtn').text('Next Period');
-        } else {
-            $('#periodDesc').text('Adjust the "New Holdings" for each investment option and confirm your portfolio.');
-            $('#actionBtn').text('Confirm Holdings');
-        }
-    }
-
-    // ── Button click ───────────────────────────────────────────────────────
-    function buttonClick() {
-        var obs = isObsPeriod(currentPeriod);
-
-        if (!obs) {
-            // Validate budget
-            var newH = getNewHoldings();
-            var newPortfolioValue = 0;
-            for (var i = 0; i < 5; i++) {
-                newPortfolioValue += newH[i] * currentPrices[i];
-            }
-            var portfolioValue = 0;
-            for (var i = 0; i < 5; i++) {
-                portfolioValue += holdings[i] * currentPrices[i];
-            }
-            var totalWealth   = cash + portfolioValue;
-            var cashRemaining = totalWealth - newPortfolioValue;
-
-            if (cashRemaining < -0.001) {
-                return;  // over budget — button should already be disabled
-            }
-
-            // Commit new state
-            holdings = newH;
-            cash     = cashRemaining;
-            for (var i = 0; i < 5; i++) {
-                costBasis[i] = holdings[i] * currentPrices[i];
-            }
-
-            $('#actionBtn').prop('disabled', true);
-            liveSend({period: currentPeriod, holdings: holdings});
-        } else {
-            $('#actionBtn').prop('disabled', true);
-            liveSend({period: currentPeriod, holdings: null});
-        }
-    }
-
-    // ── Server response ────────────────────────────────────────────────────
-    function liveRecv(data) {
-        if (data.done) {
-            document.forms[0].submit();
-            return;
-        }
-        currentPeriod = data.nextPeriod;
-        console.log(currentPeriod);
-        updateChart(currentPeriod);
-        updateTableForPeriod(currentPeriod);
-        updateCurrentPeriodText(currentPeriod);
-        $('#actionBtn').prop('disabled', false);
-
-        if (currentPeriod == 1)
-            {$('#startInvestingModal').modal('show');}
-    }
-
-    // ── Chart ──────────────────────────────────────────────────────────────
-    function updateChart(period) {
-        var prices = getPrices(period);
-        for (var i = 0; i < 5; i++) {
-            chart.series[i].addPoint([period, prices[i]], true, false, true);
-        }
-    }
-
-    function initChart(firstPeriod, startPeriod) {
-        var dataLength = startPeriod - firstPeriod + 1;
-        var colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#d62728'];
-        var names  = [
-            'Investment Option 1', 'Investment Option 2', 'Investment Option 3',
-            'Investment Option 4', 'Investment Option 5'
-        ];
-
-        var series = [];
-        for (var s = 0; s < 5; s++) {
-            var data = [];
-            for (var i = 0; i < dataLength; i++) {
-                data.push([firstPeriod + i, allPrices[s][i]]);
-            }
-            series.push({name: names[s], color: colors[s], data: data});
-        }
-
-        chart = Highcharts.chart('myChart', {
-            chart: {type: 'line', animation: true},
-            title: {text: 'Prices of the Investment Options'},
-            xAxis: {
-                title: {text: 'Period'},
-                min: firstPeriod,
-                max: lastInvestPeriod() + 1,
-                plotBands: [{
-                    from: firstRound - 0.5,
-                    to:   firstRound + obsRounds - 0.5,
-                    color: 'rgba(200, 200, 200, 0.3)',
-                    //label: {text: 'Observation', style: {color: '#888'}, align: 'center', verticalAlign: 'top', y: 20}
-                }]
-            },
-            yAxis: {
-                title: {text: 'Price ($)'},
-                min: 0
-            },
-            legend: {
-                layout: 'horizontal',
-                align: 'center',
-                verticalAlign: 'bottom',
-                itemWidth: 160
-            },
-            series: series
-        });
-    }
-
-    // ── Modal validation ───────────────────────────────────────────────────
-    function checkModalComplete() {
-        for (let n = 1; n <= 5; n++) {
-            const ret  = document.getElementById('startInvestingModalReturn' + n).value;
-            const risk = document.getElementById('startInvestingModalRisk' + n).value;
-            if (ret === '' || risk === '') {
-                document.getElementById('startInvestingModalOkBtn').disabled = true;
-                return;
-            }
-        }
-        document.getElementById('startInvestingModalOkBtn').disabled = false;
-    }
-
-    
-    */
 </script>
 
 {% endblock %}
