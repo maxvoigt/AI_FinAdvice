@@ -236,6 +236,16 @@ class trustGame(Page):
             'round_number': player.round_number,
             'testing': player.session.config['testing']
         }
+    
+    def js_vars(player):
+        if player.participant.trustGameOrder + 1 == player.round_number:
+            return {
+                'field_name': 'id_amount_to_send_finAdvisor',
+            }
+        else:
+            return {
+                'field_name': 'id_amount_to_send_AI',
+            }
 
 page_sequence = [
     startPage,

@@ -17,10 +17,10 @@ client = OpenAI(api_key=api_key)
 
 def generate_text(prompt):
     response = client.responses.create(
-        model="gpt-5-mini",
+        model="gpt-5.4-mini",
         input=prompt,
-        max_output_tokens=2500,
-        reasoning={"effort": "medium"}, # ensure some reasoning is done
+        max_output_tokens=3000,
+        reasoning={"effort": "low"}, # ensure some reasoning is done
         #temperature=0,  # reduces randomness
     )
     return response.output_text
