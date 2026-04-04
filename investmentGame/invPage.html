@@ -7,14 +7,11 @@
 
 {% block content %}
 
-<div class="d-none" id="formInputs">
-    {{ formfield_errors 'investmentOption1Holdings' }}
-    {{ formfield_errors 'investmentOption2Holdings' }}
-    {{ formfield_errors 'investmentOption3Holdings' }}
-    {{ formfield_errors 'investmentOption4Holdings' }}
-    {{ formfield_errors 'investmentOption5Holdings' }}
-    {{ formfield 'chart_image' }}
-</div>
+{% if advicePeriod %}
+    <div class="d-none" id="formInputs">
+        {{ formfield 'chart_image' }}
+    </div>
+{% endif %}
 
 <div class="container-fluid bg-light my-3 px-3 py-3 rounded border">
 
@@ -27,103 +24,29 @@
     
     <!-- Period information -->
     <div id="observationInfo" class="alert alert-warning mb-3 d-none text-center" style="padding-top: 0.375rem; padding-bottom: 0.375rem;">
-        You can currently observe the price development of the investment options.
+        Currently, you can observe the price development of the investment options.
     </div>
     <div id="investmentInfo" class="alert alert-warning mb-3 d-none text-center" style="padding-top: 0.375rem; padding-bottom: 0.375rem;">
-        You can adjust your holdings of the investment options below. <br>
-        Currently, you have $<span id="totalValAlert">{{ totalValue |to2 }}</span> of your wealth of $<span id="totalWealthAlertText">{{ totalWealth |to2 }}</span> invested.
-    </div>
-
-    <!-- Portfolio table -->
-    <div class="d-flex gap-3 align-items-stretch">
-
-        <!-- Portfolio table -->
-        <div class="card flex-grow-1">
-            <div class="card-body p-2">
-                <table class="table table-sm table-striped table-hover align-middle mb-0 text-center">
-                    <thead>
-                        <tr>
-                            <tr>
-                                <th colspan="2" style="border-bottom: none;"></th>
-                                <th colspan="3">Current</th>
-                                <th style="width:2px; border:none; background:transparent;"></th>
-                                <th colspan="3">New</th>
-                            </tr>
-                            <tr>
-                                <th>Alternatives</th>
-                                <th>Prices ($)</th>
-                                <th>Holdings</th>
-                                <th style="white-space: nowrap;">Value ($)</th>
-                                <th>Portfolio<br>share (%)</th>
-                                <th> </th>
-                                <th>Holdings</th>
-                                <th style="white-space: nowrap;">Value ($)</th>
-                                <th>Portfolio<br> share (%)</th>
-                            </tr>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for opt in options %}
-                        <tr>
-                            <td style="min-width: 170px; white-space: nowrap;">
-                                <span id="optText{{ opt.num }}"
-                                      style="color: {{ opt.color }}; font-weight: bold;">
-                                    {{ opt.label }}
-                                </span>
-                            </td>
-                            <td><span id="price{{ opt.num }}">{{ opt.lastPrices |to2 }}</span></td>
-                            <td><span id="holdings{{ opt.num }}">{{ opt.oldHoldings |to0 }}</span></td>
-                            <td id="curVal{{ opt.num }}Cell"><span id="curVal{{ opt.num }}">{{ opt.currentValue |to2 }}</span></td>
-                            <td id="curShare{{ opt.num }}Cell"><span id="curShare{{ opt.num }}">{{ opt.currentShare }}</span></td>
-                            <td></td>
-                            <td>
-                                <div class="input-group input-group-sm justify-content-center">
-                                    <button class="btn btn-outline-secondary" type="button"
-                                            name="investmentOption{{ opt.num }}HoldingsButtonMinus"
-                                            onclick="stepHolding({{ opt.num }}, -1)">−</button>
-                                    <input  id="newH{{ opt.num }}" 
-                                            name="investmentOption{{ opt.num }}Holdings"
-                                            type="number"
-                                            min="0" step="1"
-                                            class="form-control text-center"
-                                            value="{{ opt.oldHoldings|to0 }}"
-                                            style="max-width: 70px;"
-                                            oninput="updateNewValues(this.id, {{ opt.num }})">
-                                    <button class="btn btn-outline-secondary" type="button"
-                                            name="investmentOption{{ opt.num }}HoldingsButtonPlus"
-                                            onclick="stepHolding({{ opt.num }}, 1)">+</button>
-                                </div>
-                            </td>
-                            <td id="newVal{{ opt.num }}Cell"><span id="newVal{{ opt.num }}">{{ opt.currentValue |to2 }}</span></td>
-                            <td id="newShare{{ opt.num }}Cell"><span id="newShare{{ opt.num }}">{{ opt.currentShare }}</span></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr class="table-dark fw-bold">
-                            <td style="min-width: 170px; white-space: nowrap;">Total</td>
-                            <td></td>
-                            <td></td>
-                            <td><span id="totalCurVal">{{ totalValue |to2 }}</span></td>
-                            <td><span id="totalShare">{{ totalShare }}</span></td>
-                            <td></td>
-                            <td></td>
-                            <td><span id="totalNewVal">{{ totalValue |to2 }}</span></td>
-                            <td><span id="totalNewShare">{{ totalShare }}</span></td>
-                        </tr>
-                    </tfoot>
-                </table>
+        {% if currentPeriod == 1 %}
+            <strong>You can now adjust your holdings of the investment options below.</strong> </br>
+            <div style="text-align: left;">
+                You can adjust your investments in different ways:
+                <ul>
+                    <li>Enter the number of units for each investment option in the “Holdings” field.</li>
+                    <li>Use the “+” or “–” buttons next to “Holdings” to increase or decrease the number of units for each investment option by 1.</li>
+                    <li>Enter the percentage of your total wealth for each investment option in the “Share (%)” field.</li>
+                    <li>Use the “+” or “–” buttons next to “Share (%)” to adjust the percentage of your total wealth for each investment option by 0.5 percentage points.</li>
+                </ul>
+                You submit your investments by clicking the "Next period" button at the bottom of the page.
             </div>
-        </div>
-
-    </div><!-- end flex row -->
-
-    <!-- Total wealth alert -->
-    </br>
-    <div id="totalWealthAlert" class="alert alert-danger mb-3 d-none text-center">
-        The total value of your new holdings exceeds your total wealth of ${{ totalWealth |to2 }}.
-        Please adjust your holdings to continue.
+        {% else %}
+            You can adjust your holdings of the investment options below.
+        {% endif %}
     </div>
+
+    <!-- Investment module -->
+    <div id="investmentModule"></div>
+    
 </div>
 
 <button id="showAdviceBtn" type="button" class="btn btn-success d-none" data-bs-toggle="modal" data-bs-target="#adviceModal">Show advice</button>
@@ -133,7 +56,7 @@
 <!-- DEFINE MODALS -->
 
 <!-- Beliefs modal -->
-{% if currentPeriod in adviceRounds %}
+{% if advicePeriod %}
 <div class="modal fade" id="beliefsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="beliefsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-xl">
       <div class="modal-content">
@@ -141,25 +64,41 @@
           <h1 class="modal-title fs-5" id="beliefsModalLabel">Please answer the questions below before proceeding</h1>
         </div>
         <div class="modal-body">
-            <p class="text-muted small mb-3">
-                Note: You can review the price chart by clicking the "Show price chart" button below.
-            </p>
-
             <div class="row">
                 <div class="col-auto ms-4 mb-3">
                     {{ formfield 'performancePrediction1' }}
+                    <p id="performancePrediction1Help" class="d-none alert alert-danger">
+                        Investment Option 1 either increases by {{ asset_rows.0.priceIncrease|to2 }}% or decreases by {{ asset_rows.0.priceDecrease|to2 }}%.
+                        The average price change must thus be between {{ asset_rows.0.priceDecrease|to2 }}% and {{ asset_rows.0.priceIncrease|to2 }}%.
+                    </p>
                 </div>
                 <div class="col-auto ms-4 mb-3">
                     {{ formfield 'performancePrediction2' }}
+                    <p id="performancePrediction2Help" class="d-none alert alert-danger">
+                        Investment Option 2 either increases by {{ asset_rows.1.priceIncrease|to2 }}% or decreases by {{ asset_rows.1.priceDecrease|to2 }}%.
+                        The average price change must thus be between {{ asset_rows.1.priceDecrease|to2 }}% and {{ asset_rows.1.priceIncrease|to2 }}%.
+                    </p>
                 </div>
                 <div class="col-auto ms-4 mb-3">
                     {{ formfield 'performancePrediction3' }}
+                    <p id="performancePrediction3Help" class="d-none alert alert-danger">
+                        Investment Option 3 either increases by {{ asset_rows.2.priceIncrease|to2 }}% or decreases by {{ asset_rows.2.priceDecrease|to2 }}%.
+                        The average price change must thus be between {{ asset_rows.2.priceDecrease|to2 }}% and {{ asset_rows.2.priceIncrease|to2 }}%.
+                    </p>
                 </div>
                 <div class="col-auto ms-4 mb-3">
                     {{ formfield 'performancePrediction4' }}
+                    <p id="performancePrediction4Help" class="d-none alert alert-danger">
+                        Investment Option 4 either increases by {{ asset_rows.3.priceIncrease|to2 }}% or decreases by {{ asset_rows.3.priceDecrease|to2 }}%.
+                        The average price change must thus be between {{ asset_rows.3.priceDecrease|to2 }}% and {{ asset_rows.3.priceIncrease|to2 }}%.
+                    </p>
                 </div>
                 <div class="col-auto ms-4 mb-3">
                     {{ formfield 'performancePrediction5' }}
+                    <p id="performancePrediction5Help" class="d-none alert alert-danger">
+                        Investment Option 5 either increases by {{ asset_rows.4.priceIncrease|to2 }}% or decreases by {{ asset_rows.4.priceDecrease|to2 }}%.
+                        The average price change must thus be between {{ asset_rows.4.priceDecrease|to2 }}% and {{ asset_rows.4.priceIncrease|to2 }}%.
+                    </p>
                 </div>
             </div>
 
@@ -176,16 +115,42 @@
                 Show price chart
             </button>
             
+            
+            {% if treatment == 1 %}
             <hr>
             <div class="alert alert-warning mb-0 mt-2 py-2">
-                    In this period, you have the option to receive <strong>investment advice from ChatGPT</strong>.<br>
-                    You can access the advice by clicking the "Show advice" button on the bottom of the page.
-                    ChatGPT has seen exactly the same price changes as you, knows the characteristics of the investment options,
-                    and broadly knows about you.
+                In this period, you have the option to receive <strong>investment advice from a financial advisor</strong>.<br>
+                You can access the advice by clicking the "Show advice" button on the bottom of the page.
+                The financial advisor has seen exactly the same price changes as you, knows the characteristics of the investment options,
+                and broadly knows about you.
             </div>
+            {% elif treatment == 2 %}
+            <hr>
+            <div class="alert alert-warning mb-0 mt-2 py-2">
+                In this period, you have the option to receive <strong>investment advice from a financial advisor who could use ChatGPT</strong>.<br>
+                You can access the advice by clicking the "Show advice" button on the bottom of the page.
+                The financial advisor has seen exactly the same price changes as you, knows the characteristics of the investment options,
+                and broadly knows about you.
+            </div>
+            {% elif treatment == 3 %}
+            <hr>
+            <div class="alert alert-warning mb-0 mt-2 py-2">
+                In this period, you have the option to receive <strong>investment advice from ChatGPT</strong>.<br>
+                You can access the advice by clicking the "Show advice" button on the bottom of the page.
+                ChatGPT has seen exactly the same price changes as you, knows the characteristics of the investment options,
+                and broadly knows about you.
+            </div>
+            {% endif %}
         </div>
-        <div class="modal-footer align-items-center justify-content-center">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" disabled>Submit answers</button>
+
+        <div class="modal-footer align-items-center justify-content-center flex-column">
+            {% if treatment == 3 %}
+            <div id="pleaseWait" class="d-flex flex-column align-items-center justify-content-center text-center gap-2 mt-2">
+                <span>Please wait while ChatGPT is generating your investment advice...</span>
+                <div class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></div>
+            </div>
+            {% endif %}
+            <button id="submitPerfPredictionBtn" type="button" class="btn btn-primary mt-3 d-none" data-bs-dismiss="modal" disabled>Submit answers</button>
         </div>
       </div>
     </div>
@@ -201,7 +166,14 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <span id="adviceText"></span>
+          <strong>Situation:</strong> </br>
+          <span id="adviceSituation"></span>
+          <hr>
+          <strong>Recommended allocation:</strong> </br>
+          <div id="adviceAllocation" class="mt-2"></div>
+          <hr>
+          <strong>Reason:</strong> </br>
+          <span id="adviceReason"></span>
         </div>
         <div class="modal-footer align-items-center justify-content-center">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
@@ -261,76 +233,236 @@
 </div>
 
 
-
-
 {% endblock %}
 
 
 {% block scripts %}
-<script src="https://code.highcharts.com/highcharts.js"></script>
+<!--Load Highcharts-->
+<script src="{% static 'js/highcharts.js' %}"></script>
+<script src="{% static 'js/accessibility.js' %}"></script>
 
 <script>
+    window.invModuleApplyLivePayload = function () {};
+    function liveRecv(data) {
+        var pid = js_vars.id_in_group;
+        var payload = data;
+        if (
+            data != null &&
+            typeof data === 'object' &&
+            !Array.isArray(data) &&
+            Object.prototype.hasOwnProperty.call(data, pid)
+        ) {
+            payload = data[pid];
+        }
+        if (payload == null || typeof payload !== 'object') return;
+
+        var type = payload.type;
+        if (type === 'portfolio') {
+            if (payload.portfolio && typeof window.invModuleApplyLivePayload === 'function') {
+                window.invModuleApplyLivePayload(payload);
+            }
+        } else if (type === 'advice') {
+            var advice = payload.advice;
+            if (!advice || typeof advice !== 'object') return;
+            document.getElementById('adviceSituation').innerHTML = advice.situation;
+            document.getElementById('adviceAllocation').innerHTML = buildAdviceAllocationTable(advice.allocation);
+            document.getElementById('adviceReason').innerHTML = advice.reason;
+            document.getElementById('showAdviceBtn').classList.remove('d-none');
+            document.getElementById('next_button').disabled = false;
+            document.getElementById('pleaseWait').classList.add('d-none');
+            document.getElementById('submitPerfPredictionBtn').classList.remove('d-none');
+        }
+    }
+</script>
+
+<!--Load React Components-->
+<script type="text/babel" src="{% static 'js/invModule.js' %}"></script>
+
+<script type="text/babel">
+    const mountNode = document.querySelector('#investmentModule');
+    const invModuleRoot = ReactDOM.createRoot(mountNode);
+    invModuleRoot.render(<InvModuleApp />);
+</script>
+
+
+<script>
+    // Page flow
+    // ── Init ───────────────────────────────────────────────────────────────
+    $(document).ready(function() {
+        initChart();
+
+        if (currentPeriod > -9) {
+            setTimeout(updateAll, js_vars.updateInterval);
+        }
+        
+        // Disable all elements with the name "newHoldings"
+        if (js_vars.roundType == "Observation") {
+            $("*[name*='investmentOption']").each(function() {
+                $(this).prop('disabled', true);
+            });
+            $('#observationInfo').removeClass('d-none');
+        } else {
+            // Investment: `InvModule` sets `disabled` per `pageStatus` / phase; do not force-enable here.
+            $('#investmentInfo').removeClass('d-none');
+        }
+
+        // Fill the form inputs with the current holdings
+        const oldHoldings = js_vars.oldHoldings;
+
+        // Open modal in advice rounds
+        if (adviceRounds.includes(currentPeriod)) {
+            setTimeout(function() {
+                $('#beliefsModal').modal('show');
+                
+                const toggleChartBtn = document.getElementById('toggleChartBtn');
+                const optionalChartPanel = document.getElementById('optionalChartPanel');
+                if (toggleChartBtn && optionalChartPanel) {
+                    optionalChartPanel.addEventListener('shown.bs.collapse', function () {
+                        toggleChartBtn.textContent = 'Hide price chart';
+                    });
+                    optionalChartPanel.addEventListener('hidden.bs.collapse', function () {
+                        toggleChartBtn.textContent = 'Show price chart';
+                    });
+                }
+
+                // --- Add on-change validation for performance prediction inputs ---
+                function validatePerformancePredictions() {
+                    const assetCharacteristics = js_vars.assetCharacteristics;
+                    let allValid = true;
+                    for (let i = 1; i <= 5; i++) {
+                        const input = document.getElementById('id_performancePrediction' + i);
+                        if (!input) {
+                            allValid = false;
+                            continue;
+                        }
+                        const priceIncrease = assetCharacteristics[i - 1].priceIncrease;
+                        const priceDecrease = assetCharacteristics[i - 1].priceDecrease;
+                        // Simple numeric validity check; expand as needed.
+                        const val = input.value;
+                        const numVal = Number(val);
+
+                        if (
+                            val === "" ||
+                            isNaN(numVal) ||
+                            numVal < priceDecrease ||
+                            numVal > priceIncrease
+                        ) {
+                            allValid = false;
+                            input.classList.add('is-invalid');
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+
+                        if (numVal > priceIncrease || numVal < priceDecrease) {
+                            document.getElementById('performancePrediction' + i + 'Help').classList.remove('d-none');
+                        } else {
+                            document.getElementById('performancePrediction' + i + 'Help').classList.add('d-none');
+                        }
+                    }
+                    // Only enable the Submit button if all are valid
+                    const submitBtn = document.getElementById('submitPerfPredictionBtn');
+                    if (submitBtn) {
+                        submitBtn.disabled = !allValid;
+                    }
+                }
+
+                // Attach event listeners for "onchange" to the performance prediction fields
+                for (let i = 1; i <= 5; i++) {
+                    const input = document.getElementById('id_performancePrediction' + i);
+                    if (input) {
+                        input.addEventListener('input', validatePerformancePredictions);
+                    }
+                }
+                
+                // Only run validation if all prediction fields have a value
+                let allFilled = true;
+                for (let i = 1; i <= 5; i++) {
+                    const input = document.getElementById('id_performancePrediction' + i);
+                    if (input && input.value.trim() === "") {
+                        allFilled = false;
+                        break;
+                    }
+                }
+                if (allFilled) {
+                    validatePerformancePredictions();
+                }
+            }, js_vars.updateInterval * 5);
+        }
+
+        document.getElementById('next_button').disabled = false;
+    });
+
+    // Update all information on the page
+    function updateAll() {
+        updateChart();
+        
+        setTimeout(function() {
+            if (typeof window.invModuleSetPageStatus === 'function') {
+                window.invModuleSetPageStatus('New');
+            }
+        }, 800);
+    }
+</script>
+
+<script>
+    // Plotting the chart
     const currentPeriod = js_vars.currentPeriod ;
     const firstRound = js_vars.firstRound;
     const maxRounds = js_vars.maxRounds;
-    const thisPrices = js_vars.thisPrices;
-    const prevPrices = js_vars.prevPrices;
-    const currentValues = js_vars.currentValues;
-    const totalCurrentValue = js_vars.totalCurrentValue;
-    const currentShares = js_vars.currentShares;
-    const totalCurrentShares = js_vars.totalCurrentShares;
-    const totalWealth = js_vars.totalWealth;
+    const investmentOptions = js_vars.investmentOptions;
     const adviceRounds = js_vars.adviceRounds;
-    let imageBase64 = "";
-    
+
+    const thisPrices = {};
+    investmentOptions.forEach((o) => {
+        const np = o.newPrice;
+        const useNew = typeof np === 'number' && !Number.isNaN(np);
+        thisPrices[String(o.num)] = useNew ? np : Number(o.oldPrice);
+    });
+
+    // Obtain invidivual information
+    const oldPrices = investmentOptions.map(option => option.oldPrice);
+    const newPrices = investmentOptions.map(option => option.newPrice);
+    const prevPrices = investmentOptions.map(option => option.prevPrices);
+    const numShares = investmentOptions.map(option => option.numShares);
+    const currentValues = investmentOptions.map(option => option.currentValue);
+    const newValues = investmentOptions.map(option => option.newValue);
+    const oldWealthShares = investmentOptions.map(option => option.oldWealthShare);
+    const newWealthShares = investmentOptions.map(option => option.newWealthShare);
+
     if (currentPeriod == -9) {
-        var allPrices = thisPrices;
+        var allPrices = oldPrices;
     } else {
         var allPrices = prevPrices;
     }
-    
 
-    /* Receive advice */
-    function liveRecv(data) {
-        if (js_vars.treatment != 3) {
-            return;
-        }
-        // your code goes here
-        document.getElementById('adviceText').innerHTML = data;
-        document.getElementById('showAdviceBtn').classList.remove('d-none');
-        document.getElementById('next_button').disabled = false;
-    }
+    // Save chart 
+    let imageBase64 = "";
 
     /* Initialize chart */
     function initChart() {
-        var colors = js_vars.investmentColors;
-        var names  = [
-            'Alternative 1', 'Alternative 2', 'Alternative 3',
-            'Alternative 4', 'Alternative 5'
-        ];
-
         var dataLength;
 
-        if (Array.isArray(allPrices[1])) {
-            dataLength = allPrices[1].length;
+        // allPrices is a length-5 array (indices 0–4 = Alternatives 1–5), not keyed by "1".."5"
+        if (Array.isArray(allPrices[0])) {
+            dataLength = allPrices[0].length;
         } else {
-            // If allPrices[0] is a number, treat as single value
             dataLength = 1;
         }
 
         var series = [];
         for (var s = 1; s <= 5; s++) {
+            var idx = s - 1;
+            var seriesPrices = allPrices[idx];
             var data = [];
-            if (Array.isArray(allPrices[String(s)])) {
-                // If allPrices[s] is an array of values (multiple periods)
+            if (Array.isArray(seriesPrices)) {
                 for (var i = 0; i < dataLength; i++) {
-                    data.push([firstRound + i, allPrices[String(s)][i]]);
+                    data.push([firstRound + i, seriesPrices[i]]);
                 }
             } else {
-                // If allPrices[s] is a single value (single period)
-                data.push([firstRound, allPrices[String(s)]]);
+                data.push([firstRound, seriesPrices]);
             }
-            series.push({name: names[s - 1], color: colors[s - 1], data: data});
+            series.push({
+                name: investmentOptions[s - 1].label, color: investmentOptions[s - 1].color, data: data, marker: { radius: 5 },});
         }
 
         chart = Highcharts.chart('myChart', {
@@ -375,32 +507,17 @@
 
     function updateChart() {
         console.log("updateChart");
+        console.log(newPrices);
         for (var i = 0; i < 5; i++) {
-            chart.series[i].addPoint([currentPeriod, thisPrices[String(i + 1)]], false, false, true);
+            chart.series[i].addPoint([currentPeriod, newPrices[i]], false, false, true);
         }
         chart.redraw();
 
-        setTimeout(() => {
-            captureChart();
-        }, 1000);
-    }
-
-    function updateTable() {
-        console.log(thisPrices)
-        for (var i = 0; i < 5; i++) {
-            $('#price' + (i + 1)).text(formatNumber2(thisPrices[String(i + 1)]));
-            $('#curVal' + (i + 1)).text(formatNumber2(currentValues[String(i + 1)]));
-            $('#newVal' + (i + 1)).text(formatNumber2(currentValues[String(i + 1)]));
-            $('#curShare' + (i + 1)).text(currentShares[String(i + 1)]);
-            $('#newShare' + (i + 1)).text(currentShares[String(i + 1)]);
+        if (adviceRounds.includes(currentPeriod)) {
+            setTimeout(() => {
+                captureChart();
+            }, 1000);
         }
-
-        $('#totalCurVal').text(formatNumber2(totalCurrentValue));
-        $('#totalShare').text(totalCurrentShares);
-        $('#totalNewVal').text(formatNumber2(totalCurrentValue));
-        $('#totalNewShare').text(totalCurrentShares);
-
-        $('#totalValAlert').text(formatNumber2(totalCurrentValue));
     }
 
     // Capture the chart after the update
@@ -444,206 +561,116 @@
             URL.revokeObjectURL(url);
 
             updateAdvice();
-
         };
 
         img.src = url;
     }
+</script>
 
-    // Calculate if the total new value is greater than the total wealth
-    function isTotalNewValueGreaterThanTotalWealth(inNewValue) {
-        return inNewValue > totalWealth;
-    }
-
-    // Update the new values
-    function updateNewValues(num, optNum) {
-        const input = document.getElementById(num);
-        
-        let price = thisPrices[String(optNum)];
-        let holdings = parseInt(input.value || '0', 10);
-
-        let newVal = price * holdings;
-
-        // Compute total new portfolio value based on all newH fields and current prices
-        let totalNewValue = 0;
-        for (let i = 1; i <= 5; i++) {
-            let inputElem = document.getElementById('newH' + i);
-            let holdings = parseInt(inputElem.value || '0', 10);
-            let price = thisPrices[String(i)];
-            totalNewValue += holdings * price;
-        }
-
-        $('#totalNewVal').text(formatNumber2(totalNewValue));
-        $('#totalValAlert').text(formatNumber2(totalNewValue));
-        $('#newVal' + optNum).text(formatNumber2(newVal));
-
-        // Compute the portfolio share (%) for each option and update the interface
-        let newShares = {};
-        if (totalNewValue > 0) {
-            for (let i = 1; i <= 5; i++) {
-                let inputElem = document.getElementById('newH' + i);
-                let holdings = parseInt(inputElem.value || '0', 10);
-                let price = thisPrices[String(i)];
-                let optValue = holdings * price;
-                // Compute share as percentage of totalNewValue, with 2 decimals
-                let share = ((optValue / totalNewValue) * 100).toFixed(2);
-                newShares[String(i)] = share;
-                $('#newShare' + i).text(share);
-            }
-            // Total share should be ~100, but can sum and set for precision
-            let totalShare = Object.values(newShares).reduce((acc, val) => acc + Number(val), 0).toFixed(2);
-            $('#totalNewShare').text(totalShare);
-        } else {
-            // If nothing invested, all shares zero
-            for (let i = 1; i <= 5; i++) {
-                $('#newShare' + i).text("—");
-            }
-            $('#totalNewShare').text("—");
-        }
-
-        if (isTotalNewValueGreaterThanTotalWealth(totalNewValue)) {
-            $('#next_button').prop('disabled', true);
-            $('#totalWealthAlert').removeClass('d-none');
-        } else {
-            $('#next_button').prop('disabled', false);
-            $('#totalWealthAlert').addClass('d-none');
-        }
-
-        highlightChangedCells(optNum);
-    }
-
+<script>
+    // Advice functions
+ 
     function updateAdvice() {
         // In the advice rounds, call the live method to generate the investment advice
-        if (js_vars.treatment != 3) {
-            return;
+        if (js_vars.treatment == 3) {
+            if (adviceRounds.includes(currentPeriod)) {
+                document.getElementById('next_button').disabled = true;
+                liveSend({type: 'advice', chart_image: imageBase64});
+            }
+        } else if (js_vars.treatment == 2) {
+            // Fill the advice information in
+            document.getElementById('submitPerfPredictionBtn').classList.remove('d-none');
+        } else if (js_vars.treatment == 1) {
+            // Fill the advice information in
+            document.getElementById('submitPerfPredictionBtn').classList.remove('d-none');
+        } else {
+            document.getElementById('submitPerfPredictionBtn').classList.remove('d-none');
         }
-        if (adviceRounds.includes(currentPeriod)) {
-            document.getElementById('next_button').disabled = true;
-            liveSend(imageBase64);
-        }
-    }
-
-    // Input controls
-    function stepHolding(num, delta) {
-        const input = document.getElementById('newH' + num);
-        const min = parseInt(input.min || '0', 10);
-        const step = parseInt(input.step || '1', 10);
-        let value = parseInt(input.value || '0', 10) + delta * step;
-        if (value < min) value = min;
-        input.value = value;
-        updateNewValues('newH' + num, num);
     }
     
-    // Highlight cells that change
-    function highlightChangedCells(optNum) {
-        $('#newVal' + optNum + 'Cell').addClass('table-info');
-        $('#newShare' + optNum + 'Cell').addClass('table-info');
-
-        setTimeout(function() {
-            $('#newVal' + optNum + 'Cell').removeClass('table-info');
-            $('#newShare' + optNum + 'Cell').removeClass('table-info');
-        }, 500);
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 
-    // Wrapper function to update information on the page after timeout
-    function updateAll() {
-        updateChart();
-        updateTable();
-        $('#totalWealthAlertText').text(formatNumber2(totalWealth));
+    function adviceRowLabel(key) {
+        var m = /^Option (\d+)$/.exec(String(key).trim());
+        if (m) {
+            var opts = js_vars.investmentOptions || [];
+            var idx = parseInt(m[1], 10) - 1;
+            if (opts[idx] && opts[idx].label) return opts[idx].label;
+        }
+        if (/risk/i.test(String(key))) return 'Not invested';
+        return String(key);
     }
 
-    // Helper functions
-    function formatNumber2(val) {
-        return Number(val).toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
+    function adviceAllocationColorForKey(key) {
+        var m = /^Option (\d+)$/.exec(String(key).trim());
+        if (m) {
+            var n = parseInt(m[1], 10);
+            var opts = js_vars.investmentOptions || [];
+            if (opts[n - 1] && opts[n - 1].color) return opts[n - 1].color;
+        }
+        if (/risk/i.test(String(key))) return 'gray';
+        return '#333';
+    }
+
+    function formatAdviceCellNumber(x, minD, maxD) {
+        if (x == null || x === '') return '—';
+        var num = Number(x);
+        if (Number.isNaN(num)) return escapeHtml(String(x));
+        return num.toLocaleString(undefined, {
+            minimumFractionDigits: minD,
+            maximumFractionDigits: maxD,
         });
     }
 
-    // ── Init ───────────────────────────────────────────────────────────────
-    $(document).ready(function() {
-        initChart();
-
-        if (currentPeriod > -9) {
-            setTimeout(updateAll, js_vars.updateInterval);
-        }
-        
-        // Disable all elements with the name "newHoldings"
-        if (js_vars.roundType == "Observation") {
-            $("*[name*='investmentOption']").each(function() {
-                $(this).prop('disabled', true);
-            });
-            $('#observationInfo').removeClass('d-none');
-        } else {
-            $("*[name*='investmentOption']").each(function() {
-                $(this).prop('disabled', false);
-            });
-            $('#investmentInfo').removeClass('d-none');
-        };
-
-        // Fill the form inputs with the current holdings
-        const oldHoldings = js_vars.oldHoldings;
-
-        forminputs.investmentOption1Holdings.value = oldHoldings["1"];
-        forminputs.investmentOption2Holdings.value = oldHoldings["2"];
-        forminputs.investmentOption3Holdings.value = oldHoldings["3"];
-        forminputs.investmentOption4Holdings.value = oldHoldings["4"];
-        forminputs.investmentOption5Holdings.value = oldHoldings["5"];
-
-        // Open modal in advice rounds
-        setTimeout(function() {
-            if (adviceRounds.includes(currentPeriod)) {
-                $('#beliefsModal').modal('show');
-                
-                const toggleChartBtn = document.getElementById('toggleChartBtn');
-                const optionalChartPanel = document.getElementById('optionalChartPanel');
-                if (toggleChartBtn && optionalChartPanel) {
-                    optionalChartPanel.addEventListener('shown.bs.collapse', function () {
-                        toggleChartBtn.textContent = 'Hide price chart';
-                    });
-                    optionalChartPanel.addEventListener('hidden.bs.collapse', function () {
-                        toggleChartBtn.textContent = 'Show price chart';
-                    });
-                }
-
-                // --- Add on-change validation for performance prediction inputs ---
-                function validatePerformancePredictions() {
-                    let allValid = true;
-                    for (let i = 1; i <= 5; i++) {
-                        const input = document.getElementById('id_performancePrediction' + i);
-                        if (!input) {
-                            allValid = false;
-                            continue;
-                        }
-                        // Simple numeric validity check; expand as needed.
-                        const val = input.value;
-                        if (val === "" || isNaN(Number(val))) {
-                            allValid = false;
-                            input.classList.add('is-invalid');
-                        } else {
-                            input.classList.remove('is-invalid');
-                        }
-                    }
-                    // Only enable the Submit button if all are valid
-                    const submitBtn = document.querySelector('#beliefsModal .modal-footer button.btn-primary');
-                    if (submitBtn) {
-                        submitBtn.disabled = !allValid;
-                    }
-                }
-
-                // Attach event listeners for "onchange" to the performance prediction fields
-                for (let i = 1; i <= 5; i++) {
-                    const input = document.getElementById('id_performancePrediction' + i);
-                    if (input) {
-                        input.addEventListener('input', validatePerformancePredictions);
-                    }
-                }
-            }
-        }, js_vars.updateInterval * 5);
-
-        document.getElementById('next_button').disabled = false;
-    });
-
+    function buildAdviceAllocationTable(allocation) {
+        if (!allocation || typeof allocation !== 'object') return '';
+        var order = [
+            'Option 1',
+            'Option 2',
+            'Option 3',
+            'Option 4',
+            'Option 5',
+            'Risk-free asset',
+        ];
+        var parts = [];
+        parts.push(
+            '<div class="mx-auto" style="max-width: 22rem;">',
+            '<table class="table table-sm table-striped table-hover align-middle mb-0 text-center w-100">',
+            '<thead><tr>',
+            '<th class="text-start">Name</th>',
+            '<th>Share (%)</th>',
+            '</tr></thead><tbody>'
+        );
+        order.forEach(function (key) {
+            if (!Object.prototype.hasOwnProperty.call(allocation, key)) return;
+            var row = allocation[key];
+            if (!row || typeof row !== 'object') return;
+            var color = adviceAllocationColorForKey(key);
+            var label = escapeHtml(adviceRowLabel(key));
+            var pct = formatAdviceCellNumber(row.percentage, 2, 2);
+            parts.push(
+                '<tr>',
+                '<th class="text-start" style="color: ',
+                escapeHtml(color),
+                '; font-weight: bold;">',
+                label,
+                '</th>',
+                '<td>',
+                pct,
+                '</td>',
+                '</tr>'
+            );
+        });
+        parts.push('</tbody></table>', '</div>');
+        return parts.join('');
+    }
 </script>
 
 {% endblock %}

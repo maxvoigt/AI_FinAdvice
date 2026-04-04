@@ -6,7 +6,9 @@ SESSION_CONFIGS = [
         app_sequence=[
             'welcome',
             'demographics_before',
-            'investmentGame'],
+            'investmentGame',
+            'demographics_after',
+            ],
         num_demo_participants=4,
     ),
 ]
@@ -20,6 +22,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     real_world_currency_per_point=1.00, 
     participation_fee=0.00, 
     testing=True,
+    consumer_survey=False,
     doc=""
 )
 

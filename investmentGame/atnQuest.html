@@ -66,8 +66,20 @@ Please read carefully
         <button id="next_page_btn" class="btn btn-primary px-3 d-none" >Continue</button>
         <button id="exit_btn" class="btn btn-primary px-3 d-none" >Okay</button>
     </div>
-
 </div>
+
+{% if testing %}
+<div class="row mt-3">
+    <div class="col center center-align">
+        <button id="skipBtn" class="btn btn-secondary px-3" onclick="skipPage()">
+        Skip for testing</button>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -111,6 +123,11 @@ Please read carefully
         document.getElementById("submitAnswerBtn").disabled = true;
 
         liveSend(answer);
+    }
+
+    function skipPage() {
+        document.getElementById('attention_input').value = "I read the explanation";
+        submitAnswer();
     }
 
 </script>

@@ -1,0 +1,486 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    A few questions about artificial intelligence
+{% endblock %}
+
+{% block styles %}
+<style>
+    .form-check-sub {
+        padding-left: 4em;
+    }
+
+    #sortable-investment-strategy {
+        max-width: 42rem;
+    }
+
+    .sortable-item {
+        transition: box-shadow 0.15s ease, border-color 0.15s ease;
+        list-style: none;
+    }
+
+    .sortable-item:hover {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border-color: rgba(0, 0, 0, 0.175) !important;
+    }
+
+    .sortable-handle {
+        cursor: grab;
+        flex-shrink: 0;
+        line-height: 1;
+        padding: 0.15rem 0.35rem 0 0;
+        user-select: none;
+    }
+
+    .sortable-handle:active {
+        cursor: grabbing;
+    }
+
+    .ui-sortable-helper.sortable-item {
+        cursor: grabbing !important;
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.12);
+    }
+
+    .sortable-placeholder {
+        min-height: 2.75rem;
+        margin-bottom: 0.5rem;
+        border: 2px dashed var(--bs-secondary, #6c757d);
+        border-radius: 0.375rem;
+        background: rgba(13, 110, 253, 0.06);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-none">
+    {{ formfield_errors 'finAdvice_FinAdvisor_ReasonsNo' }}
+    <input type="hidden" name="finAdvice_FinAdvisor_ReasonsNo" id="finAdvice_FinAdvisor_ReasonsNo" />
+    {{ formfield_errors 'finAdvice_InvestmentStrategy_Ranking' }}
+    <input type="hidden" name="finAdvice_InvestmentStrategy_Ranking" id="finAdvice_InvestmentStrategy_Ranking" />
+</div>
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+<div class="col">
+    <div class="row align-items-center mb-3">
+        <div class="col-auto">
+            <label class="col-form-label mb-0">{{ form.finAdvice_who.label }}</label>
+        </div>
+        <div class="col-auto" style="padding-left: 2em;">
+            {{ form.finAdvice_who }}
+        </div>
+    </div>
+    
+    <hr>
+    <div class="row align-items-center mb-3">
+        <div class="col-auto">
+            <label class="col-form-label mb-0">{{ form.finAdvice_FinAdvisor.label }}</label>
+        </div>
+        <div class="col-auto" style="padding-left: 2em;">
+            {{ form.finAdvice_FinAdvisor }}
+        </div>
+    </div>
+
+    <div id="finAdvice_FinAdvisor_Yes_row" class="row align-items-center mb-3 collapse">
+        <div class="col-12" style="padding-left: 2em;">
+            <label class="col-form-label mb-0">
+                {{ form.finAdvice_FinAdvisor_Compensation.label }}
+            </label>
+        </div>
+        <div class="col-12" style="padding-left: 4em;">
+            {{ form.finAdvice_FinAdvisor_Compensation }}
+        </div>
+      
+        <div class="col-12" style="padding-left: 2em;">
+            <label class="col-form-label mb-0">
+                {{ form.finAdvice_FinAdvisor_FinInstitution.label }}
+            </label>
+        </div>
+        <div class="col-12" style="padding-left: 4em;">
+            {{ form.finAdvice_FinAdvisor_FinInstitution }}
+        </div>
+    </div>
+    
+    <div id="finAdvice_FinAdvisor_No_row" class="row align-items-center mb-3 collapse">
+        <p style="padding-left: 2em;">Why? Please select all that apply.</p>
+        <div class="form-check form-check-sub">
+            <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="enough_knowledge" id="enough_knowledge" onchange="updateFinAdvisorReasonsNo(this.id)">
+            <label class="form-check-label" for="enough_knowledge">
+                I have enough financial and savings knowledge to forego the services of a financial advisor
+            </label>
+        </div>
+        <div class="form-check form-check-sub">
+            <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="too_costly" id="too_costly" onchange="updateFinAdvisorReasonsNo(this.id)">
+            <label class="form-check-label" for="too_costly">
+                The services of a financial advisor are too costly 
+            </label>
+        </div>
+        <div class="form-check form-check-sub">
+            <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="cannot_afford" id="cannot_afford" onchange="updateFinAdvisorReasonsNo(this.id)">
+            <label class="form-check-label" for="cannot_afford">
+                I do not have enough money to afford the services of a financial advisor 
+            </label>
+        </div>
+        <div class="form-check form-check-sub ">
+            <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="do_not_trust" id="do_not_trust" onchange="updateFinAdvisorReasonsNo(this.id)">
+            <label class="form-check-label" for="do_not_trust">
+                I do not trust financial advisors 
+            </label>
+        </div>
+        <div class="form-check form-check-sub">
+            <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="relative_helps" id="relative_helps" onchange="updateFinAdvisorReasonsNo(this.id)">
+            <label class="form-check-label" for="relative_helps">
+                A relative helps me with my financial matters
+            </label>
+        </div>
+        <div class="form-check form-check-sub mb-3">
+            <input type="text" class="form-control mt-1" id="finAdvice_FinAdvisor_ReasonsNo_text" name="finAdvice_FinAdvisor_ReasonsNo_text" placeholder="Other" onblur="updateFinAdvisorReasonsNo(this.id)">
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="col">
+        <p class="mb-1">Please rank the following components of an investment strategy in your personal order of importance.
+        Drag each row by the grip (<span aria-hidden="true">⠿</span>) on the left to reorder the options from most important (top) to least important (bottom).
+        Note that you must make at least one change to the ranking to proceed.</p>
+        <div class="d-flex justify-content-between align-items-baseline small text-muted mb-1 px-1" style="max-width: 30rem;">
+            <span>Most important</span>
+        </div>
+        <ul id="sortable-investment-strategy" class="list-unstyled mb-0 ps-0">
+            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Diversification">
+                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
+                <span class="ps-1">Diversification</span>
+            </li>
+            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Picking Good Fund Managers">
+                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
+                <span class="ps-1">Picking good fund managers</span>
+            </li>
+            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Picking Good Stocks">
+                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
+                <span class="ps-1">Picking good stocks</span>
+            </li>
+            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Timing the Market">
+                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
+                <span class="ps-1">Timing the market</span>
+            </li>
+            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Minimizing Risks">
+                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
+                <span class="ps-1">Minimizing risks</span>
+            </li>
+            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Minimizing Fees">
+                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
+                <span class="ps-1">Minimizing fees</span>
+            </li>
+            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Selling Funds That Had Bad Performance Last Year">
+                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
+                <span class="ps-1">Selling funds that had bad performance last year</span>
+            </li>
+        </ul>
+        <div class="d-flex justify-content-between align-items-baseline small text-muted mb-1 px-1" style="max-width: 30rem;">
+            <span>Least important</span>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row align-items-center mb-3">
+        <div class="col-12">
+            <label class="col-form-label mb-0">{{ form.finAdvice_InvestmentAmount.label }}</label>
+        </div>
+        <div class="col-3" style="padding-left: 2em;">
+            {{ form.finAdvice_InvestmentAmount }}
+        </div>
+        <div class="col-auto">
+            <input id="finAdvice_InvestmentAmount_Range_checkbox" type="checkbox" onchange="checkAllFields()"/>
+            <label for="finAdvice_InvestmentAmount_Range_checkbox">Prefer not to say</label>
+        </div>
+    </div>
+
+    <div id="investment_amount_range_row" class="row align-items-center mb-3 collapse">
+        <div class="col-12" style="padding-left: 2em;">
+            <label class="col-form-label mb-0">
+                {{ form.finAdvice_InvestmentAmount_Range.label }}
+            </label>
+        </div>
+        <div class="col-12" style="padding-left: 2em;">
+            {{ form.finAdvice_InvestmentAmount_Range }}
+        </div>
+    </div>
+
+
+
+</div>
+</div>
+
+<button id="next_button" class="otree-btn-next btn btn-primary" disabled>Next</button>
+
+{% if testing %}
+    <br></br>
+    <button id="skipBtn" type="button" class="btn btn-secondary" onclick="skipPage()">
+    Skip for testing</button>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<script>
+    // Check if all fields are filled
+    let finAdvisorReasonsNoFilled = false;
+
+
+    $(document).ready(function() {
+        // Check fields for all standard inputs
+        document.querySelectorAll('input[name="finAdvice_who"]').forEach(function (el) {
+            el.addEventListener('change', function () {
+                checkAllFields();
+            });
+        });
+        
+        document.querySelectorAll('input[name="finAdvice_FinAdvisor_Compensation"]').forEach(function (el) {
+            el.addEventListener('change', function () {
+                checkAllFields();
+            });
+        });
+        
+        document.querySelectorAll('input[name="finAdvice_FinAdvisor_FinInstitution"]').forEach(function (el) {
+            el.addEventListener('change', function () {
+                checkAllFields();
+            });
+        });
+
+        document.querySelectorAll('input[name="finAdvice_FinAdvisor_ReasonsNoBox"]').forEach(function (el) {
+            el.addEventListener('change', function () {
+                checkAllFields();
+            });
+        });
+
+        document.querySelectorAll('input[name="finAdvice_InvestmentAmount_Range"]').forEach(function (el) {
+            el.addEventListener('change', function () {
+                checkAllFields();
+            });
+        });
+
+        const investmentAmountElem = document.getElementById('id_finAdvice_InvestmentAmount');
+        if (investmentAmountElem) {
+            investmentAmountElem.addEventListener('blur', function () {
+                checkAllFields();
+            });
+        }
+
+        document.querySelectorAll('input[name="finAdvice_FinAdvisor"]').forEach(function (el) {
+        el.addEventListener('change', function () {
+            checkAllFields();
+            if (this.value === '1') {
+                // Has financial advisor
+                console.log('yes');
+                document.getElementById('finAdvice_FinAdvisor_Yes_row').classList.add('show');
+                document.getElementById('finAdvice_FinAdvisor_No_row').classList.remove('show');
+            } else {
+                // No financial advisor
+                console.log('no');
+                document.getElementById('finAdvice_FinAdvisor_Yes_row').classList.remove('show');
+                document.getElementById('finAdvice_FinAdvisor_No_row').classList.add('show');
+            }
+        });
+
+    // Add event listener for the "Prefer not to say" checkbox for Investment Amount
+        var preferNotToSayCheckbox = document.getElementById('finAdvice_InvestmentAmount_Range_checkbox');
+        var investmentAmountRangeRow = document.getElementById('investment_amount_range_row');
+
+        if (preferNotToSayCheckbox && investmentAmountRangeRow) {
+            // Helper to sync row visibility with box state
+            function syncInvestmentAmountRowFromCheckbox() {
+                if (preferNotToSayCheckbox.checked) {
+                    investmentAmountRangeRow.classList.add('show');
+                    var input = document.getElementById('id_finAdvice_InvestmentAmount');
+                    if (preferNotToSayCheckbox.checked && input) {
+                        input.value = "";
+                    }
+                } else {
+                    investmentAmountRangeRow.classList.remove('show');
+                }
+            }
+            // Respond to user clicking the box
+            preferNotToSayCheckbox.addEventListener('change', syncInvestmentAmountRowFromCheckbox);
+        }
+    });
+
+    });
+
+    function syncInvestmentStrategyRanking() {
+        var order = $("#sortable-investment-strategy li.sortable-item").map(function () {
+            return $(this).data("value");
+        }).get();
+        $("#finAdvice_InvestmentStrategy_Ranking").val(order.join(","));
+        checkAllFields();
+    }
+
+    $("#sortable-investment-strategy").sortable({
+        handle: ".sortable-handle",
+        placeholder: "sortable-placeholder",
+        tolerance: "pointer",
+        update: syncInvestmentStrategyRanking,
+    });
+
+    // Page logics
+
+    function updateFinAdvisorReasonsNo( elemID ) {
+        console.log(elemID);
+        const finAdvisorReasonsNoElem = document.getElementById('finAdvice_FinAdvisor_ReasonsNo');
+        let currentValue = finAdvisorReasonsNoElem.value || "";
+
+        const textField = document.getElementById('finAdvice_FinAdvisor_ReasonsNo_text');
+        const boxes = document.querySelectorAll('input[type="checkbox"][name="finAdvice_FinAdvisor_ReasonsNoBox"]');
+        
+
+        if (elemID === 'finAdvice_FinAdvisor_ReasonsNo_text') {
+        // Set the hidden input's value to the text area content
+            if (textField) {
+                // Add the text to the existing value, separated by a comma if needed
+                let existing = finAdvisorReasonsNoElem.value ? finAdvisorReasonsNoElem.value.split(',').map(e => e.trim()).filter(e => e) : [];
+                let newText = textField.value.trim();
+                if (newText && !existing.includes(newText)) {
+                    existing.push(newText);
+                }
+                // Always join by comma and remove duplicates/empties
+                finAdvisorReasonsNoElem.value = existing.filter(e => e).join(',');
+            }
+        } else {
+            // Split, remove whitespace and empty, to avoid substring issues
+            let checked = currentValue.split(',').map(e => e.trim()).filter(e => e);
+            if (checked.includes(elemID)) {
+                checked = checked.filter(e => e !== elemID);
+            } else {
+                checked.push(elemID);
+            }
+            // Remove possible duplicate empty strings and join by comma
+            finAdvisorReasonsNoElem.value = checked.filter(e => e).join(',');
+            console.log(finAdvisorReasonsNoElem);
+        }
+
+        // Check if noGenAIReasonElem is empty or not
+        // Get text field value and checkboxes (excluding the text field itself)
+        const textEmpty = !textField || textField.value.trim() === "";
+        const anyChecked = Array.from(boxes).some(cb => cb.checked);
+        if (textEmpty && !anyChecked) {
+            finAdvisorReasonsNoElem.value = "";
+        }
+
+        finAdvisorReasonsNoFilled = finAdvisorReasonsNoElem.value.trim().length > 0;
+        checkAllFields();
+    }
+
+    function checkAllFields() {
+        // Check if a radio button in id_finAdvice_who has been clicked
+        let finAdviceWhoClicked = false;
+        const whoRadios = document.querySelectorAll('input[name="finAdvice_who"]');
+        for (let i = 0; i < whoRadios.length; i++) {
+            if (whoRadios[i].checked) {
+                finAdviceWhoClicked = true;
+                break;
+            }
+        }
+
+        // Check if a radio button in finAdvice_FinAdvisor has been clicked
+        let finAdvisorClicked = false;
+        const finAdvisorRadios = document.querySelectorAll('input[name="finAdvice_FinAdvisor"]');
+        for (let i = 0; i < finAdvisorRadios.length; i++) {
+            if (finAdvisorRadios[i].checked) {
+                finAdvisorClicked = true;
+                break;
+            }
+        }
+
+        let conditionalFirst = false;
+        if (finAdvisorClicked) {
+            const yes = document.getElementById('id_finAdvice_FinAdvisor-0').checked;
+            const no = document.getElementById('id_finAdvice_FinAdvisor-1').checked;
+            
+            if (yes) {
+                // Check if a radio button in finAdvice_FinAdvisor_FinInstitution has been clicked
+                let finInstitutionClicked = false;
+                const finInstitutionRadios = document.querySelectorAll('input[name="finAdvice_FinAdvisor_FinInstitution"]');
+                for (let i = 0; i < finInstitutionRadios.length; i++) {
+                    if (finInstitutionRadios[i].checked) {
+                        finInstitutionClicked = true;
+                        break;
+                    }
+                }
+
+                // Check if a radio button in finAdvice_FinAdvisor_Compensation has been clicked
+                let finCompensationClicked = false;
+                const finCompensationRadios = document.querySelectorAll('input[name="finAdvice_FinAdvisor_Compensation"]');
+                for (let i = 0; i < finCompensationRadios.length; i++) {
+                    if (finCompensationRadios[i].checked) {
+                        finCompensationClicked = true;
+                        break;
+                    }
+                }
+                
+                if (finInstitutionClicked && finCompensationClicked) {
+                    conditionalFirst = true;
+                } else {
+                    conditionalFirst = false;
+                }
+            } else if (no) {
+                conditionalFirst = finAdvisorReasonsNoFilled;
+            } else {
+                conditionalFirst = true;
+            }
+        }
+
+        // Check if the investment strategy ranking is empty
+        const rankingElem = document.getElementById('finAdvice_InvestmentStrategy_Ranking');
+        const rankingIsEmpty = !rankingElem || !rankingElem.value || rankingElem.value.trim().length === 0;
+
+        // Check if there is a value in finAdvice_InvestmentAmount or a selection in finAdvice_InvestmentAmount_Range
+        const investmentAmountElem = document.getElementById('id_finAdvice_InvestmentAmount');
+        const investmentAmountRangeElem = document.getElementById('id_finAdvice_InvestmentAmount_Range');
+
+        let hasInvestmentAmount = false;
+        let hasInvestmentAmountRange = false;
+
+        // Check investment amount (number or text input)
+        if (investmentAmountElem) {
+            const val = investmentAmountElem.value;
+            // Accept non-empty, and (for number fields) not NaN
+            hasInvestmentAmount = val !== undefined && val !== null && String(val).trim().length > 0;
+        }
+
+        // Check investment amount range (radios or select)
+        if (investmentAmountRangeElem) {
+            // Handles radio buttons or select dropdown
+            if (investmentAmountRangeElem.tagName.toLowerCase() === 'select') {
+                hasInvestmentAmountRange = investmentAmountRangeElem.value !== "" && investmentAmountRangeElem.value !== null;
+            } else {
+                // Is it a group of radios? Look for selection:
+                // for regular input
+                if (investmentAmountRangeElem.type === 'radio') {
+                    // It's a single radio input, check if it's checked
+                    hasInvestmentAmountRange = investmentAmountRangeElem.checked;
+                } else {
+                    // If not, try querySelectorAll for group
+                    const radios = document.querySelectorAll('input[name="finAdvice_InvestmentAmount_Range"]');
+                    hasInvestmentAmountRange = Array.from(radios).some(r => r.checked);
+                }
+            }
+        }
+
+        // Apply final condition: Must have EITHER investment amount, OR investment amount range filled/selected
+        const investmentAmountFilled = hasInvestmentAmount || hasInvestmentAmountRange;
+
+        if (finAdviceWhoClicked && finAdvisorClicked && conditionalFirst && !rankingIsEmpty && investmentAmountFilled) {
+            document.getElementById('next_button').disabled = false;
+        } else {
+            document.getElementById('next_button').disabled = true;
+        }
+
+    }
+</script>
+
+
+{% endblock %}
