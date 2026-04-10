@@ -3,6 +3,7 @@ import random
 import numpy as np
 import requests
 import pandas as pd
+import ast
 
 from otree.settings import RECAPTCHA_SECRET_KEY, RECAPTCHA_SITE_KEY
 
@@ -84,7 +85,7 @@ def creating_session(subsession):
             payCustomer = assignmentRow['pay_customer'].values[0]
 
             ## Randomize the order of the assets on an individual level
-            shuffled_options = assignmentRow['assetOrder'].values[0]
+            shuffled_options = ast.literal_eval(assignmentRow['assetOrder'].values[0])
 
             ## Save information to player
             player.treatment = int(aiTreatment)

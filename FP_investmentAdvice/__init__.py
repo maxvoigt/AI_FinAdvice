@@ -367,8 +367,8 @@ class invPage(Page):
                 numSharesNew = newHoldings[i],
                 oldValue = prevDollarHoldings[i],
                 newValue = currentDollarHoldings[i],
-                oldWealthShare = currentDollarHoldings[i] / currentWealth * 100,
-                newWealthShare = newDollarHoldings[i] / currentWealth * 100,
+                oldWealthShare = prevDollarHoldings[i] / currentWealth * 100,
+                newWealthShare = currentDollarHoldings[i] / currentWealth * 100,
             )
             for i in range(len(C.INVESTMENT_COLORS))
         ]
