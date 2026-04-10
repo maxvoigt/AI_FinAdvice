@@ -170,6 +170,45 @@ class Player(BasePlayer):
         blank=True,
     )
 
+    ## Financial literacy
+    finLit_1 = models.IntegerField(
+        label='Suppose you had $100 in a savings account and the interest rate was 2% per year. After 5 years, how much do you think you would have in the account if you left the money to grow during these 5 years?',
+        choices=[
+            [1, 'More than $102'],
+            [2, 'Exactly $102'],
+            [3, 'Less than $102'],
+            [7777777, 'Don’t know'],
+            [8888888, 'Refuse to answer'],
+        ],
+        widget=widgets.RadioSelect,
+        blank=False,
+    )
+    
+    finLit_2 = models.IntegerField(
+        label='Imagine that the interest rate on your savings account was 1% per year and inflation was 2% per year. After 1 year, with the money in this account, would you be able to buy…',
+        choices=[
+            [1, '... more than today.'],
+            [2, '... exactly as much as today.'],
+            [3, '... less than today.'],
+            [7777777, 'Don’t know'],
+            [8888888, 'Refuse to answer'],
+        ],
+        widget=widgets.RadioSelect,
+        blank=False,
+    )
+
+    finLit_3 = models.IntegerField(
+        label='Do you think the following statement is true or false?“Buying a single company’s stock usually provides a safer return than a stock mutual fund.”',
+        choices=[
+            [1, 'True'],
+            [2, 'False'],
+            [7777777, 'Don’t know'],
+            [8888888, 'Refuse to answer'],
+        ],
+        widget=widgets.RadioSelect,
+        blank=False,
+    )
+
 
 class startPage(Page):
     pass
@@ -206,9 +245,20 @@ class financialAdvice(Page):
             'testing': player.session.config['testing'],
         }
 
+class finLit(Page):
+    form_model = 'player'
+    form_fields = ['finLit_1', 'finLit_2', 'finLit_3']
+
+    @staticmethod
+    def vars_for_template(player):
+        return {
+            'testing': player.session.config['testing'],
+        }
+
 page_sequence = [
-    startPage,
+    #startPage,
     aiLiteracy,
     chatbotSurvey,
     financialAdvice,
+    finLit,
 ]

@@ -1,0 +1,38 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+{% if clientNum == 1 %}
+    Your first client
+{% else %}
+    Your second client
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        
+        <p>
+            The final wealth of your {% if clientNum == 1 %}first{% else %}second{% endif %} client 
+            when rebalancing to your recommended allocation in each period
+            is <b>${{ finalWealth|to2 }}</b>.
+        </p>
+
+        {% if clientNum == 1 %}
+            <p>
+                You will now receive a second client profile.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+</br>
+
+<div class="col center center-align text-center">
+    <button id="next_page_btn" class="btn btn-primary px-3">Continue</button>
+</div>
+
+
+{% endblock %}

@@ -10,6 +10,7 @@ from PIL import Image
 import base64
 import io
 
+import sharedData.assetParams as assetParams
 
 class C(BaseConstants):
     NAME_IN_URL = 'investmentGame'
@@ -20,7 +21,7 @@ class C(BaseConstants):
     INITIAL_WEALTH = 10000
     UPDATE_INTERVAL = 350 # time in ms to update the chart
     INVESTMENT_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#d62728']
-    ADVICE_ROUNDS = [1, 5]
+    ADVICE_ROUNDS = [0, 5]
     PORTION_SHARES_CHANGE = 0.5
     PORTION_HOLDINGS_CHANGE = 1
 
@@ -88,13 +89,13 @@ class Player(BasePlayer):
 
     # Save details of the investment chocie
     changedHoldings = models.BooleanField(initial=False) # Save if user changed holdings in this round
-    investmentOption1Holdings = models.FloatField(initial=0, blank=True)
-    investmentOption2Holdings = models.FloatField(initial=0, blank=True)
-    investmentOption3Holdings = models.FloatField(initial=0, blank=True)
-    investmentOption4Holdings = models.FloatField(initial=0, blank=True)
-    investmentOption5Holdings = models.FloatField(initial=0, blank=True)
-    totalWealth = models.FloatField(initial=10000)
-    riskFreeHoldings = models.FloatField(initial=0)
+    totalWealthBOP = models.FloatField(initial=10000) # Wealth at the beginning of the period
+    w1 = models.FloatField(initial=0) # Portfolio weight of the first asset
+    w2 = models.FloatField(initial=0) # Portfolio weight of the second asset
+    w3 = models.FloatField(initial=0) # Portfolio weight of the third asset
+    w4 = models.FloatField(initial=0) # Portfolio weight of the fourth asset
+    w5 = models.FloatField(initial=0) # Portfolio weight of the fifth asset
+    w6 = models.FloatField(initial=0) # Portfolio weight of the risk-free asset
     
     # Save details of the performance predictions
     performancePrediction1 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 1, on average?")
@@ -106,6 +107,10 @@ class Player(BasePlayer):
     # Save details of the financial advice
     advice = models.LongStringField(initial="", blank=True)
     chart_image = models.LongStringField(blank=True)
+
+     ## Helper variables
+    isInitialize = models.BooleanField(initial=False)
+    correlatedAssets = models.StringField()
    
 
 def _normalize_attention_text(text: str) -> str:
@@ -161,25 +166,24 @@ class explanations(Page):
 
     @staticmethod
     def vars_for_template(player):
-        # Convert DataFrame to list of dicts for template (oTree templates cannot use pandas .loc)
-        df = C.assetParameters
+        tmpOrder = ast.literal_eval(player.participant.assetOrder)
+        assetDictionary = assetParams.assetDictionary
+
         asset_rows = [
             {
-                'option_num': i + 1,
-                'priceIncrease': float(df.iloc[i]['priceIncrease']) * 100,
-                'priceDecrease': float(df.iloc[i]['priceDecrease']) * 100,
-                'probIncrease': float(df.iloc[i]['probIncrease']) * 100,  # display as percentage
+                'option_num': idx+1,
+                'priceIncrease': assetDictionary[i]['x_up'] * 100,
+                'priceDecrease': assetDictionary[i]['x_down'] * 100,
+                'probIncrease': assetDictionary[i]['p_up'] * 100,  # display as percentage
+                'name': assetDictionary[i]['name'],
             }
-            for i in range(len(df))
+            for idx, i in enumerate(tmpOrder)
         ]
 
-        # Add Investment Option 5 --> Perfectly negatively correlated with Investment Option 1
-        asset_rows.append({
-            'option_num': 5,
-            'priceIncrease': float(df.iloc[0]['priceIncrease']) * 100,
-            'priceDecrease': float(df.iloc[0]['priceDecrease']) * 100,
-            'probIncrease': float(df.iloc[0]['probIncrease']) * 100,
-        })
+        indexAsset = next((row['option_num'] for row in asset_rows if row['name'] == 'IndAsset'), None)
+        hedgeAsset = next((row['option_num'] for row in asset_rows if row['name'] == 'Hedge'), None)
+
+        player.correlatedAssets = str(sorted([indexAsset, hedgeAsset]))
 
         # Get Information for table
         return {
@@ -260,11 +264,6 @@ class attentionScreen(Page):
     @staticmethod
     def is_displayed(player):
         return player.round_number == 1
-    
-    @staticmethod
-    def before_next_page(player, timeout_happened):
-        player.riskFreeHoldings = player.totalWealth
-
 
 class invPage(Page):
     form_model = 'player'
@@ -275,194 +274,174 @@ class invPage(Page):
         if player.round_number - C.NUM_PREVRROUNDS in C.ADVICE_ROUNDS:
             return ['performancePrediction1', 'performancePrediction2', 'performancePrediction3', 'performancePrediction4', 'performancePrediction5', 'chart_image']
     
-    def is_displayed(player):
-        ## Initialize holdings if user did not change them in this round
-        if not player.changedHoldings and player.round_number > 1:
-            prev_player = player.in_previous_rounds()[-1]
-            player.investmentOption1Holdings = prev_player.investmentOption1Holdings
-            player.investmentOption2Holdings = prev_player.investmentOption2Holdings
-            player.investmentOption3Holdings = prev_player.investmentOption3Holdings
-            player.investmentOption4Holdings = prev_player.investmentOption4Holdings
-            player.investmentOption5Holdings = prev_player.investmentOption5Holdings
-            player.riskFreeHoldings = prev_player.riskFreeHoldings
-        return True
+    @staticmethod
+    def is_displayed(player: Player):
 
+        if not player.isInitialize:
+            player.isInitialize = True
+            if player.round_number == 1:
+                player.totalWealthBOP = 10000 # Start with 10,000 at the beginning of the period
+                player.w1 = 0
+                player.w2 = 0
+                player.w3 = 0
+                player.w4 = 0
+                player.w5 = 0
+                player.w6 = 100
+
+            else:
+                #prePlayer = player.in_previous_rounds()[-1]
+                player.totalWealthBOP, [player.w1, player.w2, player.w3, player.w4, player.w5, player.w6] = get_wealth_update(player)
+                
+
+        return True
 
     @staticmethod
     def js_vars(player):
-        thisIndex = player.round_number - 1;
-        # Get asset prices for all periods
-        option1Prices = player.participant.investmentOption1Prices
-        option2Prices = player.participant.investmentOption2Prices
-        option3Prices = player.participant.investmentOption3Prices
-        option4Prices = player.participant.investmentOption4Prices
-        option5Prices = player.participant.investmentOption5Prices
+        currentPeriod = player.round_number
+        prevPeriod = currentPeriod - 1
 
-        # Get all prices for all periods to determine min and max
-        tmp_currentPrices = (
-            option1Prices[:player.round_number + 1] +
-            option2Prices[:player.round_number + 1] +
-            option3Prices[:player.round_number + 1] +
-            option4Prices[:player.round_number + 1] +
-            option5Prices[:player.round_number + 1]
-        )
+        ### PORTFOLIO LOGIC ###
 
-        prices_by_investmentOption = {
-            '1': option1Prices[:player.round_number],
-            '2': option2Prices[:player.round_number],
-            '3': option3Prices[:player.round_number],
-            '4': option4Prices[:player.round_number],
-            '5': option5Prices[:player.round_number],
+        ## Get Prices for the current and previous period
+        prevPrices = inv_trade_prices(player, prevPeriod)
+        currentPrices = inv_trade_prices(player, currentPeriod)
+
+        ## Get the holdings as number of shares
+        oldWealth = player.totalWealthBOP
+        prevDollarHoldings, prevHoldings = get_holdings(player, oldWealth, player.w1, player.w2, player.w3, player.w4, player.w5, player.w6, prevPeriod)
+        
+        if currentPeriod > 1:
+            prevPlayer = player.in_previous_rounds()[-1]
+            oldWealth = prevPlayer.totalWealthBOP
+            ## We update here with old values to get the "ground" truth at the beginning in case of page reloads
+            prevDollarHoldings, prevHoldings = get_holdings(player, oldWealth, prevPlayer.w1, prevPlayer.w2, prevPlayer.w3, prevPlayer.w4, prevPlayer.w5, prevPlayer.w6, prevPeriod)
+        
+        ## Value holdings at the current prices
+        currentDollarHoldings = [prevHoldings[i] * currentPrices[i] for i in range(len(prevHoldings))]
+        currentWealth = sum(currentDollarHoldings)
+        
+        ## Rebalance to new allocations --> needed for nice updating if reloaded in initialPortfolio
+        tmpAllocation = [player.w1, player.w2, player.w3, player.w4, player.w5, player.w6]
+        newDollarHoldings = [tmpAllocation[i] * currentWealth / 100 for i in range(len(tmpAllocation))]
+        newHoldings = [newDollarHoldings[i] / currentPrices[i] for i in range(len(newDollarHoldings))]
+
+        ### DISPLAY LOGIC ###
+        price_max = get_max_price(player)
+
+        # Get all prices until before the current period for plotting --> this periods price is pushed separately
+        allPrices = {
+            '1': ast.literal_eval(player.participant.investmentOption1Prices)[:currentPeriod],
+            '2': ast.literal_eval(player.participant.investmentOption2Prices)[:currentPeriod],
+            '3': ast.literal_eval(player.participant.investmentOption3Prices)[:currentPeriod],
+            '4': ast.literal_eval(player.participant.investmentOption4Prices)[:currentPeriod],
+            '5': ast.literal_eval(player.participant.investmentOption5Prices)[:currentPeriod],
         }
 
-        price_max = (np.floor(max(tmp_currentPrices) / 100) + 1) * 100
-
-        # Get holdings
-        oldHoldings = {
-            '1': 0,
-            '2': 0,
-            '3': 0,
-            '4': 0,
-            '5': 0,
-        }
-
-        riskFreeHoldings = player.riskFreeHoldings
-
-        if player.round_number > 1:
-            prev_player = player.in_previous_rounds()[-1]
-            oldHoldings = {
-                '1': prev_player.investmentOption1Holdings,
-                '2': prev_player.investmentOption2Holdings,
-                '3': prev_player.investmentOption3Holdings,
-                '4': prev_player.investmentOption4Holdings,
-                '5': prev_player.investmentOption5Holdings,
-            }
-
-            riskFreeHoldings = prev_player.riskFreeHoldings
-
-        ## Calculate current total value
-        totalCurrentValue = 0
-        for i in range(len(C.INVESTMENT_COLORS)):
-            totalCurrentValue += locals()[f'option{i+1}Prices'][player.round_number-1] * oldHoldings[str(i + 1)]
-
-        totalCurrentValue = totalCurrentValue + riskFreeHoldings
-
-        newTotalValue = 0
-        for i in range(len(C.INVESTMENT_COLORS)):
-            newTotalValue += locals()[f'option{i+1}Prices'][player.round_number] * oldHoldings[str(i + 1)]
-
-        newTotalValue = newTotalValue + riskFreeHoldings
-
-        ## Get information about investment options
+        ## Get information about investment options including holdings
         investmentOptions = [
             dict(
                 num=i + 1,
-                label=f'Alternative {i + 1}',
+                label=f'Option {i + 1}',
                 color=C.INVESTMENT_COLORS[i],
-                oldPrice = prices_by_investmentOption[str(i + 1)][thisIndex-1],
-                newPrice = prices_by_investmentOption[str(i + 1)][thisIndex] if thisIndex > 0 else "-",
-                prevPrices = prices_by_investmentOption[str(i + 1)][:thisIndex] if thisIndex > 0 else "-",
-                numShares = oldHoldings[str(i + 1)],
-                currentValue = prices_by_investmentOption[str(i + 1)][thisIndex-1] * oldHoldings[str(i + 1)],
-                newValue = prices_by_investmentOption[str(i + 1)][thisIndex] * oldHoldings[str(i + 1)] if thisIndex > 0 else "-",
-                oldWealthShare = "—" if totalCurrentValue == 0 else round(prices_by_investmentOption[str(i + 1)][thisIndex-1] * oldHoldings[str(i + 1)] / totalCurrentValue * 100, 2),
-                newWealthShare = (
-                    "—"
-                    if newTotalValue == 0
-                    else (
-                        round(prices_by_investmentOption[str(i + 1)][thisIndex] * oldHoldings[str(i + 1)] / newTotalValue * 100, 2)
-                        if thisIndex > 0
-                        else round(prices_by_investmentOption[str(i + 1)][thisIndex-1] * oldHoldings[str(i + 1)] / newTotalValue * 100, 2)
-                    )
-                ),
+                oldPrice = prevPrices[i],
+                newPrice = currentPrices[i],
+                allPrices = allPrices[str(i + 1)],
+                numShares = prevHoldings[i],
+                #numSharesNew = newHoldings[i],
+                oldValue = prevDollarHoldings[i],
+                newValue = currentDollarHoldings[i],
+                oldWealthShare = prevDollarHoldings[i] / currentWealth * 100,
+                newWealthShare = currentDollarHoldings[i] / currentWealth * 100,
             )
             for i in range(len(C.INVESTMENT_COLORS))
         ]
-       
+
         riskFreeAsset = [
             dict(
                 label = "Not invested",
                 color = 'gray',
-                currentValue = riskFreeHoldings,
-                newValue = riskFreeHoldings,
-                oldWealthShare = "—" if totalCurrentValue == 0 else round(riskFreeHoldings / totalCurrentValue * 100, 2),
-                newWealthShare = "—" if newTotalValue == 0 else round(riskFreeHoldings / newTotalValue * 100, 2),
+                currentValue = prevDollarHoldings[-1],
+                newValue = currentDollarHoldings[-1],
+                oldWealthShare = currentDollarHoldings[-1] / currentWealth * 100,
+                newWealthShare = currentDollarHoldings[-1] / currentWealth * 100,
             )
         ]
 
+        ## Get the initial portfolio at EOP --> can be updated using the live method
+        initialPortfolio = {
+            'dollarHoldings': newDollarHoldings,
+            'numShares': newHoldings,
+            'allocation': [player.w1, player.w2, player.w3, player.w4, player.w5, player.w6],
+        }
+
         ## Get characteristics of the investment options
-        df = C.assetParameters
+        tmpOrder = ast.literal_eval(player.participant.assetOrder)
+        assetDictionary = assetParams.assetDictionary
+
         assetCharacteristics = [
             {
-                'option_num': i + 1,
-                'priceIncrease': float(df.iloc[i]['priceIncrease']) * 100,
-                'priceDecrease': float(df.iloc[i]['priceDecrease']) * 100,
-                'probIncrease': float(df.iloc[i]['probIncrease']) * 100,  # display as percentage
-                'color': C.INVESTMENT_COLORS[i],
+                'option_num': idx+1,
+                'priceIncrease': assetDictionary[i]['x_up'] * 100,
+                'priceDecrease': assetDictionary[i]['x_down'] * 100,
+                'probIncrease': assetDictionary[i]['p_up'] * 100,  # display as percentage
+                'name': assetDictionary[i]['name'],
             }
-            for i in range(len(df))
+            for idx, i in enumerate(tmpOrder)
         ]
 
-        # Add Investment Option 5 --> Perfectly negatively correlated with Investment Option 1
-        assetCharacteristics.append({
-            'option_num': 5,
-            'priceIncrease': float(df.iloc[0]['priceIncrease']) * 100,
-            'priceDecrease': float(df.iloc[0]['priceDecrease']) * 100,
-            'probIncrease': float(df.iloc[0]['probIncrease']) * 100,
-            'color': C.INVESTMENT_COLORS[-1],
-        })
-        
         return {
-            'currentPeriod': player.round_number - C.NUM_PREVRROUNDS,
-            'treatment': player.participant.treatment,
-            'firstRound': -(C.NUM_PREVRROUNDS - 1),
+            'currentPeriod': currentPeriod - C.NUM_PREVRROUNDS,
+            'treatment': int(player.participant.treatment),
+            'firstRound': -(C.NUM_PREVRROUNDS),
             'maxRounds': C.NUM_INVESTMENT_ROUNDS,
             'obsRounds': C.NUM_PREVRROUNDS,
             'price_max': price_max,
-            'roundType': "Investment" if player.round_number > C.NUM_PREVRROUNDS else "Observation",
             'updateInterval': C.UPDATE_INTERVAL,
-            #'oldHoldings': oldHoldings,
-            'adviceRounds': C.ADVICE_ROUNDS,
-            'currentState': "Investment" if player.round_number > C.NUM_PREVRROUNDS else "Observation",
+            'currentState': "Investment" if currentPeriod - C.NUM_PREVRROUNDS >= 0 else "Observation",
             'investmentOptions' : investmentOptions,
             'riskFreeAsset' : riskFreeAsset,
-            'initialPortfolio': inv_initial_portfolio_payload(player),
+            'initialPortfolio': initialPortfolio,
             'id_in_group': player.id_in_group,
             'assetCharacteristics': assetCharacteristics,
+            'isAdvisor': False,
+            'isAdviceRound': (player.round_number-C.NUM_PREVRROUNDS) in C.ADVICE_ROUNDS,
+            'beliefsBefore': player.participant.beliefsBefore,
         }
 
     @staticmethod
     def vars_for_template(player):
         ## Get characteristics of the investment options
-        df = C.assetParameters
+        tmpOrder = player.participant.assetOrder
+        tmpOrder = [int(i) for i in tmpOrder.split(',')]
+        assetDictionary = assetParams.assetDictionary
+
         asset_rows = [
             {
-                'option_num': i + 1,
-                'priceIncrease': float(df.iloc[i]['priceIncrease']) * 100,
-                'priceDecrease': float(df.iloc[i]['priceDecrease']) * 100,
-                'probIncrease': float(df.iloc[i]['probIncrease']) * 100,  # display as percentage
-                'color': C.INVESTMENT_COLORS[i],
+                'option_num': idx+1,
+                'priceIncrease': assetDictionary[i]['x_up'] * 100,
+                'priceDecrease': assetDictionary[i]['x_down'] * 100,
+                'probIncrease': assetDictionary[i]['p_up'] * 100,  # display as percentage
+                'name': assetDictionary[i]['name'],
+                'color': C.INVESTMENT_COLORS[idx],
             }
-            for i in range(len(df))
+            for idx, i in enumerate(tmpOrder)
         ]
 
-        # Add Investment Option 5 --> Perfectly negatively correlated with Investment Option 1
-        asset_rows.append({
-            'option_num': 5,
-            'priceIncrease': float(df.iloc[0]['priceIncrease']) * 100,
-            'priceDecrease': float(df.iloc[0]['priceDecrease']) * 100,
-            'probIncrease': float(df.iloc[0]['probIncrease']) * 100,
-            'color': C.INVESTMENT_COLORS[-1],
-        })
+        indexAsset = next((row['option_num'] for row in asset_rows if row['name'] == 'IndAsset'), None)
+        hedgeAsset = next((row['option_num'] for row in asset_rows if row['name'] == 'Hedge'), None)
 
         return {
-            'treatment': player.participant.treatment,
-            'currentPeriod': player.round_number - C.NUM_PREVRROUNDS,
-            'totalRounds': C.NUM_INVESTMENT_ROUNDS,
-            'adviceRounds': C.ADVICE_ROUNDS,
             'testing': player.session.config['testing'],
+            'totalRounds': C.NUM_INVESTMENT_ROUNDS ,
+            'obsRounds': C.NUM_PREVRROUNDS,
+            'investRounds': C.NUM_INVESTMENT_ROUNDS,
+            'firstRound': -(C.NUM_PREVRROUNDS - 1),
             'asset_rows': asset_rows,
-            'advicePeriod': player.round_number - C.NUM_PREVRROUNDS in C.ADVICE_ROUNDS,
+            'treatment': player.participant.treatment,
+            'correlatedAssets': sorted([indexAsset, hedgeAsset]),
+            'corrCoeff': assetParams.correlationCoefficient,
+            'advicePeriod': (player.round_number-C.NUM_PREVRROUNDS) in C.ADVICE_ROUNDS,
+            'currentPeriod': player.round_number - C.NUM_PREVRROUNDS,
         }
 
     @staticmethod
@@ -502,7 +481,6 @@ class invPage(Page):
 
                 ## Create structured advice for page
                 retAdvice = create_structured_advice(player.advice)
-                print('here')
                 yield {
                     player.id_in_group: {
                         'type': 'advice',
@@ -512,72 +490,45 @@ class invPage(Page):
         else:
             player.changedHoldings = True
             if data['type'] == 'changeShares':
-                newHoldings, newShares = updatePortfolio(player, data, 'change')
+                newAllocation, newNumShares, newHoldings = updatePortfolio(player, data, 'change')
             elif data['type'] == 'changeHoldings':
-                newHoldings, newShares = updatePortfolio(player, data, 'change')
+                newAllocation, newNumShares, newHoldings = updatePortfolio(player, data, 'change')
             elif data['type'] == 'setShares':
-                newHoldings, newShares = updatePortfolio(player, data, 'set')
+                newAllocation, newNumShares, newHoldings = updatePortfolio(player, data, 'set')
             elif data['type'] == 'setHoldings':
-                newHoldings, newShares = updatePortfolio(player, data, 'set')
+                newAllocation, newNumShares, newHoldings = updatePortfolio(player, data, 'set')
 
             retData = {
                 'type': 'portfolio',
-                'newHoldings': newHoldings,
-                'newShares': newShares,
-                'portfolio': inv_portfolio_payload(player, newHoldings, newShares),
+                'portfolio': {
+                    'dollarHoldings': newHoldings,
+                    'numShares': newNumShares,
+                    'allocation': newAllocation,}
             }
 
-            player.investmentOption1Holdings = newHoldings['1']
-            player.investmentOption2Holdings = newHoldings['2']
-            player.investmentOption3Holdings = newHoldings['3']
-            player.investmentOption4Holdings = newHoldings['4']
-            player.investmentOption5Holdings = newHoldings['5']
-            player.riskFreeHoldings = newHoldings['riskFree']
+            player.w1 = newAllocation[0]
+            player.w2 = newAllocation[1]
+            player.w3 = newAllocation[2]
+            player.w4 = newAllocation[3]
+            player.w5 = newAllocation[4]
+            player.w6 = newAllocation[5]
 
             yield {
                 player.id_in_group: retData
             }
 
+class invResults(Page):
     @staticmethod
-    def before_next_page(player, timeout_happened):
-        currentWealth = player.totalWealth
-        if player.round_number > 1:
-            prev_player = player.in_previous_rounds()[-1]
-            currentWealth = prev_player.totalWealth
+    def is_displayed(player):
+        return player.round_number == C.NUM_ROUNDS
 
-        ## Costs for the investment positions
-        costBasis = {
-            '1': player.investmentOption1Holdings * player.participant.investmentOption1Prices[player.round_number - 1],
-            '2': player.investmentOption2Holdings * player.participant.investmentOption2Prices[player.round_number - 1],
-            '3': player.investmentOption3Holdings * player.participant.investmentOption3Prices[player.round_number - 1],
-            '4': player.investmentOption4Holdings * player.participant.investmentOption4Prices[player.round_number - 1],
-            '5': player.investmentOption5Holdings * player.participant.investmentOption5Prices[player.round_number - 1],
-        }
-        totalCostBasis = sum(costBasis.values())
-
-        riskFreeHoldings = currentWealth - totalCostBasis
-
-        ## Update the total wealth
-        newPortfolioValue = {
-            '1': player.investmentOption1Holdings * player.participant.investmentOption1Prices[player.round_number],
-            '2': player.investmentOption2Holdings * player.participant.investmentOption2Prices[player.round_number],
-            '3': player.investmentOption3Holdings * player.participant.investmentOption3Prices[player.round_number],
-            '4': player.investmentOption4Holdings * player.participant.investmentOption4Prices[player.round_number],
-            '5': player.investmentOption5Holdings * player.participant.investmentOption5Prices[player.round_number],
-        }
-
-        totalNewPortfolioValue = sum(newPortfolioValue.values())
-
-        newTotalWealth = totalNewPortfolioValue + riskFreeHoldings
-
-        ## Update the total wealth
-        player.totalWealth = newTotalWealth
-        player.riskFreeHoldings = riskFreeHoldings
-
+    @staticmethod
+    def vars_for_template(player):
         return {
-            'totalWealth': newTotalWealth,
+            'testing': player.session.config['testing'],
+            'finalWealth': player.totalWealthBOP,
         }
-
+        
 
 page_sequence = [
     startPage,
@@ -586,9 +537,32 @@ page_sequence = [
     atnQuest,
     attentionScreen,
     invPage,
-    #invResults
+    invResults
 ]
 
+########## HELPER FUNCTIONS ##########
+def get_max_price(player):
+    listIndex = player.round_number 
+
+    # Get asset prices for all periods
+    option1Prices = ast.literal_eval(player.participant.investmentOption1Prices)
+    option2Prices = ast.literal_eval(player.participant.investmentOption2Prices)
+    option3Prices = ast.literal_eval(player.participant.investmentOption3Prices)
+    option4Prices = ast.literal_eval(player.participant.investmentOption4Prices)
+    option5Prices = ast.literal_eval(player.participant.investmentOption5Prices)
+
+    # Get all prices for all periods to determine min and max; Forward looking
+    tmp_currentPrices = (
+        option1Prices[:listIndex + 1] +
+        option2Prices[:listIndex + 1] +
+        option3Prices[:listIndex + 1] +
+        option4Prices[:listIndex + 1] +
+        option5Prices[:listIndex + 1]
+    )
+
+    price_max = (np.floor(max(tmp_currentPrices) / 100) + 1.5) * 100
+
+    return price_max
 
 ########## ADVICE PROMPTING ##########
 client = AsyncOpenAI(api_key=api_key)
@@ -729,7 +703,7 @@ def generate_prompt(player, age, gender, riskAversion, prices, chart):
 
     Based on this, write a brief, personalized investment recommendation for this client. 
 
-    - **situation**: Start the advice by briefly summarizing the situation, mentioning client or asset characteristics as you wish. Keep the situation short and concise.
+    - **situation**: Start the advice by briefly summarizing the situation, mentioning client or asset characteristics as you wish. Keep the description short and concise.
     - **allocation**: For each option (1–5) and the risk-free asset, specify the recommended portfolio weight (%) and your expected average return for that option.
     - **reason**: Please give a short explanation for the advice.
     """
@@ -797,45 +771,28 @@ def create_structured_advice(advice):
 ########## PORTFOLIO LOGIC ##########
 
 def updatePortfolio(player, data, inType):
-    currentHoldings = {
-        '1': player.investmentOption1Holdings,
-        '2': player.investmentOption2Holdings,
-        '3': player.investmentOption3Holdings,
-        '4': player.investmentOption4Holdings,
-        '5': player.investmentOption5Holdings,
-        'riskFree': player.riskFreeHoldings,
-    }
+    currentPeriod = player.round_number
+    allocation = [player.w1, player.w2, player.w3, player.w4, player.w5, player.w6]
 
-    currentPrices = {
-        '1': player.participant.investmentOption1Prices[player.round_number-1],
-        '2': player.participant.investmentOption2Prices[player.round_number-1],
-        '3': player.participant.investmentOption3Prices[player.round_number-1],
-        '4': player.participant.investmentOption4Prices[player.round_number-1],
-        '5': player.participant.investmentOption5Prices[player.round_number-1],
-        'riskFree': 1,
-    }
+    totalWealth = player.totalWealthBOP
 
-    totalWealth = 0
+    dollarHoldings = [allocation[i] * totalWealth / 100 for i in range(len(allocation))]
+    currentPrices = inv_trade_prices(player, currentPeriod)
 
-    for key, value in currentPrices.items():
-        totalWealth += value * currentHoldings[key]
+    numShares = [dollarHoldings[i] / currentPrices[i] for i in range(len(dollarHoldings))]
 
-    currentShares = {}
-    for key, value in currentHoldings.items():
-        currentShares[key] = (value * currentPrices[key]) / totalWealth * 100
-    
-    newShares = currentShares.copy()
-    newHoldings = currentHoldings.copy()
+
+    newHoldings = dollarHoldings.copy()
+    newNumShares = numShares.copy()
     
     if inType == 'change':
         ## Button was used to change holdings / shares
-        changedAsset = data['asset']
+        changedAsset = int(data['asset']) - 1
         direction = data['direction']
 
-
         if data['type'] == 'changeHoldings':
-            maxBuy = currentHoldings['riskFree'] / currentPrices[str(changedAsset)]
-            maxSell = -currentHoldings[str(changedAsset)]
+            maxBuy = dollarHoldings[-1] / currentPrices[changedAsset] # Number of shares that can be bought
+            maxSell = -numShares[changedAsset] # Number of shares that can be sold
 
             delta = direction * C.PORTION_HOLDINGS_CHANGE
             
@@ -844,20 +801,26 @@ def updatePortfolio(player, data, inType):
             else:
                 delta = max(delta, maxSell)
 
-            tmpNewHoldings = max(0, newHoldings[str(changedAsset)] + delta)
+            # Delta is in shares
+            dollarTransfer = delta * currentPrices[changedAsset]
 
-            newHoldings[str(changedAsset)] = tmpNewHoldings
+            ## Update dollar holdings
+            tmpNewHoldings = dollarHoldings[changedAsset] + dollarTransfer
 
-            # Update risk-free asset
-            newHoldings['riskFree'] = currentHoldings['riskFree'] - delta * currentPrices[str(changedAsset)]
+            newHoldings[changedAsset] = tmpNewHoldings
+            newHoldings[-1] = dollarHoldings[-1] - dollarTransfer
 
-            # Update shares
-            for key, value in newHoldings.items():
-                newShares[key] = (value * currentPrices[key]) / totalWealth * 100
+            ## Update portfolio shares ( allocation )
+            newShares = [newHoldings[i] / totalWealth * 100 for i in range(len(newHoldings))]
+
+            ## Update number of shares
+            newNumShares[changedAsset] = tmpNewHoldings / currentPrices[changedAsset]
+            newNumShares[-1] = (dollarHoldings[-1] - dollarTransfer)
+
         else:
             targetTransfer = direction * C.PORTION_SHARES_CHANGE * totalWealth / 100
-            maxBuy = currentHoldings['riskFree']
-            maxSell = -currentHoldings[str(changedAsset)] * currentPrices[str(changedAsset)]
+            maxBuy = dollarHoldings[-1] # Last element is risk-free asset, available cash
+            maxSell = -dollarHoldings[changedAsset] * currentPrices[changedAsset]
 
             transfer = targetTransfer
             if direction > 0:
@@ -865,20 +828,25 @@ def updatePortfolio(player, data, inType):
             else:
                 transfer = max(transfer, maxSell)
             
-            holdingsChange = transfer / currentPrices[str(changedAsset)]
-            newHoldings[str(changedAsset)] = max(0, newHoldings[str(changedAsset)] + holdingsChange)
-            newHoldings['riskFree'] = max(0, newHoldings['riskFree'] - transfer)
+            ## Update dollar holdings
+            tmpNewHoldings = dollarHoldings[changedAsset] + transfer
 
-            # Update shares
-            for key, value in newHoldings.items():
-                newShares[key] = (value * currentPrices[key]) / totalWealth * 100
+            newHoldings[changedAsset] = tmpNewHoldings
+            newHoldings[-1] = dollarHoldings[-1] - transfer
+
+            ## Update portfolio shares ( allocation )
+            newShares = [newHoldings[i] / totalWealth * 100 for i in range(len(newHoldings))]
+            
+            ## Update number of shares
+            newNumShares[changedAsset] = tmpNewHoldings / currentPrices[changedAsset]
+            newNumShares[-1] = (dollarHoldings[-1] - transfer)
     elif inType == 'set':
         # Numerical input of target
-        changedAsset = data['asset']
+        changedAsset = int(data['asset']) - 1
 
         if data['type'] == 'setShares':
             targetShare = data['targetShare']
-            maxValue = currentHoldings['riskFree'] + currentHoldings[str(changedAsset)] * currentPrices[str(changedAsset)]
+            maxValue = dollarHoldings[-1] + dollarHoldings[changedAsset]
             maxShare = maxValue / totalWealth * 100
 
             if targetShare > maxShare:
@@ -886,87 +854,85 @@ def updatePortfolio(player, data, inType):
             elif targetShare < 0:
                 targetShare = 0
             
-            targetHoldings = ((targetShare / 100) * totalWealth) / currentPrices[str(changedAsset)]
-            targetTransfer = targetHoldings * currentPrices[str(changedAsset)] - currentHoldings[str(changedAsset)] * currentPrices[str(changedAsset)]
-
-            newHoldings[str(changedAsset)] = targetHoldings
-            newHoldings['riskFree'] = currentHoldings['riskFree'] - targetTransfer
+            targetHoldings = ((targetShare / 100) * totalWealth) # Dollar amoung
+            targetTransfer = targetHoldings - dollarHoldings[changedAsset]
             
-            # Update shares
-            for key, value in newHoldings.items():
-                newShares[key] = (value * currentPrices[key]) / totalWealth * 100
+            ## Update dollar holdings
+            newHoldings[changedAsset] = targetHoldings
+            newHoldings[-1] = dollarHoldings[-1] - targetTransfer
+            
+            ## Update portfolio shares ( allocation )
+            newShares = [newHoldings[i] / totalWealth * 100 for i in range(len(newHoldings))]
+            
+            ## Update number of shares
+            newNumShares[changedAsset] = targetHoldings / currentPrices[changedAsset]
+            newNumShares[-1] = (dollarHoldings[-1] - targetTransfer)
+        
         elif data['type'] == 'setHoldings':
             targetHoldings = data['targetHoldings']
-            maxValue = currentHoldings['riskFree'] + currentHoldings[str(changedAsset)] * currentPrices[str(changedAsset)]
-            maxHoldings = maxValue / currentPrices[str(changedAsset)]
+
+            maxValue = dollarHoldings[-1] + dollarHoldings[changedAsset]
+            maxHoldings = maxValue / currentPrices[changedAsset]
 
             if targetHoldings > maxHoldings:
                 targetHoldings = maxHoldings
             elif targetHoldings < 0:
                 targetHoldings = 0
-                
-            targetTransfer = targetHoldings * currentPrices[str(changedAsset)] - currentHoldings[str(changedAsset)] * currentPrices[str(changedAsset)]
-            newHoldings[str(changedAsset)] = targetHoldings
-            newHoldings['riskFree'] = currentHoldings['riskFree'] - targetTransfer
+
+            targetTransfer = targetHoldings * currentPrices[changedAsset] - dollarHoldings[changedAsset]
+
+            ## Update dollar holdings
+            newHoldings[changedAsset] = targetHoldings * currentPrices[changedAsset]
+            newHoldings[-1] = dollarHoldings[-1] - targetTransfer
+
+            ## Update portfolio shares ( allocation )
+            newShares = [newHoldings[i] / totalWealth * 100 for i in range(len(newHoldings))]
+
+            ## Update number of shares
+            newNumShares[changedAsset] = targetHoldings
+            newNumShares[-1] = (dollarHoldings[-1] - targetTransfer)
             
-            # Update shares
-            for key, value in newHoldings.items():
-                newShares[key] = (value * currentPrices[key]) / totalWealth * 100
+    return newShares, newNumShares, newHoldings  ## Portfolio shares, Number of shares, Dollar holdings
 
-    return newHoldings, newShares
+def get_wealth_update(player):
+    currentPeriod = player.round_number
+    prevPeriod = currentPeriod - 1
 
+    prevPlayer = player.in_previous_rounds()[-1]
 
-def inv_trade_prices(player):
+    # Last period's wealth
+    lastWealth = prevPlayer.totalWealthBOP
+
+    # Last period's portfolio weights
+    lastWeights = [prevPlayer.w1, prevPlayer.w2, prevPlayer.w3, prevPlayer.w4, prevPlayer.w5, prevPlayer.w6]
+    boughtPrices = inv_trade_prices(player, prevPeriod)
+    currentNumShares = [(lastWeights[i] / 100) * lastWealth / boughtPrices[i] for i in range(len(lastWeights))]
+
+    currentPrices = inv_trade_prices(player, currentPeriod)
+    currentDollarHoldings = [currentNumShares[i] * currentPrices[i] for i in range(len(currentNumShares))]
+
+    currentWealth = sum(currentDollarHoldings)
+
+    currentPortfolioShares = [currentDollarHoldings[i] / currentWealth * 100 for i in range(len(currentNumShares))]
+
+    return currentWealth, currentPortfolioShares
+
+def inv_trade_prices(player, period):
     """Prices for portfolio valuation; same index as updatePortfolio."""
-    idx = player.round_number - 1
-    return {
-        '1': float(player.participant.investmentOption1Prices[idx]),
-        '2': float(player.participant.investmentOption2Prices[idx]),
-        '3': float(player.participant.investmentOption3Prices[idx]),
-        '4': float(player.participant.investmentOption4Prices[idx]),
-        '5': float(player.participant.investmentOption5Prices[idx]),
-        'riskFree': 1.0,
-    }
-
-
-def inv_portfolio_payload(player, new_holdings, new_shares):
-    """
-    JSON-serializable display bundle for the React table (New column).
-    new_holdings / new_shares use keys '1'..'5' and 'riskFree'.
-    """
-    prices = inv_trade_prices(player)
-    line_values = [
-        float(new_holdings[str(i)] * prices[str(i)])
-        for i in range(1, 6)
+    return [
+        float(ast.literal_eval(player.participant.investmentOption1Prices)[period]),
+        float(ast.literal_eval(player.participant.investmentOption2Prices)[period]),
+        float(ast.literal_eval(player.participant.investmentOption3Prices)[period]),
+        float(ast.literal_eval(player.participant.investmentOption4Prices)[period]),
+        float(ast.literal_eval(player.participant.investmentOption5Prices)[period]),
+        1.0,
     ]
-    sum_risky = float(sum(line_values))
-    cash = float(new_holdings['riskFree'])
-    total_wealth = float(sum_risky + cash)
-    return {
-        'holdings': [float(new_holdings[str(i)]) for i in range(1, 6)],
-        'lineValues': line_values,
-        'shares': [float(new_shares[str(i)]) for i in range(1, 6)],
-        'cash': cash,
-        'cashShare': float(new_shares['riskFree']),
-        'sumRisky': sum_risky,
-        'totalWealth': total_wealth,
-    }
 
+def get_holdings(player, wealth, w1, w2, w3, w4, w5, w6, period):
+    prices = inv_trade_prices(player, period)
+    allocation = [w1, w2, w3, w4, w5, w6]
+    
+    dollarHoldings = [allocation[i] * wealth / 100 for i in range(len(allocation))]
+    numShares = [dollarHoldings[i] / prices[i] for i in range(len(dollarHoldings))]
 
-def inv_initial_portfolio_payload(player):
-    """Current player holdings mark-to-market at trade prices (matches page load before live edits)."""
-    h = {
-        '1': float(player.investmentOption1Holdings),
-        '2': float(player.investmentOption2Holdings),
-        '3': float(player.investmentOption3Holdings),
-        '4': float(player.investmentOption4Holdings),
-        '5': float(player.investmentOption5Holdings),
-        'riskFree': float(player.riskFreeHoldings),
-    }
-    prices = inv_trade_prices(player)
-    total_wealth = sum(prices[k] * h[k] for k in h)
-    if total_wealth <= 0:
-        s = {k: 0.0 for k in h}
-    else:
-        s = {k: (h[k] * prices[k]) / total_wealth * 100.0 for k in h}
-    return inv_portfolio_payload(player, h, s)
+    return dollarHoldings, numShares

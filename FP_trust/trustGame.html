@@ -1,0 +1,57 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Please imagine the following situation
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        <div class="row">
+            <div class="col">
+                <p>
+                    You have been randomly and 
+                    anonymously paired with <strong>a generative AI system, such as ChatGPT</strong>.
+                </p>
+                <p>
+                    In addition, you have been randomly <strong>selected to be Participant A</strong>,
+                    while your paired generative AI system will be Participant B.  
+                </p>
+                <p>
+                    Participant A will begin with $1,000, 
+                    while Participant B begins without an additional amount.
+                    Participant A can send any amount that is a multiple of 
+                    $100 (e.g, $0, $100, $200, …, $900, $1,000) to Participant B. 
+                    The amount that Participant B receives will be tripled. 
+                    Participant B can then decide to return any amount that is a multiple of $100
+                    to Participant A.
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{ formfields }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+
+{% if testing %}
+    <br></br>
+    <button id="skipBtn" class="btn btn-secondary" onclick="skipPage()">
+    Skip for testing</button>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function skipPage() {
+            document.getElementById('id_amount_to_send_AI').value = 100;
+        }
+</script>
+
+{% endblock %}

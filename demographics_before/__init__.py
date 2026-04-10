@@ -1,5 +1,7 @@
 from otree.api import *
-
+import pandas as pd
+import ast
+import random
 
 doc = """
 Your app description
@@ -117,11 +119,9 @@ class Player(BasePlayer):
     finRiskTaking = models.IntegerField(
         label = "Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?",
         choices = [
-            [1, 'I am willing to take substantial financial risks expecting to earn substantial returns.'],
-            [2, 'I am willing to take above average financial risks expecting to earn above-average returns.'],
-            [3, 'I am willing to take average financial risks expecting to earn average returns.'],
-            [4, 'I am willing to take below average financial risks expecting to earn below-average returns.'],
-            [5, 'I am not willing to take any risk, knowing I will earn a small but certain return.'],
+            [1, 'I am willing to take above average financial risks expecting to earn above-average returns.'],
+            [2, 'I am willing to take average financial risks expecting to earn average returns.'],
+            [3, 'I am willing to take below average financial risks expecting to earn below-average returns.'],
         ])
 
     amount_to_send_finAdvisor = models.IntegerField(
@@ -157,7 +157,60 @@ class Player(BasePlayer):
             [1000, '$1000'],
         ]
     )
-    
+
+### Create ExtraModel for treatment assignment
+class Assignment(ExtraModel):
+    subsession = models.Link(Subsession)
+
+    gender = models.StringField()
+    age = models.StringField()
+    riskAversion = models.StringField()
+
+    assetOrder = models.StringField()
+
+    investmentOption1Prices = models.StringField()
+    investmentOption2Prices = models.StringField()
+    investmentOption3Prices = models.StringField()
+    investmentOption4Prices = models.StringField()
+    investmentOption5Prices = models.StringField()
+    treatment = models.IntegerField()
+
+    order_in_cell = models.IntegerField()   # preserves CSV order
+    assigned = models.BooleanField(initial=False)
+    assigned_participant_code = models.StringField(blank=True)
+
+def creating_session(subsession):
+    client_assignments = pd.read_csv('_static/clients/client_master_table.csv')
+    # Columns: treatment,gender,age,risk_av,Index,Dominated,PosSkew,NegSkew,Hedge, assetOrder
+
+    client_assignments['order_in_cell'] = client_assignments.groupby(['gender', 'age', 'risk_av']).cumcount() + 1
+
+    assetNameMatching = {
+        1: 'IndAsset',
+        2: 'Dominated',
+        3: 'PosSkew',
+        4: 'NegSkew',
+        5: 'Hedge',
+    }
+
+    for row in client_assignments.itertuples():
+        assetOrder = ast.literal_eval(row.assetOrder)
+        Assignment.create(
+            subsession = subsession,
+            gender = row.gender,
+            age = row.age,
+            riskAversion = row.risk_av,
+            assetOrder = row.assetOrder,
+            treatment = row.treatment,
+            order_in_cell = row.order_in_cell,
+            assigned = False,
+            assigned_participant_code = '',
+            investmentOption1Prices = row._asdict()[assetNameMatching[assetOrder[0]]],
+            investmentOption2Prices = row._asdict()[assetNameMatching[assetOrder[1]]],
+            investmentOption3Prices = row._asdict()[assetNameMatching[assetOrder[2]]],
+            investmentOption4Prices = row._asdict()[assetNameMatching[assetOrder[3]]],
+            investmentOption5Prices = row._asdict()[assetNameMatching[assetOrder[4]]],
+        )
     
 # PAGES
 class startPage(Page):
@@ -210,6 +263,7 @@ class demographicsPage(Page):
         player.participant.age = player.age
         player.participant.gender = player.gender
         player.participant.riskAversion = player.finRiskTaking
+        assignTreatment(player)
 
 class trustGame(Page):
     form_model = 'player'
@@ -221,6 +275,7 @@ class trustGame(Page):
         else:
             return ['amount_to_send_AI']
 
+    @staticmethod
     def vars_for_template(player):
         if player.participant.trustGameOrder + 1 == player.round_number:
             partner_type = 'a financial advisor'
@@ -237,6 +292,7 @@ class trustGame(Page):
             'testing': player.session.config['testing']
         }
     
+    @staticmethod
     def js_vars(player):
         if player.participant.trustGameOrder + 1 == player.round_number:
             return {
@@ -252,3 +308,64 @@ page_sequence = [
     demographicsPage,
     trustGame
     ]
+
+### Treatment Assignment Functions ###
+def assignTreatment(player):
+    subsession = player.subsession
+
+    age = player.age
+    gender = player.gender
+    riskAversion = player.finRiskTaking
+
+    useAge = ''
+    if age <= 34:
+        useAge = 'Young'
+    elif age <= 54:
+        useAge = 'Mid'
+    else:
+        useAge = 'Old'
+
+    useGender = ''
+    if gender == 1:
+        useGender = 'M'
+    elif gender == 2:
+        useGender = 'F'
+    else:   
+        if random.random() < 0.5:
+            useGender = 'M'
+        else:
+            useGender = 'F'
+    
+    useRiskAversion = ''
+    if riskAversion == 1:
+        useRiskAversion = 'Low'
+    elif riskAversion == 2:
+        useRiskAversion = 'Medium'
+    else:
+        useRiskAversion = 'High'
+
+
+    slot = Assignment.objects_filter(
+        subsession=subsession,
+        age=useAge,
+        gender=useGender,
+        riskAversion=useRiskAversion,
+        assigned=False,
+    ).order_by(Assignment.order_in_cell).first()
+
+    if not slot:
+        raise Exception("No slot found")
+    
+    slot.assigned = True
+    slot.assigned_participant_code = player.participant.code
+
+    if not player.session.config['testing']:
+        ## Otherwise, the treatment is assigned in the welcome app
+        player.participant.treatment = slot.treatment
+    
+    player.participant.investmentOption1Prices = slot.investmentOption1Prices
+    player.participant.investmentOption2Prices = slot.investmentOption2Prices
+    player.participant.investmentOption3Prices = slot.investmentOption3Prices
+    player.participant.investmentOption4Prices = slot.investmentOption4Prices
+    player.participant.investmentOption5Prices = slot.investmentOption5Prices
+    player.participant.assetOrder = slot.assetOrder

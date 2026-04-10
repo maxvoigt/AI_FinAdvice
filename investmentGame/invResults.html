@@ -1,0 +1,35 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Many thanks for completing the investment task!
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        <div class="row">
+            <div class="col text-center">
+                <p>
+                    <b>Your final wealth is ${{ finalWealth|to2 }}</b>.
+                </p>
+            </div>
+            <div class="row">
+                <div class="col">
+                    On the next pages, we will ask you a few more questions before you receive your payment.
+                    Please answer these questions as truthfully as possible.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</br>
+
+<div class="col center center-align text-center">
+    <button id="next_page_btn" class="btn btn-primary px-3">Continue</button>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+{% if clientNum == 1 %}
+    Your first client
+{% else %}
+    Your second client
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        
+        <p>
+            Your {% if clientNum == 1 %}first{% else %}second{% endif %} client is
+            <b>{{ showGender }}</b> and <b>{{ showAgeText }}</b>.
+        </p>
+        
+        <p>
+            In addition, 
+            when asked 
+            "Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?"
+            {{ pronoun }} answered "<b>{{ showRiskAversion }}</b>".
+        </p>
+    </div>
+</div>
+
+</br>
+
+<div class="col center center-align text-center">
+    <button id="next_page_btn" class="btn btn-primary px-3">Got it, let's start</button>
+</div>
+
+
+{% endblock %}

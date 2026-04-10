@@ -1,0 +1,66 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Many thanks for your participation!
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col mb-3">
+        <p>
+            If you would like to be considered for a follow-up survey that is 
+            similar to this study—except that you would interact with advisees 
+            live in a chat—please click the button below.
+        </p>
+        <p>
+            Clicking the button below will open a draft email to
+            the survey administrator, which ensures that 
+            none of your personal information is included or can 
+            be linked to your answers in this study.
+        </p>
+
+        <p class="d-flex justify-content-center mb-0">
+            <a class="btn btn-primary" href="{{ follow_up_survey_href }}" role="button">
+                I am interested in the follow-up study
+            </a>
+        </p>
+    </div>
+    <hr>
+    {% if isPaid %}
+    <div class="col mb-3">
+        <p>
+            You have been selected to receive a payment for your participation.
+        </p>
+        <p>
+            Your payment is based on the 
+            final wealth of your {{ paidCustomer }} client, which 
+            was ${{ payoffWealth|to2 }}. Thus, your 
+            final payment is <b>${{ dollarPayoff|to2 }}</b>.
+        </p>
+        <p>
+            For confidentiality reasons, 
+            we cannot directly transfer the payment to you. 
+            Instead, please send an email 
+            to <a href="{{ mailto_href }}">TO COME</a>
+            by clicking on the button below (your draft email will include your payment amounts).
+        </p>
+        <div class="d-flex justify-content-center">
+            <a class="btn btn-primary" href="{{ mailto_href }}" role="button">Send email</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="col mb-3">
+        <p>
+            Unfortunately, you have not been selected to receive a payment for your participation.
+        </p>
+    </div>
+    {% endif %}
+    <hr>
+    <div class="col text-center">
+        <b>You can now close this window and leave the website.</b>
+    </div>
+</div>
+
+{% endblock %}

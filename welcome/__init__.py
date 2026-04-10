@@ -20,8 +20,6 @@ class C(BaseConstants):
     SAMPLE_FRUITS = ['C', 'R', 'Z', 'V', 'Y', 'N', 'R', 'P']
     SAMPLE_AUDIO = ['Country', 'Government', 'People', 'Question', 'Service']
 
-    assetPrices = pd.read_csv('_static/global/assetPrices.csv', header=None)
-
 
 class Subsession(BaseSubsession):
     pass
@@ -35,42 +33,26 @@ class Group(BaseGroup):
 def creating_session(subsession):
     if subsession.round_number == 1:
         for player in subsession.get_players():
-            usableID = player.participant.id_in_session - 1
-
-            # Assign treatment
-            treatment = usableID % C.NUM_TREATMENTS ## 0 - No Advice,1 - FP; 2 - FP + ChatGPT; 3 - ChatGPT
-            player.treatment = treatment
-            player.participant.treatment = treatment
-
             # Assign order of trust game
             trustGameOrder = random.choice([0, 1])
             player.trustGameOrder = trustGameOrder
             player.participant.trustGameOrder = trustGameOrder
 
-            # Assign price chart
-            priceChart = int(np.floor(usableID / C.NUM_TREATMENTS))
-            print(treatment, priceChart)
-            player.priceChart = priceChart
-            player.participant.priceChart = priceChart
-
             ## Attention Checks
             player.fruit = random.choice(C.SAMPLE_FRUITS)
             player.audio_file = random.choice(C.SAMPLE_AUDIO)
 
-            # Assign asset prices
-            # Get columns 1 to 25 (Python index 0-based: columns 0 = first column, so 1:26 gets cols 1–25)
-            investmentOption1Prices = C.assetPrices.iloc[int(priceChart), 0:25].tolist()
-            investmentOption2Prices = C.assetPrices.iloc[int(priceChart), 25:50].tolist()
-            investmentOption3Prices = C.assetPrices.iloc[int(priceChart), 50:75].tolist()
-            investmentOption4Prices = C.assetPrices.iloc[int(priceChart), 75:100].tolist()
-            investmentOption5Prices = C.assetPrices.iloc[int(priceChart), 100:125].tolist()
+            ## Determine if asked for beliefs before or after the investment task
+            beliefsBefore = random.choice([True, False])
+            player.participant.beliefsBefore = beliefsBefore
 
-            player.participant.investmentOption1Prices = investmentOption1Prices
-            player.participant.investmentOption2Prices = investmentOption2Prices
-            player.participant.investmentOption3Prices = investmentOption3Prices
-            player.participant.investmentOption4Prices = investmentOption4Prices
-            player.participant.investmentOption5Prices = investmentOption5Prices
-            
+            if player.session.config['testing']:
+                usableID = player.participant.id_in_session - 1
+
+                # Assign treatment
+                treatment = usableID % C.NUM_TREATMENTS ## 0 - No Advice,1 - FP; 2 - FP + ChatGPT; 3 - ChatGPT
+                player.participant.treatment = treatment
+
 ##### DEFINE FUNCTIONS #####
 
 def recaptcha_valid(response_token):
@@ -84,7 +66,6 @@ def recaptcha_valid(response_token):
 
 class Player(BasePlayer):
     prolID = models.StringField(label='Please enter your Prolific ID:', min_length=24, max_length=24)
-    treatment = models.IntegerField()
     priceChart = models.IntegerField()
     trustGameOrder = models.IntegerField()
 

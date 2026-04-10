@@ -10,6 +10,20 @@ SESSION_CONFIGS = [
             'demographics_after',
             ],
         num_demo_participants=4,
+        testing=True,
+    ),
+    dict(
+        name='finAdvice_FP',
+        app_sequence=[
+            'FP_welcome',
+            'FP_trust',
+            'FP_investmentAdvice',
+            'FP_demographics',
+            'FP_payment',
+            ],
+        num_demo_participants=2,
+        testing=True,
+        advisorExchangeRate=500,
     ),
 ]
 
@@ -38,6 +52,16 @@ PARTICIPANT_FIELDS = [
     'age',
     'gender',
     'riskAversion',
+    'customer1',
+    'customer2',
+    'path1',
+    'path2',
+    'assetOrder',
+    'adviceAllocation',
+    'beliefsBefore',
+    'isPaid',
+    'paidCustomer',
+    'payoffWealth',
 ]
 SESSION_FIELDS = []
 

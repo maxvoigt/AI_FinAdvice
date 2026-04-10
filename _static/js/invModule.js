@@ -16,23 +16,17 @@ const options = js_vars.investmentOptions;
 const riskFreeAsset = (js_vars.riskFreeAsset && js_vars.riskFreeAsset[0]) || {};
 
 const DEFAULT_LIVE_PORTFOLIO = {
-    holdings: [0, 0, 0, 0, 0],
-    lineValues: [0, 0, 0, 0, 0],
-    shares: [0, 0, 0, 0, 0],
-    cash: 0,
-    cashShare: 0,
-    sumRisky: 0,
-    totalWealth: 0,
+    dollarHoldings: [0, 0, 0, 0, 0, 10000],
+    numShares: [0, 0, 0, 0, 0, 10000],
+    allocation: [0, 0, 0, 0, 0, 100],
 };
 
 const initialPortfolioState = js_vars.initialPortfolio || DEFAULT_LIVE_PORTFOLIO;
 
+const isAdvisor = js_vars.isAdvisor || false;
+
 function InvModule({ pageStatus, phase }) {
     const [livePortfolio, setLivePortfolio] = React.useState(initialPortfolioState);
-    const [holdings, setHoldings] = React.useState(() =>
-        initialPortfolioState.holdings.map((h) => Number(h) || 0),
-    );
-
 
     const shareTimersRef = React.useRef({});
     const holdingsTimersRef = React.useRef({});
@@ -97,7 +91,6 @@ function InvModule({ pageStatus, phase }) {
             if (!payload || !payload.portfolio) return;
             const p = payload.portfolio;
             setLivePortfolio(p);
-            setHoldings((p.holdings || []).map((h) => Number(h) || 0));
         };
         window.invModuleApplyLivePayload = apply;
         return () => {
@@ -126,10 +119,13 @@ function InvModule({ pageStatus, phase }) {
         };
     }, [pageStatus]);
 
-    const canEdit = pageStatus === 'New' && phase === 'Investment';
-
+    const canEdit =
+        (js_vars.isAdvisor && !js_vars.isAdviceRound)
+            ? false
+            : ((pageStatus === 'New' && phase === 'Investment'));
+    
     let totalOld =
-        options.reduce((a, o) => a + o.currentValue, 0) + (riskFreeAsset.currentValue || 0);
+        options.reduce((a, o) => a + o.oldValue, 0) + (riskFreeAsset.currentValue || 0);
     let totalNew =
         options.reduce((a, o) => a + (Number(o.newValue) || 0), 0) + (Number(riskFreeAsset.newValue) || 0);
     if (js_vars.currentPeriod === js_vars.firstRound) {
@@ -169,16 +165,16 @@ function InvModule({ pageStatus, phase }) {
                             {options.map((option, idx) => {
                                 const num = option.num;
                                 const priceLeft = pageStatus === 'Old' ? option.oldPrice : option.newPrice;
-                                const valueLeft = pageStatus === 'Old' ? option.currentValue : option.newValue;
+                                const valueLeft = pageStatus === 'Old' ? option.oldValue : option.newValue;
                                 const shareLeft = pageStatus === 'Old' ? option.oldWealthShare : option.newWealthShare;
                                 const priceCellId = pageStatus === 'New' ? 'newPrice' + num : undefined;
-                                const pv = livePortfolio.lineValues[idx];
-                                const sh = livePortfolio.shares[idx];
+                                const pv = livePortfolio.dollarHoldings[idx];
+                                const sh = livePortfolio.allocation[idx];
                                 const shareInputStr =
                                     shareDraftByAsset[num] !== undefined
                                         ? shareDraftByAsset[num]
                                         : sh.toFixed(2);
-                                const hCur = holdings[idx];
+                                const hCur = livePortfolio.numShares[idx];
                                 const holdingsInputStr =
                                     holdingsDraftByAsset[num] !== undefined
                                         ? holdingsDraftByAsset[num]
@@ -197,67 +193,71 @@ function InvModule({ pageStatus, phase }) {
                                         <td>{formatNumber2(shareLeft)}</td>
                                         <td> </td>
                                         <td>
-                                            <div className="input-group input-group-sm justify-content-center">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-secondary"
-                                                    name={'investmentOption' + num + 'HoldingsButtonMinus'}
-                                                    disabled={!canEdit}
-                                                    onClick={() => changeHoldings(num, -1)}
-                                                >
-                                                    −
-                                                </button>
-                                                <input
-                                                    id={'newH' + num}
-                                                    name={'investmentOption' + num + 'Holdings'}
-                                                    type="number"
-                                                    min={0}
-                                                    className="form-control text-center"
-                                                    step="any"
-                                                    style={INV_INPUT_STYLE}
-                                                    value={holdingsInputStr}
-                                                    disabled={!canEdit}
-                                                    onFocus={() => {
-                                                        delete lastLiveSentHoldingsRef.current[num];
-                                                        setHoldingsDraftByAsset((prev) => ({
-                                                            ...prev,
-                                                            [num]: String(hCur),
-                                                        }));
-                                                    }}
-                                                    onChange={(e) => {
-                                                        const raw = e.target.value;
-                                                        setHoldingsDraftByAsset((prev) => ({
-                                                            ...prev,
-                                                            [num]: raw,
-                                                        }));
-                                                        debouncedSetHoldingsInput(num, raw);
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        const raw = e.target.value;
-                                                        const timers = holdingsTimersRef.current;
-                                                        const hadPending = !!timers[num];
-                                                        if (hadPending) {
-                                                            clearTimeout(timers[num]);
-                                                            delete timers[num];
-                                                            flushSetHoldingsInput(num, raw);
-                                                        }
-                                                        setHoldingsDraftByAsset((prev) => {
-                                                            const next = { ...prev };
-                                                            delete next[num];
-                                                            return next;
-                                                        });
-                                                    }}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-secondary"
-                                                    name={'investmentOption' + num + 'HoldingsButtonPlus'}
-                                                    disabled={!canEdit}
-                                                    onClick={() => changeHoldings(num, 1)}
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
+                                            {isAdvisor ? (
+                                                <span>{holdingsInputStr}</span>
+                                            ) : (
+                                                <div className="input-group input-group-sm justify-content-center">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline-secondary"
+                                                        name={'investmentOption' + num + 'HoldingsButtonMinus'}
+                                                        disabled={!canEdit}
+                                                        onClick={() => changeHoldings(num, -1)}
+                                                    >
+                                                        −
+                                                    </button>
+                                                    <input
+                                                        id={'newH' + num}
+                                                        name={'investmentOption' + num + 'Holdings'}
+                                                        type="number"
+                                                        min={0}
+                                                        className="form-control text-center"
+                                                        step="any"
+                                                        style={INV_INPUT_STYLE}
+                                                        value={holdingsInputStr}
+                                                        disabled={!canEdit}
+                                                        onFocus={() => {
+                                                            delete lastLiveSentHoldingsRef.current[num];
+                                                            setHoldingsDraftByAsset((prev) => ({
+                                                                ...prev,
+                                                                [num]: hCur.toFixed(2),
+                                                            }));
+                                                        }}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value;
+                                                            setHoldingsDraftByAsset((prev) => ({
+                                                                ...prev,
+                                                                [num]: raw,
+                                                            }));
+                                                            debouncedSetHoldingsInput(num, raw);
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            const raw = e.target.value;
+                                                            const timers = holdingsTimersRef.current;
+                                                            const hadPending = !!timers[num];
+                                                            if (hadPending) {
+                                                                clearTimeout(timers[num]);
+                                                                delete timers[num];
+                                                                flushSetHoldingsInput(num, raw);
+                                                            }
+                                                            setHoldingsDraftByAsset((prev) => {
+                                                                const next = { ...prev };
+                                                                delete next[num];
+                                                                return next;
+                                                            });
+                                                        }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline-secondary"
+                                                        name={'investmentOption' + num + 'HoldingsButtonPlus'}
+                                                        disabled={!canEdit}
+                                                        onClick={() => changeHoldings(num, 1)}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                            )}
                                         </td>
                                         <td id={'newVal' + num + 'Cell'}>
                                             <span id={'newVal' + num}>{formatNumber2(pv)}</span>
@@ -350,10 +350,10 @@ function InvModule({ pageStatus, phase }) {
                                 <td> </td>
                                 <td>-</td>
                                 <td>
-                                    <span id="riskFreeNewValue">{formatNumber2(livePortfolio.cash)}</span>
+                                    <span id="riskFreeNewValue">{formatNumber2(livePortfolio.dollarHoldings[5])}</span>
                                 </td>
                                 <td>
-                                    <span id="riskFreeNewShare">{formatNumber1(livePortfolio.cashShare)}</span>
+                                    <span id="riskFreeNewShare">{formatNumber2(livePortfolio.allocation[5])}</span>
                                 </td>
                             </tr>
                             <tr
@@ -367,8 +367,8 @@ function InvModule({ pageStatus, phase }) {
                                 <td>100.0</td>
                                 <td> </td>
                                 <td />
-                                <td id="totalNewVal">{formatNumber2(livePortfolio.totalWealth)}</td>
-                                <td id="totalNewShare">{livePortfolio.totalWealth > 0 ? '100.0' : '—'}</td>
+                                <td id="totalNewVal">{formatNumber2(livePortfolio.dollarHoldings.reduce((a, b) => a + Number(b), 0))}</td>
+                                <td id="totalNewShare">{livePortfolio.allocation.reduce((a, b) => a + Number(b), 0) > 0 ? '100.0' : '—'}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -403,9 +403,10 @@ function setShares ( num, targetShare ) {
     liveSend({type: 'setShares', asset: num, targetShare: targetShare});
 }
 
-function sendHoldingsLive(num, targetHoldings) {
-    liveSend({ type: 'setHoldings', asset: num, targetHoldings: targetHoldings });
+function sendHoldingsLive ( num, targetHoldings ) {
+    liveSend({type: 'setHoldings', asset: num, targetHoldings: targetHoldings});
 }
+
 
 // Helper functions
 function formatNumber2(val) {

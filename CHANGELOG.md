@@ -1,6 +1,31 @@
 # Changelog
 
+## 2026-04-11
+
+### FP master — long table (cell × treatment)
+
+- `sharedData/build_fp_cell_treatment_long.py`: Reads `_static/fp/fp_master_table.csv`; emits two client rows per `fp_id` (cell 1 + `path_1` + `*_p1` series; cell 2 + `path_2` + `*_p2` series); duplicates each client row for `treatment` 0–3. Price columns are unified (`Index`, `Dominated`, `PosSkew`, `NegSkew`, `Hedge`); `client_slot` is 1 or 2. Run: `python3 sharedData/build_fp_cell_treatment_long.py`
+- `_static/fp/fp_cell_treatment_long.csv`: Generated wide file (28 800 rows = 3600 `fp_id` × 2 clients × 4 treatments); unique `assignment_key` = `{fp_id}_{client_slot}_{treatment}`
+
+## 2026-04-08
+
+### FP_investmentAdvice — elicitBeliefs gated on advice form
+
+- `FP_investmentAdvice/invPage.html`: Added `isAdviceFormCompleteForElicit` / `syncElicitBeliefsEnabled` so `#elicitBeliefs` stays disabled until `adviceSituation`, `adviceReason`, and hidden `adviceAllocation` (six weights summing to ~100%) are set when `beliefsBefore` is false; listeners on those fields + call after portfolio `liveRecv`; moved allocation sync into the `portfolio` branch only (avoids errors on `advice` messages).
+
+## 2026-04-06
+
+### FP_investmentAdvice — invPage advice section layout
+
+- `FP_investmentAdvice/invPage.html`: Replaced the standalone “Your advice” card and bare `#investmentModule` with one `card mb-3` that shares a single `#investmentModule` mount; on advice rounds the card header and three steps (a) situation via `adviceSituation`, (b) module + `adviceAllocation`, (c) `adviceReason`; on non-advice rounds the card body shows only the module (`p-2`).
+- `FP_investmentAdvice/__init__.py`: Added `label=` on `adviceSituation`, `adviceAllocation`, and `adviceReason` for clearer form widgets.
+
 ## 2026-04-02
+
+### FP master table (fp_id × cells × price paths)
+
+- `sharedData/build_fp_master_table.py`: Builds `_static/fp/fp_master_table.csv` — one row per `fp_id` from `fp_assignments.csv`, merged with `cell_assignments` (as `c1_*` / `c2_*`), plus normalized prices for `path_1` and `path_2` from `path_library.csv` (columns `path1_t{period}_{Asset}` / `path2_t{period}_{Asset}`; periods ordered -9…10; each asset scaled so its first period = 100). Run: `python3 sharedData/build_fp_master_table.py`
+- `_static/fp/fp_master_table.csv`: Generated wide table (3600 × 213 columns)
 
 ### demographics_after — financialAdvice ranking list UX
 
@@ -26,7 +51,16 @@ Run `otree resetdb` after pulling these model changes.
 - `demographics_after/__init__.py`: Completed `aiLit_2`–`aiLit_4` as `IntegerField` + `RadioSelectHorizontal` (same pattern as `aiLit_1`) for Q10–Q12; `aiLiteracy` `form_fields` includes all four items
 - `demographics_after/aiLiteracy.html`: New page template rendering the four AI literacy fields in a single form
 
+### FP_payment — mailto draft includes payment
+
+- `FP_payment/__init__.py`: When `isPaid`, builds `mailto_href` with URL-encoded subject and body (first/second client, experimental final wealth, dollar payoff from `payoffWealth` / `advisorExchangeRate`)
+- `FP_payment/payment.html`: Email link and primary button use `mailto_href` instead of a bare `mailto:` address
+
 ## 2026-04-09
+
+### FP_demographics — work experience sentinel values on main field
+
+- `FP_demographics/financialAdvice.html`: “Don’t know” / “Prefer not to say” now set `workExperience` to `7777` / `8888` on `id_workExperience` for submission; digits are hidden via transparent text and an overlay label; removed use of non-existent `workExperience_special`; typing in the field clears sentinel mode
 
 ### investmentGame — advice allocation table width
 

@@ -1,0 +1,296 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    Comprehension questions
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        <p>
+            Please answer the following comprehension questions. 
+            If you answer a question incorrectly, you can try again after a short delay.
+        </p>
+        <hr>
+
+        <!-- CompQ_1 -->
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">{{ form.compQ_1.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.compQ_1 }}
+            </div>
+        </div>
+
+        <div id="compQ1_MessagesWrapper" style="position:relative;">
+            <div id="compQ1_Placeholder" class="row d-flex" style="visibility: hidden; margin-top:15px; min-height:65px;">
+                <div class="col">
+                    This is a placeholder for consistent height.
+                </div>
+            </div>
+            <div id="compQ1_False" class="row alert alert-danger d-none" style="margin-top:15px;">
+                <div class="col">
+                    Your answer is not correct.
+                    Remember that the computer randomly determined the price changes before the experiment started. 
+                    The investment choices of your advisees thus cannot affect the price changes.
+                </div>
+            </div>
+            <div id="compQ1_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
+                <div class="col">
+                    Your answer is correct.
+                </div>
+            </div>
+        </div>
+
+        <!-- CompQ_2 -->
+        <hr>
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">{{ form.compQ_2.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.compQ_2 }}
+            </div>
+        </div>
+
+        <div id="compQ2_MessagesWrapper" style="position:relative;">
+            <div id="compQ2_Placeholder" class="row d-flex" style="visibility: hidden; margin-top:15px; min-height:65px;">
+                <div class="col">
+                    This is a placeholder for consistent height.
+                </div>
+            </div>
+            <div id="compQ2_False" class="row alert alert-danger d-none" style="margin-top:15px;">
+                <div class="col">
+                    Your answer is not correct.
+                    Remember that the price changes of the Investment Options {{ correlatedAssets.0 }} and {{ correlatedAssets.1 }} are correlated with each other, while  
+                    the price changes of all other investment options are 
+                    independent of each other.
+                </div>
+            </div>
+            <div id="compQ2_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
+                <div class="col">
+                    Your answer is correct.
+                </div>
+            </div>
+        </div>
+
+        <!-- CompQ_3 -->
+         <hr>
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">{{ form.compQ_3.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.compQ_3 }}
+            </div>
+        </div>
+
+        <div id="compQ3_MessagesWrapper" style="position:relative;">
+            <div id="compQ3_Placeholder" class="row d-flex" style="visibility: hidden; margin-top:15px; min-height:65px;">
+                <div class="col">
+                    This is a placeholder for consistent height.
+                </div>
+            </div>
+            <div id="compQ3_False" class="row alert alert-danger d-none" style="margin-top:15px;">
+                <div class="col">
+                    Your answer is not correct.
+                    The price changes of the investment options are different, as is the chance of a price increase for each investment option.
+                </div>
+            </div>
+            <div id="compQ3_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
+                <div class="col">
+                    Your answer is correct.
+                </div>
+            </div>
+        </div>
+
+        <!-- CompQ_4 -->
+        <hr>
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label">{{ form.compQ_4.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.compQ_4 }}
+            </div>
+        </div>
+
+        <div id="compQ4_MessagesWrapper" style="position:relative;">
+            <div id="compQ4_Placeholder" class="row d-flex" style="visibility: hidden; margin-top:15px; min-height:65px;">
+                <div class="col">
+                    This is a placeholder for consistent height.
+                </div>
+            </div>
+            <div id="compQ4_False" class="row alert alert-danger d-none" style="margin-top:15px;">
+                <div class="col">
+                    Your answer is not correct.
+                    Remember that we already determined whether you are eligible for a bonus and which hypothetical customer will be used to determine the bonus in the beginning of the survey. 
+                    Your advice, however, can affect the size of your bonus because the final wealth of the hypothetical customer is determined by your advice.
+                </div>
+            </div>
+            <div id="compQ4_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
+                <div class="col">
+                    Your answer is correct.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body text-center">
+          You can continue in <span id="countdown">10 seconds</span>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<button id="next_button" class="otree-btn-next btn btn-primary disabled">Next</button>
+
+{% if testing %}
+    <br></br>
+    <button id="skipBtn" class="btn btn-secondary" onclick="skipPage()">
+    Skip for testing</button>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var compQ1_correct = false;
+    var compQ2_correct = false;
+    var compQ3_correct = false;
+    var compQ4_correct = false;
+
+    if (js_vars.treatment == 0) {
+        compQ4_correct = true;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var compQ1 = document.getElementById('id_compQ_1');
+        var compQ2 = document.getElementById('id_compQ_2');
+        var compQ3 = document.getElementById('id_compQ_3');
+        var compQ4 = document.getElementById('id_compQ_4');
+
+        if (compQ1) {
+            compQ1.addEventListener('change', function(event) {
+                var value = event.target.value;
+                if (value == "1") {
+                    document.getElementById('compQ1_False').classList.remove('d-none');
+                    document.getElementById('compQ1_Correct').classList.add('d-none');
+                    document.getElementById('compQ1_Placeholder').classList.add('d-none');
+                    blockPage();
+                    compQ1_correct = false;
+
+                } else {
+                    document.getElementById('compQ1_False').classList.add('d-none');
+                    document.getElementById('compQ1_Correct').classList.remove('d-none');
+                    document.getElementById('compQ1_Placeholder').classList.add('d-none');
+                    compQ1_correct = true;
+                }
+                checkAllCorrect();
+            });
+        }
+
+        if (compQ2) {
+            compQ2.addEventListener('change', function(event) {
+                var value = event.target.value;
+                if (value == "1") {
+                    document.getElementById('compQ2_False').classList.remove('d-none');
+                    document.getElementById('compQ2_Correct').classList.add('d-none');
+                    document.getElementById('compQ2_Placeholder').classList.add('d-none');
+                    blockPage();
+                    compQ2_correct = false;
+                } else {
+                    document.getElementById('compQ2_False').classList.add('d-none');
+                    document.getElementById('compQ2_Correct').classList.remove('d-none');
+                    document.getElementById('compQ2_Placeholder').classList.add('d-none');
+                    compQ2_correct = true;
+                }
+                checkAllCorrect();
+            });
+        }
+
+        if (compQ3) {
+            compQ3.addEventListener('change', function(event) {
+                var value = event.target.value;
+                if (value == "1") {
+                    document.getElementById('compQ3_False').classList.remove('d-none');
+                    document.getElementById('compQ3_Correct').classList.add('d-none');
+                    document.getElementById('compQ3_Placeholder').classList.add('d-none');
+                    blockPage();
+                    compQ3_correct = false;
+                } else {
+                    document.getElementById('compQ3_False').classList.add('d-none');
+                    document.getElementById('compQ3_Correct').classList.remove('d-none');
+                    document.getElementById('compQ3_Placeholder').classList.add('d-none');
+                    compQ3_correct = true;
+                }
+                checkAllCorrect();
+            });
+        }
+
+        if (compQ4) {
+            compQ4.addEventListener('change', function(event) {
+                var value = event.target.value;
+                if (value == "2") {
+                    document.getElementById('compQ4_False').classList.add('d-none');
+                    document.getElementById('compQ4_Correct').classList.remove('d-none');
+                    document.getElementById('compQ4_Placeholder').classList.add('d-none');
+                    compQ4_correct = true;
+                } else {
+                    document.getElementById('compQ4_False').classList.remove('d-none');
+                    document.getElementById('compQ4_Correct').classList.add('d-none');
+                    document.getElementById('compQ4_Placeholder').classList.add('d-none');
+                    blockPage();
+                    compQ4_correct = false;
+                }
+                
+                checkAllCorrect();
+            });
+        }
+    });
+
+    function blockPage(seconds = 5) {
+        $('#staticBackdrop').modal('show');
+
+        let remaining = seconds;
+        $('#countdown').text(remaining + ' seconds');
+
+        const interval = setInterval(() => {
+            remaining--;
+            if (remaining == 1) {
+                $('#countdown').text(remaining + ' second');
+            } else {
+                $('#countdown').text(remaining + ' seconds');
+            }
+
+            if (remaining < 1) {
+                clearInterval(interval);
+                $('#staticBackdrop').modal('hide');
+            }
+        }, 1000);
+    }
+
+    function checkAllCorrect() {
+        if (compQ1_correct && compQ2_correct && compQ3_correct && compQ4_correct) {
+            document.getElementById('next_button').classList.remove('disabled');
+        } else {
+            document.getElementById('next_button').classList.add('disabled');
+        }
+    }
+
+    function skipPage() {
+            document.getElementById('id_compQ_1').value = 2;
+            document.getElementById('id_compQ_2').value = 2;
+            document.getElementById('id_compQ_3').value = 2;
+            document.getElementById('id_compQ_4').value = 1;
+        }
+</script>
+
+{% endblock %}

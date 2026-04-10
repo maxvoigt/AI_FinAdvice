@@ -27,7 +27,7 @@
         Currently, you can observe the price development of the investment options.
     </div>
     <div id="investmentInfo" class="alert alert-warning mb-3 d-none text-center" style="padding-top: 0.375rem; padding-bottom: 0.375rem;">
-        {% if currentPeriod == 1 %}
+        {% if currentPeriod == 0 %}
             <strong>You can now adjust your holdings of the investment options below.</strong> </br>
             <div style="text-align: left;">
                 You can adjust your investments in different ways:
@@ -49,8 +49,9 @@
     
 </div>
 
+<button id="elicitBeliefs" type="button" class="otree-btn-next btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#beliefsModal" disabled>Next period</button>
+<button id="next_button" class="otree-btn-next btn btn-primary d-none" disabled>Next period</button>
 <button id="showAdviceBtn" type="button" class="btn btn-success d-none" data-bs-toggle="modal" data-bs-target="#adviceModal">Show advice</button>
-<button id="next_button" class="otree-btn-next btn btn-primary" disabled>Next period</button>
 <button id="helpBtn" type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#investmentOptionDetailsModal">Investment option details</button>
 
 <!-- DEFINE MODALS -->
@@ -232,6 +233,56 @@
     </div>
 </div>
 
+<!-- Advice round warning -->
+<div class="modal fade" id="adviceRoundsHint" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="adviceRoundsHintLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered ">
+        <div class="modal-content">
+        <div class="modal-body">
+            <div class="row justify-content-center align-items-center text-center" style="min-height: 25px;">
+                <div class="col-12 d-flex flex-column justify-content-center h-100">
+                    <h5>In this round, you have the option to receive advice from 
+                        {% if treatment == 1 %}
+                        a financial advisor.
+                        {% elif treatment == 2 %}
+                        a financial advisor who could use ChatGPT.
+                        {% elif treatment == 3 %}
+                        ChatGPT.
+                        {% endif %}
+                    </h5>    
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    {% if treatment == 1 %}
+                        The financial advisor has seen exactly the same price changes as you. In addition, 
+                        the financial advisor has 
+                        given the advice to someone who has similar characteristics as you in terms of age, gender, and 
+                        willingness to take financial risks. 
+                    {% elif treatment == 2 %}
+                        The financial advisor has seen exactly the same price changes as you. In addition, 
+                        the financial advisor has 
+                        given the advice to someone who has similar characteristics as you in terms of age, gender, and 
+                        willingness to take financial risks. 
+                    {% elif treatment == 3 %}
+                        ChatGPT has seen exactly the same price changes as you, and 
+                        broadly knows your characteristics in terms of age, gender, and 
+                        willingness to take financial risks.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer align-items-center justify-content-center">
+            {% if treatment == 3 %}
+            <div id="pleaseWait" class="d-flex flex-column align-items-center justify-content-center text-center gap-2 mt-2">
+                <span>Please wait while ChatGPT is generating your investment advice...</span>
+                <div class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></div>
+            </div>
+            {% endif %}
+            <button id="adviceHintOkay" type="button" class="btn btn-primary mt-3 d-none" onClick="dismissHintModal()" disabled>Okay</button>
+        </div>
+      </div>
+    </div>
+</div>
 
 {% endblock %}
 
@@ -291,12 +342,10 @@
     $(document).ready(function() {
         initChart();
 
-        if (currentPeriod > -9) {
-            setTimeout(updateAll, js_vars.updateInterval);
-        }
+        setTimeout(updateAll, js_vars.updateInterval);
         
         // Disable all elements with the name "newHoldings"
-        if (js_vars.roundType == "Observation") {
+        if (js_vars.currentState == "Observation") {
             $("*[name*='investmentOption']").each(function() {
                 $(this).prop('disabled', true);
             });
@@ -310,10 +359,15 @@
         const oldHoldings = js_vars.oldHoldings;
 
         // Open modal in advice rounds
-        if (adviceRounds.includes(currentPeriod)) {
+        if (js_vars.isAdviceRound) {
             setTimeout(function() {
-                $('#beliefsModal').modal('show');
-                
+                if (js_vars.treatment > 0) {
+                    console.log('advice rounds');
+                    $('#adviceRoundsHint').modal('show');
+                } else {
+                    dismissHintModal();
+                }
+
                 const toggleChartBtn = document.getElementById('toggleChartBtn');
                 const optionalChartPanel = document.getElementById('optionalChartPanel');
                 if (toggleChartBtn && optionalChartPanel) {
@@ -387,6 +441,8 @@
                     validatePerformancePredictions();
                 }
             }, js_vars.updateInterval * 5);
+        } else {
+            document.getElementById('next_button').classList.remove('d-none');
         }
 
         document.getElementById('next_button').disabled = false;
@@ -401,6 +457,22 @@
                 window.invModuleSetPageStatus('New');
             }
         }, 800);
+    }
+
+    // Remove the hint modal
+    function dismissHintModal() {
+        $('#adviceRoundsHint').modal('hide');
+
+        if (js_vars.beliefsBefore) {
+            $('#beliefsModal').modal('show');
+            document.getElementById('next_button').classList.remove('d-none');
+            document.getElementById('next_button').disabled = false;       
+            document.getElementById('submitPerfPredictionBtn').classList.remove('d-none');  
+        } else {
+            document.getElementById('elicitBeliefs').classList.remove('d-none');
+            document.getElementById('submitPerfPredictionPageBtn').classList.remove('d-none');
+            //syncElicitBeliefsEnabled();
+        }
     }
 </script>
 
@@ -422,18 +494,12 @@
     // Obtain invidivual information
     const oldPrices = investmentOptions.map(option => option.oldPrice);
     const newPrices = investmentOptions.map(option => option.newPrice);
-    const prevPrices = investmentOptions.map(option => option.prevPrices);
+    const allPrices = investmentOptions.map(option => option.allPrices);
     const numShares = investmentOptions.map(option => option.numShares);
     const currentValues = investmentOptions.map(option => option.currentValue);
     const newValues = investmentOptions.map(option => option.newValue);
     const oldWealthShares = investmentOptions.map(option => option.oldWealthShare);
     const newWealthShares = investmentOptions.map(option => option.newWealthShare);
-
-    if (currentPeriod == -9) {
-        var allPrices = oldPrices;
-    } else {
-        var allPrices = prevPrices;
-    }
 
     // Save chart 
     let imageBase64 = "";
@@ -513,7 +579,7 @@
         }
         chart.redraw();
 
-        if (adviceRounds.includes(currentPeriod)) {
+        if (js_vars.isAdviceRound) {
             setTimeout(() => {
                 captureChart();
             }, 1000);
@@ -553,7 +619,7 @@
             imageBase64 = base64;
 
             // Render a smaller preview copy in the modal.
-            if (adviceRounds.includes(currentPeriod)) {
+            if (js_vars.isAdviceRound) {
             document.getElementById('chartCopy').innerHTML =
                 '<img src="' + base64 + '" alt="Chart copy" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" />';
             }
@@ -573,7 +639,7 @@
     function updateAdvice() {
         // In the advice rounds, call the live method to generate the investment advice
         if (js_vars.treatment == 3) {
-            if (adviceRounds.includes(currentPeriod)) {
+            if (js_vars.isAdviceRound) {
                 document.getElementById('next_button').disabled = true;
                 liveSend({type: 'advice', chart_image: imageBase64});
             }

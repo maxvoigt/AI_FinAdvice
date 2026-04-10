@@ -1,0 +1,100 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    A few questions about you
+{% endblock %}
+
+{% block content %}
+
+<div class="row my-3 bg-light px-3 py-3 rounded border">
+    <div class="col">
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.gender.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.gender }}
+            </div>
+        </div>
+
+        <div id="gender_other_row" class="row align-items-center mb-3 collapse">
+            <div class="col-auto" style="padding-left: 2em;">
+                <label class="col-form-label mb-0">
+                    {{ form.gender_other.label }}
+                </label>
+            </div>
+            <div class="col-auto">
+                {{ form.gender_other }}
+            </div>
+        </div>
+
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.age.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.age }}
+            </div>
+        </div>
+        
+        <div class="row align-items-center mb-3">
+            <div class="col-auto">
+                <label class="col-form-label mb-0">{{ form.territory.label }}</label>
+            </div>
+            <div class="col-auto">
+                {{ form.territory }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+
+{% if testing %}
+    <br></br>
+    <button id="skipBtn" class="btn btn-secondary" onclick="skipPage()">
+    Skip for testing</button>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function skipPage() {
+        // Demographics fields (example test values)
+        let age = document.getElementById('id_age');
+        if (age) age.value = 32;
+
+        let gender = document.getElementById('id_gender');
+        if (gender) gender.value = 1; // 1 = 'Male'
+
+        let genderOther = document.getElementById('id_gender_other');
+        if (genderOther) genderOther.value = "";
+
+        let territory = document.getElementById('id_territory');
+        if (territory) territory.value = 5; // 5 = Ontario
+    }
+
+    $(document).ready(function() {
+        
+        let gender = document.getElementById('id_gender');
+
+        gender.addEventListener('change', function() {
+            if (gender.value == 3) {
+                document.getElementById('gender_other_row').classList.add('show');
+            } else {
+                document.getElementById('gender_other_row').classList.remove('show');
+            }
+        });
+
+        if (gender.value == 3) {
+            document.getElementById('gender_other_row').classList.add('show');
+        } else {
+            document.getElementById('gender_other_row').classList.remove('show');
+        }
+    });
+
+
+</script>
+
+{% endblock %}
