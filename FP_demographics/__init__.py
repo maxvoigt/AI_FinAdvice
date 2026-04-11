@@ -62,6 +62,24 @@ class Player(BasePlayer):
         ]
     )
 
+    patience = models.IntegerField(
+        label = "Please evaluate your patience when it comes to making financial decisions for yourself or your household.",
+        choices = [
+            [1, 'Very impatient'],
+            [2, 'Impatient'],
+            [3, 'Patient'],
+            [4, 'Very patient'],
+            [5, 'I don\'t know'],
+        ])
+    
+    finRiskTaking = models.IntegerField(
+        label = "Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?",
+        choices = [
+            [1, 'I am willing to take above average financial risks expecting to earn above-average returns.'],
+            [2, 'I am willing to take average financial risks expecting to earn average returns.'],
+            [3, 'I am willing to take below average financial risks expecting to earn below-average returns.'],
+        ])
+
     aiLit_1 = models.IntegerField(
         label='Which of the following is NOT powered by AI?',
         choices=[
@@ -246,7 +264,7 @@ class startPage(Page):
 class demographicsPage(Page):
     preserve_unsubmitted_inputs = True
     form_model = 'player'
-    form_fields = ['age', 'gender', 'gender_other', 'territory']
+    form_fields = ['age', 'gender', 'gender_other', 'territory', 'patience', 'finRiskTaking']
 
     @staticmethod
     def is_displayed(player):

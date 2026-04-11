@@ -3,9 +3,9 @@
 
 {% block title %}
 {% if clientNum == 1 %}
-    Your first client
+    Your first advisee
 {% else %}
-    Your second client
+    Your second advisee
 {% endif %}
 {% endblock %}
 
@@ -15,14 +15,14 @@
     <div class="col">
         
         <p>
-            The final wealth of your {% if clientNum == 1 %}first{% else %}second{% endif %} client 
+            The final wealth of your {% if clientNum == 1 %}first{% else %}second{% endif %} advisee 
             when rebalancing to your recommended allocation in each period
             is <b>${{ finalWealth|to2 }}</b>.
         </p>
 
         {% if clientNum == 1 %}
             <p>
-                You will now receive a second client profile.
+                You will now receive the profile of your second advisee.
             </p>
         {% endif %}
     </div>

@@ -11,46 +11,46 @@
     <div class="col">
         <p>
             In this survey, you will give investment advice to 
-            two hypothetical customers.
-        </p>
-        <p>
-            While you give the advice for hypothetical customers, 
-            we will—in a separate survey—show your advice to 
-            participants with the same characteristics as your hypothetical customers,
+            two hypothetical clients,
             called advisees.
         </p>
         <p>
+            While you give the advice for hypothetical clients, 
+            we will later—in a separate survey—show your advice to 
+            participants with the same characteristics as your advisees.
+        </p>
+        <p>
             Your <b>bonus</b> depends on the advice
-            you give to the hypothetical customers.  
+            you give to the advisees.  
             It is thus important that you read the following explanations carefully.
         </p>
 
         <hr>
         <h4>The advisees' investment task</h4>
         <p>
-            The advisees have five different investment options (Investment Option 1
-            to Investment Option 5). They will 
-            see the same price development of the investment options over {{ totalRounds }} periods
+            The advisees can invest hypothetical wealth in  
+            five different investment options (Option 1
+            to Option 5). They will 
+            see the same development of the prices of the investment options over {{ totalRounds }} periods
             (Period {{ firstRound }} to {{ investRounds }})
             as you.
         </p>
         <p>
-            The advisees cannot invest in periods {{ firstRound }} to 0. 
-            Instead the advisees will observe the price development of the investment options. 
-            From Period 0 onwards, the advisees may invest in the investment options
-            and change their investment choices in each period. 
-            Any uninvested wealth is transferred to a risk-free asset
-            and does not earn any interest.
+            The advisees cannot invest in periods {{ firstRound }} to -1. 
+            Instead the advisees will observe the price development of the options. 
+            From Period 0 onwards, the advisees may invest in the options
+            and change their investment in each period. 
+            Uninvested wealth does not earn any interest.
         </p>    
 
         <div id="section2" class="mt-3" style="display: none;">
             <hr>
             <h4>Investment options</h4>
             <p>
-                Each of the five investment options has a starting price of $100 in period {{ firstRound }}. 
-                Afterwards, the price of each investment option can either increase or decrease.
-                The following table shows by how much the price of each investment option can increase or decrease,
-                as well as the chance of a price increase:
+                Each of the five options has a starting price of $100.
+                Afterwards, the price of each option can either increase or decrease.
+                The following table shows by how much the price of each option can increase or decrease,
+                as well as the chance of a price increase.
             </p>
 
             <table class="table table-striped table-hover align-middle mt-3 text-center">
@@ -59,13 +59,13 @@
                         <th></th>
                         <th>Price increase by</th>
                         <th>Price decrease by</th>
-                        <th>Probability of price increase</th>
+                        <th>Chance of price increase</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in asset_rows %}
                     <tr>
-                        <th>Investment Option {{ row.option_num }}</th>
+                        <th style="color: {{ row.color }};">Option {{ row.option_num }}</th>
                         <td>
                             {{ row.priceIncrease|to1 }}%
                         </td>
@@ -82,21 +82,21 @@
 
             <p class="mt-3">
                 The price changes of 
-                all investment options except for Investment Option 
-                {{ correlatedAssets.0 }} and Investment Option 
+                all options except for Option 
+                {{ correlatedAssets.0 }} and Option 
                 {{ correlatedAssets.1 }} are independent of each other. 
-                Investment Options {{ correlatedAssets.0 }} and {{ correlatedAssets.1 }} are 
+                Options {{ correlatedAssets.0 }} and {{ correlatedAssets.1 }} are 
                 correlated with a correlation coefficient of {{ corrCoeff|to1 }}, 
                 which means that the
-                price of Investment Option {{ correlatedAssets.0 }} 
-                tends to decrease when the price of Investment Option {{ correlatedAssets.1 }} increases,
+                price of Option {{ correlatedAssets.0 }} 
+                tends to decrease when the price of Option {{ correlatedAssets.1 }} increases,
                 and vice versa.
             </p>
             <p>    
                 Moreover, all price changes are independent of previous periods. 
                 Before the experiment, a computer has 
                 randomly determined the price changes for each period according to the 
-                specific probabilities of each investment option. 
+                specific probabilities for each option. 
                 This also means that the advisees' choices do not influence how prices change.
             </p>
         </div>
@@ -108,9 +108,9 @@
                 In Period {{ adviceRounds.0 }} and in Period {{ adviceRounds.1 }}, you can give advice to the advisees.
                 The advice will consist of three parts: 
                 <ul>
-                    <li><b>Situation:</b> Start the advice by briefly summarizing the situation, mentioning client or asset characteristics as you wish.</li>
-                    <li><b>Allocation:</b> For each investment option (1–5) and the risk-free asset, specify the recommended portfolio weight (%).</li>
-                    <li><b>Reason:</b> Please give a short explanation for the advice.</li>
+                    <li><b>Situation:</b> Start the advice by briefly summarizing the situation, mentioning characteristics of the advisee or the options as you wish.</li>
+                    <li><b>Allocation:</b> For each option, specify the recommended portfolio weight in percentage of total wealth. The remaining wealth is not invested.</li>
+                    <li><b>Reason:</b> Please give a short explanation for your recommendation.</li>
                 </ul>
             </p>
 
@@ -130,24 +130,26 @@
             <hr>
             <h4>Your bonus</h4>
             <p>
-                At the end of the survey, you will learn whether you receive a bonus. 
-                The chance of receiving a bonus is 10%.
+                One out of every ten participants will receive a bonus, 
+                and you will learn at the end of the survey 
+                whether you are one of the ten participants who receives a bonus.
                 If you receive a bonus, it will be around $50 on average, 
                 but it can be higher or lower depending on the advice you give.
             </p>
                 
             <p>
-                Your bonus equals the final wealth of one hypothetical customer, 
+                Your bonus equals the final wealth of one advisee, 
                 divided by {{ exchangeRate }}. 
-                Each hypothetical customer starts with 
+                Each advisee starts with 
                 $10,000 in Period {{ firstRound }} and follows your advice 
-                in every period, rebalancing to your recommended allocation in each period.
-                After Period {{ investRounds }}, all investments are sold at the final prices.
+                by rebalancing to your recommendation in each period.
+                At the end of Period {{ investRounds }}, all options are sold at the final price.
             </p>
             
             <p>
                 Please note that it has already been determined at the beginning of the survey 
-                whether you receive a bonus or not, and which hypothetical customer will be used to determine the bonus. 
+                whether you receive a bonus or not, and which 
+                advisee's wealth will determine the bonus. 
                 Your advice, however, can affect the size of your bonus. 
             </p>
            

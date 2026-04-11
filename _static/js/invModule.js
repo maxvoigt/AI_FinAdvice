@@ -146,8 +146,8 @@ function InvModule({ pageStatus, phase }) {
                                 <th colSpan="3">New</th>
                             </tr>
                             <tr>
-                                <th>Alternatives</th>
-                                <th>Prices ($)</th>
+                                <th></th>
+                                <th>Price ($)</th>
                                 <th>Holdings</th>
                                 <th style={{ whiteSpace: 'nowrap' }}>Value ($)</th>
                                 <th>
@@ -343,7 +343,7 @@ function InvModule({ pageStatus, phase }) {
                                     )}
                                 </td>
                                 <td>
-                                    {formatNumber1(
+                                    {formatNumber2(
                                         pageStatus === 'Old' ? riskFreeAsset.oldWealthShare : riskFreeAsset.newWealthShare,
                                     )}
                                 </td>
@@ -364,11 +364,11 @@ function InvModule({ pageStatus, phase }) {
                                 <td> </td>
                                 <td> </td>
                                 <td id="totalCurVal">{formatNumber2(valueTotalLeft)}</td>
-                                <td>100.0</td>
+                                <td>100.00</td>
                                 <td> </td>
                                 <td />
                                 <td id="totalNewVal">{formatNumber2(livePortfolio.dollarHoldings.reduce((a, b) => a + Number(b), 0))}</td>
-                                <td id="totalNewShare">{livePortfolio.allocation.reduce((a, b) => a + Number(b), 0) > 0 ? '100.0' : '—'}</td>
+                                <td id="totalNewShare">{livePortfolio.allocation.reduce((a, b) => a + Number(b), 0) > 0 ? '100.00' : '—'}</td>
                             </tr>
                         </tbody>
                     </table>

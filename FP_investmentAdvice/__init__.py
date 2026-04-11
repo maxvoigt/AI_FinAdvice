@@ -47,14 +47,14 @@ class Player(BasePlayer):
     correlatedAssets = models.StringField()
      # Define comp questions
     compQ_1 = models.IntegerField(
-        label = "Do the investment choices of your advisees affect the price changes of the investment options?",
+        label = "Do the investment choices of your advisees affect the price changes of the options?",
         choices = [
             [1, "Yes"],
             [2, "No"],
         ]
     )
     compQ_2 = models.IntegerField(
-        label = "Are the price changes of all investment options independent of each other?",
+        label = "Are the price changes of all options independent of each other?",
         choices = [
             [1, "Yes"],
             [2, "No"],
@@ -62,7 +62,7 @@ class Player(BasePlayer):
     )
 
     compQ_3 = models.IntegerField(
-        label = "Do all investment options have the same price changes?",
+        label = "Do all options have the same price changes?",
         choices = [
             [1, "Yes"],
             [2, "No"],
@@ -70,14 +70,19 @@ class Player(BasePlayer):
     )
 
     compQ_4 = models.IntegerField(
-        label = "Does your investment advice affect your bonus? Please select the most correct answer.",
+        label = "Does your advice affect your bonus? Please select the most correct answer.",
         choices = [
-            [1, "Yes, my investment advice affects whether I am eligible for a bonus or not."],
-            [2, "Yes, my investment advice affects the size of my bonus."],
-            [3, "Yes, my investment advice affects both whether I am eligible for a bonus or not, and the size of my bonus."],
-            [4, "No, my investment advice does not affect my bonus."],
+            [1, "Yes, my advice affects whether I am eligible for a bonus or not."],
+            [2, "Yes, my advice affects the size of my bonus."],
+            [3, "Yes, my advice affects both whether I am eligible for a bonus or not, and the size of my bonus."],
+            [4, "No, my advice does not affect my bonus."],
         ]
     )
+
+    comQ1_trials = models.LongStringField(initial="[]", blank=True)
+    comQ2_trials = models.LongStringField(initial="[]", blank=True)
+    comQ3_trials = models.LongStringField(initial="[]", blank=True)
+    comQ4_trials = models.LongStringField(initial="[]", blank=True)
 
     ## Attention Check
     attention_check_done = models.BooleanField(initial=False)
@@ -88,11 +93,11 @@ class Player(BasePlayer):
     )
 
     ## Performance Predictions
-    performancePrediction1 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 1, on average?")
-    performancePrediction2 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 2, on average?")
-    performancePrediction3 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 3, on average?")
-    performancePrediction4 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 4, on average?")
-    performancePrediction5 = models.FloatField(label="What return (price change in %) do you expect for Investment Option 5, on average?")
+    performancePrediction1 = models.FloatField(label="Suppose you invest $1,000.00 into Option 1. How much money do you expect to have in five periods?")
+    performancePrediction2 = models.FloatField(label="Suppose you invest $1,000.00 into Option 2. How much money do you expect to have in five periods?")
+    performancePrediction3 = models.FloatField(label="Suppose you invest $1,000.00 into Option 3. How much money do you expect to have in five periods?")
+    performancePrediction4 = models.FloatField(label="Suppose you invest $1,000.00 into Option 4. How much money do you expect to have in five periods?")
+    performancePrediction5 = models.FloatField(label="Suppose you invest $1,000.00 into Option 5. How much money do you expect to have in five periods?")
 
     ## Financial Advice
     adviceSituation = models.LongStringField(
@@ -124,6 +129,8 @@ class Player(BasePlayer):
     
     ## AI Advice
     adviceChat = models.LongStringField(initial="", blank=True)
+    prompt = models.LongStringField(initial="", blank=True)
+    showAdviceClicked = models.IntegerField(initial=0)
     
     ## Helper variables
     isInitialize = models.BooleanField(initial=False)
@@ -151,6 +158,7 @@ class explanations(Page):
                 'priceDecrease': assetDictionary[i]['x_down'] * 100,
                 'probIncrease': assetDictionary[i]['p_up'] * 100,  # display as percentage
                 'name': assetDictionary[i]['name'],
+                'color': C.INVESTMENT_COLORS[idx],
             }
             for idx, i in enumerate(tmpOrder)
         ]
@@ -176,7 +184,8 @@ class explanations(Page):
 
 class compQuestions(Page):
     form_model = 'player'
-    form_fields = ['compQ_1', 'compQ_2', 'compQ_3', 'compQ_4']
+    form_fields = ['compQ_1', 'compQ_2', 'compQ_3', 'compQ_4', 'comQ1_trials', 'comQ2_trials', 'comQ3_trials', 'comQ4_trials']
+    preserve_unsubmitted_inputs = True
 
     def is_displayed(player):
         return player.round_number == 1
@@ -240,6 +249,8 @@ class clientProfile(Page):
         else:
             clientInfo = player.participant.customer2
 
+        print(clientInfo)
+
         tmpGender = clientInfo['gender']
         tmpAge = clientInfo['age']
         tmpRiskAversion = clientInfo['riskAversion']
@@ -281,7 +292,7 @@ class invPage(Page):
     def get_form_fields(player):
         if is_advice_round(player):
             return ['performancePrediction1', 'performancePrediction2', 'performancePrediction3', 'performancePrediction4', 'performancePrediction5',
-             'chart_image', 'adviceSituation', 'adviceAllocation', 'adviceReason']
+             'chart_image', 'adviceSituation', 'adviceAllocation', 'adviceReason', 'showAdviceClicked']
 
     @staticmethod
     def is_displayed(player: Player):
@@ -379,8 +390,8 @@ class invPage(Page):
                 color = 'gray',
                 currentValue = prevDollarHoldings[-1],
                 newValue = currentDollarHoldings[-1],
-                oldWealthShare = currentDollarHoldings[-1] / currentWealth * 100,
-                newWealthShare = newDollarHoldings[-1] / currentWealth * 100,
+                oldWealthShare = prevDollarHoldings[-1] / currentWealth * 100,
+                newWealthShare = currentDollarHoldings[-1] / currentWealth * 100,
             )
         ]
 
@@ -464,11 +475,11 @@ class invPage(Page):
         showAgeText = ""
 
         if tmpRiskAversion == 'Low':
-            showRiskAversion = "I am willing to take below average financial risks expecting to earn below-average returns"
+            showRiskAversion = "I am willing to take above average financial risks expecting to earn above-average returns"
         elif tmpRiskAversion == 'Med':
             showRiskAversion = "I am willing to take average financial risks expecting to earn average returns"
         elif tmpRiskAversion == 'High':
-            showRiskAversion = "I am willing to take above average financial risks expecting to earn above-average returns"
+            showRiskAversion = "I am willing to take below average financial risks expecting to earn below-average returns"
 
         if tmpAge == 'Young':
             showAgeText = "between 18 and 34 years old"
@@ -530,11 +541,11 @@ class invPage(Page):
                 showAgeText = ""
 
                 if tmpRiskAversion == 'Low':
-                    showRiskAversion = "I am willing to take below average financial risks expecting to earn below-average returns"
-                elif tmpRiskAversion == 'Medium':
+                    showRiskAversion = "I am willing to take above average financial risks expecting to earn above-average returns"
+                elif tmpRiskAversion == 'Med':
                     showRiskAversion = "I am willing to take average financial risks expecting to earn average returns"
                 elif tmpRiskAversion == 'High':
-                    showRiskAversion = "I am willing to take above average financial risks expecting to earn above-average returns"
+                    showRiskAversion = "I am willing to take below average financial risks expecting to earn below-average returns"
 
                 if tmpAge == 'Young':
                     showAgeText = "between 18 and 34 years old"
@@ -556,10 +567,13 @@ class invPage(Page):
                 tmpPrices.index.name = "Year"
 
                 prompt = generate_prompt(player, showAgeText, showGender, showRiskAversion, tmpPrices, player.chart_image)
-                
                 if not player.adviceChat:
                     advice = await generate_text(prompt)           
                     player.adviceChat = json.dumps(advice)
+                    player.prompt = str(prompt)
+
+                    print(player.prompt)
+                    print(player.adviceChat)
 
                 ## Create structured advice for page
                 retAdvice = create_structured_advice(player.adviceChat)
@@ -858,7 +872,7 @@ _INVESTMENT_ADVICE_JSON_SCHEMA = {
                 "Option 3": {"$ref": "#/$defs/asset"},
                 "Option 4": {"$ref": "#/$defs/asset"},
                 "Option 5": {"$ref": "#/$defs/asset"},
-                "Risk-free asset": {"$ref": "#/$defs/risk_free_asset"},
+                "Not invested": {"$ref": "#/$defs/not_invested"},
             },
             "required": [
                 "Option 1",
@@ -866,7 +880,7 @@ _INVESTMENT_ADVICE_JSON_SCHEMA = {
                 "Option 3",
                 "Option 4",
                 "Option 5",
-                "Risk-free asset",
+                "Not invested",
             ],
         },
         "reason": {"type": "string"},
@@ -878,21 +892,21 @@ _INVESTMENT_ADVICE_JSON_SCHEMA = {
             "additionalProperties": False,
             "properties": {
                 "percentage": {"type": "number"},
-                "expected_return": {"type": "number"},
+                "expected_outcome": {"type": "number"},
             },
             "required": [
                 "percentage",
-                "expected_return",
+                "expected_outcome",
             ],
         },
-        "risk_free_asset": {
+        "not_invested": {
             "type": "object",
             "additionalProperties": False,
             "properties": {
                 "percentage": {"type": "number"},
-                "expected_return": {"type": "number"},
+                "expected_outcome": {"type": "number"},
             },
-            "required": ["percentage", "expected_return"],
+            "required": ["percentage", "expected_outcome"],
         },
     },
 }
@@ -923,9 +937,9 @@ def generate_prompt(player, ageText, genderText, riskAversionText, prices, chart
     # Prepare assetParameters as a list of dicts, then convert to DataFrame and format columns as needed for prompt
     assetParameters_list = [
         {
-            'Price Increase (%)': assetDictionary[i]['x_up'] * 100,
-            'Price Decrease (%)': assetDictionary[i]['x_down'] * 100,
-            'Prob. Price Increase (%)': assetDictionary[i]['p_up'] * 100,  # display as percentage
+            'Price increase (%)': assetDictionary[i]['x_up'] * 100,
+            'Price decrease (%)': assetDictionary[i]['x_down'] * 100,
+            'Chance of price increase (%)': assetDictionary[i]['p_up'] * 100,  # display as percentage
         }
         for _, i in enumerate(tmpOrder)
     ]
@@ -937,40 +951,36 @@ def generate_prompt(player, ageText, genderText, riskAversionText, prices, chart
     assetPrices_json = prices.to_dict(orient="list")
 
     firstPlayer = player.in_previous_rounds()[0]
-    correlatedAssets = firstPlayer.correlatedAssets
+    correlatedAssets = ast.literal_eval(firstPlayer.correlatedAssets)
     corrCoeff = assetParams.correlationCoefficient
 
     prompt = f"""
-    You are a financial advisor certified in Canada, meeting with a client for investment advice.
-
     Your client is { genderText } and { ageText }.
     
     In addition, when asked "Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?"
     your client answered "{ riskAversionText }".
 
     Your client has five different investment options (Option 1 to Option 5). 
-
-    Any uninvested wealth is transferred to a risk-free asset
-    and does not earn any interest.
+    Uninvested wealth does not earn any interest.
     
-    In each period, the price of each investment option can either increase or decrease with a known probability.
+    In each period, the price of each option can either increase or decrease with a known probability.
     {json.dumps(assetParameters_json, indent=2)}
 
-    The price changes of all investment options except for Investment Option 
-    { correlatedAssets[0] } and Investment Option 
+    The price changes of all investment options except for Option 
+    { correlatedAssets[0] } and Option 
     { correlatedAssets[1] } are independent of each other. 
-    Investment Options { correlatedAssets[0] } and { correlatedAssets[1] } are 
+    Options { correlatedAssets[0] } and { correlatedAssets[1] } are 
     correlated with a correlation coefficient of { corrCoeff }, 
     which means that the
-    price of Investment Option { correlatedAssets[0] } 
-    tends to decrease when the price of Investment Option { correlatedAssets[1] } increases,
+    price of Option { correlatedAssets[0] } 
+    tends to decrease when the price of Option { correlatedAssets[1] } increases,
     and vice versa.
 
     Moreover, all price changes are independent of previous periods. 
     Before the experiment, a computer has 
     randomly determined the price changes for each period according to the 
     specific probabilities of each investment option. 
-    This also means that the advisees' choices do not influence how prices change.
+    This also means that the client's choices do not influence how prices change.
 
     All this information is known to you and your client.
 
@@ -984,26 +994,30 @@ def generate_prompt(player, ageText, genderText, riskAversionText, prices, chart
 
     Based on this, write a brief, personalized investment recommendation for this client. 
 
-    - **situation**: Start the advice by briefly summarizing the situation, mentioning client or asset characteristics as you wish. Keep the description short and concise.
-    - **allocation**: For each investment option (1–5) and the risk-free asset, specify the recommended portfolio weight (%) for that option and your expected average return for that option.
-    - **reason**: Please give a short explanation for your advice.
+    - **situation**: Start the advice by briefly summarizing the situation, mentioning characteristics of the advisee or the options as you wish. Keep the description short and concise.
+    - **allocation**: For each option, specify the recommended portfolio weight in percentage of total wealth. The remaining wealth is not invested. 
+    - **reason**: Please give a short explanation for your recommendation.
+
+    In addition, for each option, please answer the following question: 
+    "Suppose you invest $1,000.00 into this option. How much money do you expect to have in five periods?"
+    Save this information in the "expected_outcome" field of the allocation entry for each option.
     """
 
     input_data = [
         {
+            "role": "system",
+            "content": "You are a financial advisor certified in Canada, meeting with a client for investment advice."
+        },
+        {
             "role": "user",
             "content": [
-                {
-                    "type": "input_text",
-                    "text": prompt
-                },
-                {
-                    "type": "input_image",
-                    "image_url": quick_compress(chart)  # base64 string with data:image/png;base64,...
-                }
+                {"type": "input_text", "text": prompt},
+                {"type": "input_image", "image_url": quick_compress(chart)},
             ]
         }
     ]
+
+    
 
     return input_data
 
@@ -1043,7 +1057,7 @@ def create_structured_advice(advice):
         'Option 3': _advice_allocation_row_payload(alloc['Option 3']),
         'Option 4': _advice_allocation_row_payload(alloc['Option 4']),
         'Option 5': _advice_allocation_row_payload(alloc['Option 5']),
-        'Risk-free asset': _advice_allocation_row_payload(alloc['Risk-free asset']),
+        'Not invested': _advice_allocation_row_payload(alloc['Not invested']),
     }
     retAdvice['reason'] = tmpAdvice['reason']
     return retAdvice

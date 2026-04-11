@@ -6,6 +6,18 @@
 {% endblock %}
 
 {% block content %}
+<div class="d-none" id="formInputs">
+    {{ formfield 'comQ1_trials' }}
+</div>
+<div class="d-none" id="formInputs">
+    {{ formfield 'comQ2_trials' }}
+</div>
+<div class="d-none" id="formInputs">
+    {{ formfield 'comQ3_trials' }}
+</div>
+<div class="d-none" id="formInputs">
+    {{ formfield 'comQ4_trials' }}
+</div>
 
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
@@ -65,8 +77,8 @@
             <div id="compQ2_False" class="row alert alert-danger d-none" style="margin-top:15px;">
                 <div class="col">
                     Your answer is not correct.
-                    Remember that the price changes of the Investment Options {{ correlatedAssets.0 }} and {{ correlatedAssets.1 }} are correlated with each other, while  
-                    the price changes of all other investment options are 
+                    Remember that the price changes of the Options {{ correlatedAssets.0 }} and {{ correlatedAssets.1 }} are correlated with each other, while  
+                    the price changes of all other options are 
                     independent of each other.
                 </div>
             </div>
@@ -97,7 +109,7 @@
             <div id="compQ3_False" class="row alert alert-danger d-none" style="margin-top:15px;">
                 <div class="col">
                     Your answer is not correct.
-                    The price changes of the investment options are different, as is the chance of a price increase for each investment option.
+                    The price changes of the options are different, as is the chance of a price increase for each option.
                 </div>
             </div>
             <div id="compQ3_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
@@ -127,8 +139,8 @@
             <div id="compQ4_False" class="row alert alert-danger d-none" style="margin-top:15px;">
                 <div class="col">
                     Your answer is not correct.
-                    Remember that we already determined whether you are eligible for a bonus and which hypothetical customer will be used to determine the bonus in the beginning of the survey. 
-                    Your advice, however, can affect the size of your bonus because the final wealth of the hypothetical customer is determined by your advice.
+                    Remember that we already determined whether you are eligible for a bonus and which advisee will be used to determine the bonus in the beginning of the survey. 
+                    Your advice, however, can affect the size of your bonus because the final wealth of the advisee is determined by your advice.
                 </div>
             </div>
             <div id="compQ4_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
@@ -142,7 +154,7 @@
 </div>
 
 <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body text-center">
           You can continue in <span id="countdown">10 seconds</span>.
@@ -180,6 +192,11 @@
         if (compQ1) {
             compQ1.addEventListener('change', function(event) {
                 var value = event.target.value;
+                let trials = document.getElementById('id_comQ1_trials').value;
+                trials = trials.split(',').map(e => e.trim()).filter(e => e);
+                trials.push(value);
+                document.getElementById('id_comQ1_trials').value = trials.join(',');
+
                 if (value == "1") {
                     document.getElementById('compQ1_False').classList.remove('d-none');
                     document.getElementById('compQ1_Correct').classList.add('d-none');
@@ -200,6 +217,11 @@
         if (compQ2) {
             compQ2.addEventListener('change', function(event) {
                 var value = event.target.value;
+                let trials = document.getElementById('id_comQ2_trials').value;
+                trials = trials.split(',').map(e => e.trim()).filter(e => e);
+                trials.push(value);
+                document.getElementById('id_comQ2_trials').value = trials.join(',');
+                
                 if (value == "1") {
                     document.getElementById('compQ2_False').classList.remove('d-none');
                     document.getElementById('compQ2_Correct').classList.add('d-none');
@@ -219,6 +241,11 @@
         if (compQ3) {
             compQ3.addEventListener('change', function(event) {
                 var value = event.target.value;
+                let trials = document.getElementById('id_comQ3_trials').value;
+                trials = trials.split(',').map(e => e.trim()).filter(e => e);
+                trials.push(value);
+                document.getElementById('id_comQ3_trials').value = trials.join(',');
+
                 if (value == "1") {
                     document.getElementById('compQ3_False').classList.remove('d-none');
                     document.getElementById('compQ3_Correct').classList.add('d-none');
@@ -238,6 +265,11 @@
         if (compQ4) {
             compQ4.addEventListener('change', function(event) {
                 var value = event.target.value;
+                let trials = document.getElementById('id_comQ4_trials').value;
+                trials = trials.split(',').map(e => e.trim()).filter(e => e);
+                trials.push(value);
+                document.getElementById('id_comQ4_trials').value = trials.join(',');
+
                 if (value == "2") {
                     document.getElementById('compQ4_False').classList.add('d-none');
                     document.getElementById('compQ4_Correct').classList.remove('d-none');

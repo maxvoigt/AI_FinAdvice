@@ -13,12 +13,11 @@
 
 
 {% block content %}
-<div class="container bg-light border custom-border" style="padding-left:30px; padding-right:30px">
-    <br>
+<div class="row my-3 bg-light px-3 py-3 rounded border">
     <p>
         Please read the passage below and answer the question that follows.
     </p>
-
+    <hr>
     <p>
         Tatyana knew that Grandma always enjoyed serving an abundance of food to her guests.
         Now Tatyana watched as Grandma gathered Tatyana's small mother into a wide, scrawny
@@ -28,22 +27,14 @@
 
     <p>
         Who does "<span style="color:red;font-weight: bold;">her</span>" in the above passage refer to?
-    </p>
-
-    <p>
         {% formfields %}
     </p>
-
-
-<br>
-
-    <p>
-    <!-- .otree-btn-next is the CSS/jQuery selector for this button -->
-    <button class="otree-btn-next btn btn-primary">Next</button>
-    </p>
 </div>
+<!-- .otree-btn-next is the CSS/jQuery selector for this button -->
+<button class="otree-btn-next btn btn-primary">Next</button>
+
 {% if testing %}
-    <br>
+    <br></br>
     <button id="skipBtn" class="btn btn-secondary px-3" onclick="skipPage()" style="margin-left:30px;">
     Skip for testing</button>
 {% endif %}

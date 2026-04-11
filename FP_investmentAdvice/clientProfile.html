@@ -3,9 +3,9 @@
 
 {% block title %}
 {% if clientNum == 1 %}
-    Your first client
+    Your first advisee
 {% else %}
-    Your second client
+    Your second advisee
 {% endif %}
 {% endblock %}
 
@@ -15,7 +15,7 @@
     <div class="col">
         
         <p>
-            Your {% if clientNum == 1 %}first{% else %}second{% endif %} client is
+            Your {% if clientNum == 1 %}first{% else %}second{% endif %} advisee is
             <b>{{ showGender }}</b> and <b>{{ showAgeText }}</b>.
         </p>
         
@@ -31,7 +31,7 @@
 </br>
 
 <div class="col center center-align text-center">
-    <button id="next_page_btn" class="btn btn-primary px-3">Got it, let's start</button>
+    <button id="next_page_btn" class="btn btn-primary px-3">Got it</button>
 </div>
 
 
