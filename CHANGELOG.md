@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-16
+
+### FP_welcome — modern browser and device detection
+
+- `FP_welcome/welcomePage.html`: Replaced legacy regex/browser-sniffing logic in `detectBrowserAndDevice()` with a modern detector using `navigator.userAgentData` when available and robust user-agent fallbacks for Edge, Opera, Brave, Firefox, Safari, Chrome, and IE; still writes `<device>, <browser>` to `browser_first`.
+
 ## 2026-04-11
 
 ### FP master — long table (cell × treatment)

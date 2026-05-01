@@ -22,7 +22,7 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     amount_to_send_AI = models.IntegerField(
-        label = 'In this situation, how much of your $1,000 do you want to send?',
+        label = 'In this situation, how much of your $1,000 would you want to send?',
         choices = [
             [0, '$0'],
             [100, '$100'],

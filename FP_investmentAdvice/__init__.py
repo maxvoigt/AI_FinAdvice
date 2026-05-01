@@ -9,6 +9,7 @@ import json
 from PIL import Image
 import base64
 import io
+import time
 
 import sharedData.assetParams as assetParams
 
@@ -93,11 +94,11 @@ class Player(BasePlayer):
     )
 
     ## Performance Predictions
-    performancePrediction1 = models.FloatField(label="Suppose you invest $1,000.00 into Option 1. How much money do you expect to have in five periods?")
-    performancePrediction2 = models.FloatField(label="Suppose you invest $1,000.00 into Option 2. How much money do you expect to have in five periods?")
-    performancePrediction3 = models.FloatField(label="Suppose you invest $1,000.00 into Option 3. How much money do you expect to have in five periods?")
-    performancePrediction4 = models.FloatField(label="Suppose you invest $1,000.00 into Option 4. How much money do you expect to have in five periods?")
-    performancePrediction5 = models.FloatField(label="Suppose you invest $1,000.00 into Option 5. How much money do you expect to have in five periods?")
+    performancePrediction1 = models.FloatField(label="Suppose you invest $1,000.00 into Option 1. How much money do you expect to have in five periods? Please enter a number without a dollar sign.")
+    performancePrediction2 = models.FloatField(label="Suppose you invest $1,000.00 into Option 2. How much money do you expect to have in five periods? Please enter a number without a dollar sign.")
+    performancePrediction3 = models.FloatField(label="Suppose you invest $1,000.00 into Option 3. How much money do you expect to have in five periods? Please enter a number without a dollar sign.")
+    performancePrediction4 = models.FloatField(label="Suppose you invest $1,000.00 into Option 4. How much money do you expect to have in five periods? Please enter a number without a dollar sign.")
+    performancePrediction5 = models.FloatField(label="Suppose you invest $1,000.00 into Option 5. How much money do you expect to have in five periods? Please enter a number without a dollar sign.")
 
     ## Financial Advice
     adviceSituation = models.LongStringField(
@@ -131,9 +132,15 @@ class Player(BasePlayer):
     adviceChat = models.LongStringField(initial="", blank=True)
     prompt = models.LongStringField(initial="", blank=True)
     showAdviceClicked = models.IntegerField(initial=0)
+    generateTime = models.FloatField(initial=0) ## Track the time it takes to generate the advice
     
+    ## Measure information accessed for beliefs
+    showChartClicked = models.IntegerField(initial=0)
+    showDetailsClicked = models.IntegerField(initial=0)
+
     ## Helper variables
     isInitialize = models.BooleanField(initial=False)
+
     
 
 # PAGES
@@ -168,6 +175,9 @@ class explanations(Page):
 
         player.correlatedAssets = str(sorted([indexAsset, hedgeAsset]))
 
+        independentAssets = [i for i in tmpOrder if i not in [indexAsset, hedgeAsset]]
+        independentAssets.append(sorted([indexAsset, hedgeAsset])[0])
+
         return {
             'testing': player.session.config['testing'],
             'exchangeRate': player.session.config['advisorExchangeRate'],
@@ -179,6 +189,7 @@ class explanations(Page):
             'treatment': player.participant.treatment,
             'correlatedAssets': sorted([indexAsset, hedgeAsset]),
             'corrCoeff': assetParams.correlationCoefficient,
+            'independentAssets': sorted(independentAssets),
             'adviceRounds': C.ADVICE_ROUNDS,
         }
 
@@ -292,7 +303,7 @@ class invPage(Page):
     def get_form_fields(player):
         if is_advice_round(player):
             return ['performancePrediction1', 'performancePrediction2', 'performancePrediction3', 'performancePrediction4', 'performancePrediction5',
-             'chart_image', 'adviceSituation', 'adviceAllocation', 'adviceReason', 'showAdviceClicked']
+             'chart_image', 'adviceSituation', 'adviceAllocation', 'adviceReason', 'showAdviceClicked', 'showChartClicked', 'showDetailsClicked']
 
     @staticmethod
     def is_displayed(player: Player):
@@ -434,6 +445,8 @@ class invPage(Page):
             'isAdvisor': True,
             'isAdviceRound': is_advice_round(player),
             'beliefsBefore': player.participant.beliefsBefore,
+            'beliefsMinDollar': 0,
+            'beliefsMaxDollar': 10000,
         }
 
     @staticmethod
@@ -568,8 +581,12 @@ class invPage(Page):
 
                 prompt = generate_prompt(player, showAgeText, showGender, showRiskAversion, tmpPrices, player.chart_image)
                 if not player.adviceChat:
-                    advice = await generate_text(prompt)           
+                    start_time = time.time()
+                    advice = await generate_text(prompt)
+                    elapsed_time = time.time() - start_time
                     player.adviceChat = json.dumps(advice)
+                    player.generateTime = elapsed_time
+               
                     player.prompt = str(prompt)
 
                     print(player.prompt)
@@ -883,9 +900,9 @@ _INVESTMENT_ADVICE_JSON_SCHEMA = {
                 "Not invested",
             ],
         },
-        "reason": {"type": "string"},
+        "Justification": {"type": "string"},
     },
-    "required": ["situation", "allocation", "reason"],
+    "required": ["situation", "allocation", "Justification"],
     "$defs": {
         "asset": {
             "type": "object",
@@ -994,9 +1011,9 @@ def generate_prompt(player, ageText, genderText, riskAversionText, prices, chart
 
     Based on this, write a brief, personalized investment recommendation for this client. 
 
-    - **situation**: Start the advice by briefly summarizing the situation, mentioning characteristics of the advisee or the options as you wish. Keep the description short and concise.
-    - **allocation**: For each option, specify the recommended portfolio weight in percentage of total wealth. The remaining wealth is not invested. 
-    - **reason**: Please give a short explanation for your recommendation.
+    - **Situation**: Start the advice by briefly summarizing the situation, mentioning characteristics of the advisee or the options as you wish. Keep the description short and concise.
+    - **Allocation**: For each option, specify the recommended portfolio weight in percentage of total wealth. The remaining wealth is not invested. 
+    - **Justification**: Please give a short explanation for your recommendation.
 
     In addition, for each option, please answer the following question: 
     "Suppose you invest $1,000.00 into this option. How much money do you expect to have in five periods?"
@@ -1059,5 +1076,5 @@ def create_structured_advice(advice):
         'Option 5': _advice_allocation_row_payload(alloc['Option 5']),
         'Not invested': _advice_allocation_row_payload(alloc['Not invested']),
     }
-    retAdvice['reason'] = tmpAdvice['reason']
+    retAdvice['reason'] = tmpAdvice['Justification']
     return retAdvice

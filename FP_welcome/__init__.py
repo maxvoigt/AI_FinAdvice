@@ -156,7 +156,7 @@ def recaptcha_valid(response_token):
 
 
 class Player(BasePlayer):
-    prolID = models.StringField(label='Please enter your Prolific ID:', min_length=24, max_length=24)
+    prolID = models.StringField(label='Please enter your Prolific ID:', max_length=24)
     treatment = models.IntegerField()
     customer1 = models.IntegerField()
     customer1Info = models.StringField()
@@ -194,18 +194,33 @@ class Player(BasePlayer):
     attention_audio = models.BooleanField(initial=False)
     all_attention_checks = models.BooleanField(initial=False)
 
+    browser_first = models.StringField(initial='', blank=True)
+
+def prolID_error_message(player, value):
+    if value == None:
+        return 'Please enter your Prolific ID. Currently, the ID field is empty'
+    elif len(value) != 24:
+        id_len = len(value)
+        return 'Your Prolific ID is not correct! The ID you inserted has {} characters. The Prolific ID is 24 characters long.'.format(
+            id_len
+        )
+
 # PAGES
 class welcomePage(Page):
     form_model = 'player'
-    form_fields = ['prolID']
+    form_fields = ['prolID', 'browser_first']
 
+    @staticmethod
     def vars_for_template(player):
         return {
             'testing': player.session.config['testing']
         }
 
+    @staticmethod
     def is_displayed(player):
         return True
+
+        
 
 class enterCaptcha(Page):
     def vars_for_template(player):

@@ -10,14 +10,15 @@
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
         <p>
-            In this survey, you will give investment advice to 
+            In this survey, we ask you to give investment advice to 
             two hypothetical clients,
             called advisees.
         </p>
         <p>
-            While you give the advice for hypothetical clients, 
+            While you give the advice to hypothetical clients, 
             we will later—in a separate survey—show your advice to 
-            participants with the same characteristics as your advisees.
+            participants who have the same characteristics 
+            and are in the same situation as your advisees.
         </p>
         <p>
             Your <b>bonus</b> depends on the advice
@@ -28,18 +29,19 @@
         <hr>
         <h4>The advisees' investment task</h4>
         <p>
-            The advisees can invest hypothetical wealth in  
+            The advisees can invest their hypothetical wealth across  
             five different investment options (Option 1
             to Option 5). They will 
             see the same development of the prices of the investment options over {{ totalRounds }} periods
             (Period {{ firstRound }} to {{ investRounds }})
-            as you.
+            as you. We will also show the same price development to 
+            real participants that receive your advice later. 
         </p>
         <p>
             The advisees cannot invest in periods {{ firstRound }} to -1. 
-            Instead the advisees will observe the price development of the options. 
-            From Period 0 onwards, the advisees may invest in the options
-            and change their investment in each period. 
+            Instead, they observe the price development of the options. 
+            From Period 0 onwards, the advisees may invest
+            and they can change their investment in each period. 
             Uninvested wealth does not earn any interest.
         </p>    
 
@@ -48,7 +50,7 @@
             <h4>Investment options</h4>
             <p>
                 Each of the five options has a starting price of $100.
-                Afterwards, the price of each option can either increase or decrease.
+                In each period, the price of each option can either increase or decrease.
                 The following table shows by how much the price of each option can increase or decrease,
                 as well as the chance of a price increase.
             </p>
@@ -81,23 +83,19 @@
             </table>
 
             <p class="mt-3">
-                The price changes of 
-                all options except for Option 
-                {{ correlatedAssets.0 }} and Option 
-                {{ correlatedAssets.1 }} are independent of each other. 
-                Options {{ correlatedAssets.0 }} and {{ correlatedAssets.1 }} are 
-                correlated with a correlation coefficient of {{ corrCoeff|to1 }}, 
-                which means that the
-                price of Option {{ correlatedAssets.0 }} 
-                tends to decrease when the price of Option {{ correlatedAssets.1 }} increases,
-                and vice versa.
+                The price changes are independent across periods for each option.
+                Moreover, 
+                the price changes of Options {{ independentAssets.0 }}, {{ independentAssets.1 }}, {{ independentAssets.2 }}
+                and {{ independentAssets.3 }} are also independent of each other.
+                However, the price of Option {{ correlatedAssets.0 }} tends to decrease 
+                when the price of Option {{ correlatedAssets.1 }} increases, and vice versa.
+                Formally, Options {{ correlatedAssets.0 }} and {{ correlatedAssets.1 }} are correlated with a correlation coefficient of {{ corrCoeff|to1 }}.
             </p>
             <p>    
-                Moreover, all price changes are independent of previous periods. 
                 Before the experiment, a computer has 
                 randomly determined the price changes for each period according to the 
-                specific probabilities for each option. 
-                This also means that the advisees' choices do not influence how prices change.
+                probabilities in the table above. 
+                This means that neither your advice nor the advisees' choices influence how prices change.
             </p>
         </div>
 
@@ -105,12 +103,12 @@
             <hr>
             <h4>How to give advice</h4>
             <p>
-                In Period {{ adviceRounds.0 }} and in Period {{ adviceRounds.1 }}, you can give advice to the advisees.
-                The advice will consist of three parts: 
+                In Period {{ adviceRounds.0 }} and in Period {{ adviceRounds.1 }}, you 
+                will be asked to give advice consisting of three parts: 
                 <ul>
                     <li><b>Situation:</b> Start the advice by briefly summarizing the situation, mentioning characteristics of the advisee or the options as you wish.</li>
                     <li><b>Allocation:</b> For each option, specify the recommended portfolio weight in percentage of total wealth. The remaining wealth is not invested.</li>
-                    <li><b>Reason:</b> Please give a short explanation for your recommendation.</li>
+                    <li><b>Justification:</b> Please give a short explanation for your recommendation.</li>
                 </ul>
             </p>
 
@@ -132,7 +130,7 @@
             <p>
                 One out of every ten participants will receive a bonus, 
                 and you will learn at the end of the survey 
-                whether you are one of the ten participants who receives a bonus.
+                whether you receive a bonus.
                 If you receive a bonus, it will be around $50 on average, 
                 but it can be higher or lower depending on the advice you give.
             </p>

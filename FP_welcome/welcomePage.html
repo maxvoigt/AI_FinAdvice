@@ -6,6 +6,10 @@
 {% endblock %}
 
 {% block content %}
+<div class="d-none">
+    {{ formfield_errors 'browser_first' }}
+    <input type="hidden" name="browser_first" id="browser_first"/>
+</div>
 
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
@@ -42,7 +46,7 @@
             To participate in this survey, you must agree with our participation rules and privacy policy.
         </p>
 
-        <button type=”button” class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#participationRulesModal">
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#participationRulesModal">
             Show participation rules and privacy policy
         </button>
         <br></br>
@@ -55,12 +59,24 @@
             have read and understood this page including the participation rules and privacy policy, 
             and agree to participate in this survey.
         </p>
+        <hr>
+        <p>
+            Before proceeding, please confirm that 
+            you are accessing this survey from your computer and not from your phone.
+            <div class="d-flex justify-content-center">
+                <div class="form-check">
+                    <input name="computer_access" class="form-check-input" type="checkbox" value="computer_access" id="computer_access" onchange="updateComputerAccess(this.id)">
+                    <label class="form-check-label" for="computer_access">
+                        Yes, I am accessing this survey from my computer.
+                    </label>
+                </div>
+            </div>
 
-
+        </p>
     </div>
 </div>
 
-<button id=”next_button” class="otree-btn-next btn btn-primary">I agree</button>
+<button id="next_button" class="otree-btn-next btn btn-primary" disabled>I agree</button>
 
 
 <!-- Modal -->
@@ -118,4 +134,106 @@
     </div>
   </div>
 
+{% endblock %}
+{% block scripts %}
+<script>
+    function updateComputerAccess(elemID) {
+        const computerAccessElem = document.getElementById('computer_access');
+        if (computerAccessElem.checked) {
+            document.querySelector('.otree-btn-next').disabled = false;
+        } else {
+            document.querySelector('.otree-btn-next').disabled = true;
+        }
+   
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        detectBrowserAndDevice();
+    });
+
+    function detectBrowserAndDevice() {
+        const userAgent = navigator.userAgent || "";
+        const platform = navigator.platform || "Unknown platform";
+        const userAgentData = navigator.userAgentData || null;
+
+        function detectDevice() {
+            if (userAgentData && typeof userAgentData.mobile === 'boolean') {
+                if (!userAgentData.mobile) {
+                    return platform;
+                }
+                if (/android/i.test(userAgent)) {
+                    return "Android";
+                }
+                if (/iphone|ipod/i.test(userAgent)) {
+                    return "iPhone";
+                }
+                if (/ipad/i.test(userAgent)) {
+                    return "iPad";
+                }
+                return "Mobile device";
+            }
+
+            if (/android/i.test(userAgent)) {
+                return "Android";
+            }
+            if (/iphone|ipod/i.test(userAgent)) {
+                return "iPhone";
+            }
+            if (/ipad/i.test(userAgent)) {
+                return "iPad";
+            }
+            if (/mobile|tablet|windows phone|kindle|silk/i.test(userAgent)) {
+                return "Mobile device";
+            }
+            return platform;
+        }
+
+        function detectBrowser() {
+            if (userAgentData && Array.isArray(userAgentData.brands)) {
+                const brandNames = userAgentData.brands.map(function (brandInfo) {
+                    return brandInfo.brand;
+                });
+                if (brandNames.some(function (name) { return /microsoft edge/i.test(name); })) {
+                    return "Microsoft Edge";
+                }
+                if (brandNames.some(function (name) { return /opera/i.test(name); })) {
+                    return "Opera";
+                }
+                if (brandNames.some(function (name) { return /brave/i.test(name); })) {
+                    return "Brave";
+                }
+                if (brandNames.some(function (name) { return /chromium|google chrome/i.test(name); })) {
+                    return "Chrome";
+                }
+            }
+
+            if (/edg\//i.test(userAgent)) {
+                return "Microsoft Edge";
+            }
+            if (/opr\//i.test(userAgent) || /opera/i.test(userAgent)) {
+                return "Opera";
+            }
+            if ((navigator.brave && typeof navigator.brave.isBrave === 'function') || /brave\//i.test(userAgent)) {
+                return "Brave";
+            }
+            if (/firefox\//i.test(userAgent)) {
+                return "Firefox";
+            }
+            if (/safari/i.test(userAgent) && !/chrome|chromium|crios|edg|opr\//i.test(userAgent)) {
+                return "Safari";
+            }
+            if (/chrome|chromium|crios/i.test(userAgent)) {
+                return "Chrome";
+            }
+            if (/msie|trident/i.test(userAgent)) {
+                return "Internet Explorer";
+            }
+            return "Unknown browser";
+        }
+
+        const device = detectDevice();
+        const browser = detectBrowser();
+        document.getElementById("browser_first").value = device + ', ' + browser;
+    }
+</script>
 {% endblock %}
