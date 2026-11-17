@@ -1,12 +1,15 @@
 from otree.api import *
-import pandas as pd
-import ast
+import json
 import random
+import time
+import pandas as pd
 
 doc = """
 Your app description
 """
 
+SLOT_FILE = '_static/clients/client_slots.csv'
+SLOT_TIMEOUT_MIN = 90          # set a bit above the Prolific time limit
 
 class C(BaseConstants):
     NAME_IN_URL = 'demographics_before'
@@ -158,60 +161,30 @@ class Player(BasePlayer):
         ]
     )
 
-### Create ExtraModel for treatment assignment
-class Assignment(ExtraModel):
-    subsession = models.Link(Subsession)
-
-    gender = models.StringField()
-    age = models.StringField()
-    riskAversion = models.StringField()
-
-    assetOrder = models.StringField()
-
-    investmentOption1Prices = models.StringField()
-    investmentOption2Prices = models.StringField()
-    investmentOption3Prices = models.StringField()
-    investmentOption4Prices = models.StringField()
-    investmentOption5Prices = models.StringField()
-    treatment = models.IntegerField()
-
-    order_in_cell = models.IntegerField()   # preserves CSV order
-    assigned = models.BooleanField(initial=False)
-    assigned_participant_code = models.StringField(blank=True)
+    slot_id = models.StringField(blank=True)
+    block_id = models.StringField(blank=True)
+    arm = models.IntegerField(blank=True)
+    cell = models.StringField(blank=True)
 
 def creating_session(subsession):
-    client_assignments = pd.read_csv('_static/clients/client_master_table.csv')
-    # Columns: treatment,gender,age,risk_av,Index,Dominated,PosSkew,NegSkew,Hedge, assetOrder
+    if subsession.round_number == 1:
+        load_slots(subsession.session.config.get('slot_pool', 'test'))
 
-    client_assignments['order_in_cell'] = client_assignments.groupby(['gender', 'age', 'risk_av']).cumcount() + 1
+def client_cell(player):
+    """Cell label as in client_slots.csv, e.g. 'F-Mid-Med'. Returns (cell, gender_imputed)."""
+    age = 'Young' if player.age <= 34 else ('Mid' if player.age <= 54 else 'Old')
+    risk = {1: 'Low', 2: 'Med', 3: 'High'}[player.finRiskTaking]
+    imputed = False
+    if player.gender == 1:
+        gender = 'M'
+    elif player.gender == 2:
+        gender = 'F'
+    else:
+        gender, imputed = random.choice(['M', 'F']), True
+    return f'{gender}-{age}-{risk}', imputed
 
-    assetNameMatching = {
-        1: 'IndAsset',
-        2: 'Dominated',
-        3: 'PosSkew',
-        4: 'NegSkew',
-        5: 'Hedge',
-    }
 
-    for row in client_assignments.itertuples():
-        assetOrder = ast.literal_eval(row.assetOrder)
-        Assignment.create(
-            subsession = subsession,
-            gender = row.gender,
-            age = row.age,
-            riskAversion = row.risk_av,
-            assetOrder = row.assetOrder,
-            treatment = row.treatment,
-            order_in_cell = row.order_in_cell,
-            assigned = False,
-            assigned_participant_code = '',
-            investmentOption1Prices = row._asdict()[assetNameMatching[assetOrder[0]]],
-            investmentOption2Prices = row._asdict()[assetNameMatching[assetOrder[1]]],
-            investmentOption3Prices = row._asdict()[assetNameMatching[assetOrder[2]]],
-            investmentOption4Prices = row._asdict()[assetNameMatching[assetOrder[3]]],
-            investmentOption5Prices = row._asdict()[assetNameMatching[assetOrder[4]]],
-        )
-    
+
 # PAGES
 class startPage(Page):
     def is_displayed(player):
@@ -231,7 +204,6 @@ class demographicsPage(Page):
         return {
             'testing': player.session.config['testing'],
         }
-    
     
     @staticmethod
     def error_message(player, values):
@@ -263,9 +235,10 @@ class demographicsPage(Page):
         player.participant.age = player.age
         player.participant.gender = player.gender
         player.participant.riskAversion = player.finRiskTaking
-        assignTreatment(player)
+        assign_slot(player)
 
 class trustGame(Page):
+    # Participant is always the sender, either paired with a financial planner or a generative AI system
     form_model = 'player'
 
     @staticmethod
@@ -289,7 +262,8 @@ class trustGame(Page):
             'partner_type': partner_type,
             'partner_type_text': partner_type_text,
             'round_number': player.round_number,
-            'testing': player.session.config['testing']
+            'testing': player.session.config['testing'],
+            'lang': player.participant.lang
         }
     
     @staticmethod
@@ -310,62 +284,133 @@ page_sequence = [
     ]
 
 ### Treatment Assignment Functions ###
-def assignTreatment(player):
-    subsession = player.subsession
+class Slot(ExtraModel):
+    # No Link to Subsession on purpose: one pool shared by all sessions.
+    pool = models.StringField()
+    slot_id = models.StringField()
+    block_id = models.StringField()
+    record_id = models.IntegerField()
+    cell = models.StringField()
+    arm = models.IntegerField()
+    perm_rank = models.IntegerField()
+    assetOrder = models.StringField()
+    opt1_prices = models.LongStringField()
+    opt2_prices = models.LongStringField()
+    opt3_prices = models.LongStringField()
+    opt4_prices = models.LongStringField()
+    opt5_prices = models.LongStringField()
+    adv_w_d1 = models.LongStringField()
+    adv_w_d2 = models.LongStringField()
+    adv_factors_d1 = models.LongStringField()
+    adv_factors_d2 = models.LongStringField()
+    n_active = models.IntegerField()            # live reservations + completions
+    n_released = models.IntegerField()          # how often this slot was freed after a dropout
 
-    age = player.age
-    gender = player.gender
-    riskAversion = player.finRiskTaking
+class SlotUse(ExtraModel):
+    pool = models.StringField()
+    cell = models.StringField()
+    slot_id = models.StringField()
+    participant_code = models.StringField()
+    status = models.StringField()               # 'reserved', 'completed', 'released'
+    reserved_at = models.FloatField()
+    completed_late = models.BooleanField()
 
-    useAge = ''
-    if age <= 34:
-        useAge = 'Young'
-    elif age <= 54:
-        useAge = 'Mid'
-    else:
-        useAge = 'Old'
+def load_slots(pool):
+    """Load client_slots.csv into the database, once per pool."""
+    if Slot.objects_filter(pool=pool).first():
+        return                                   # already loaded by an earlier session
+    df = pd.read_csv(SLOT_FILE, keep_default_na=False)
+    for r in df.itertuples():
+        Slot.create(
+            pool=pool, slot_id=r.slot_id, block_id=r.block_id, record_id=int(r.record_id),
+            cell=r.cell, arm=int(r.arm), perm_rank=int(r.perm_rank), assetOrder=r.assetOrder,
+            opt1_prices=r.opt1_prices, opt2_prices=r.opt2_prices, opt3_prices=r.opt3_prices,
+            opt4_prices=r.opt4_prices, opt5_prices=r.opt5_prices,
+            adv_w_d1=r.adv_w_d1, adv_w_d2=r.adv_w_d2,
+            adv_factors_d1=r.adv_factors_d1, adv_factors_d2=r.adv_factors_d2,
+            n_active=0, n_released=0,
+        )
 
-    useGender = ''
-    if gender == 1:
-        useGender = 'M'
-    elif gender == 2:
-        useGender = 'F'
-    else:   
-        if random.random() < 0.5:
-            useGender = 'M'
-        else:
-            useGender = 'F'
+def release_stale_slots(pool, cell):
+    cutoff = time.time() - SLOT_TIMEOUT_MIN * 60
+    for u in list(SlotUse.objects_filter(pool=pool, cell=cell, status='reserved')):
+        if u.reserved_at < cutoff:
+            slot = Slot.objects_filter(pool=pool, slot_id=u.slot_id).first()
+            u.status = 'released'
+            slot.n_active -= 1
+            slot.n_released += 1
+
+def assign_slot(player):
+    """Reserve a slot for this participant and copy its content into participant fields."""
+    participant = player.participant
+    if participant.vars.get('slot_id'):          # already assigned (e.g. double submit)
+        return
+    config = player.session.config
+    pool = config.get('slot_pool', 'test')
+
+    cell, imputed = client_cell(player)
+    participant.gender_imputed = imputed
+    participant.cell = cell or ''
+    participant.cell_full = False
+    if cell is None:
+        participant.cell_full = True
+        return
+
+    release_stale_slots(pool, cell)
     
-    useRiskAversion = ''
-    if riskAversion == 1:
-        useRiskAversion = 'Low'
-    elif riskAversion == 2:
-        useRiskAversion = 'Medium'
-    else:
-        useRiskAversion = 'High'
+    query = Slot.objects_filter(pool=pool, cell=cell)
+    if config.get('testing') and config.get('force_arm') is not None:
+        query = query.filter_by(arm=int(config['force_arm']))
+    slot = query.order_by(Slot.n_active, Slot.perm_rank).first()
 
+    if slot is None:                             # only if the cell has no slots at all
+        participant.cell_full = True
+        return
 
-    slot = Assignment.objects_filter(
-        subsession=subsession,
-        age=useAge,
-        gender=useGender,
-        riskAversion=useRiskAversion,
-        assigned=False,
-    ).order_by(Assignment.order_in_cell).first()
+    slot.n_active += 1
+    SlotUse.create(pool=pool, cell=cell, slot_id=slot.slot_id, participant_code=participant.code,
+                status='reserved', reserved_at=time.time(), completed_late=False)
 
-    if not slot:
-        raise Exception("No slot found")
-    
-    slot.assigned = True
-    slot.assigned_participant_code = player.participant.code
+    participant.slot_id = slot.slot_id
+    participant.block_id = slot.block_id
+    participant.treatment = slot.arm
+    participant.assetOrder = json.loads(slot.assetOrder)
+    participant.investmentOption1Prices = {'p1': slot.opt1_prices}
+    participant.investmentOption2Prices = {'p1': slot.opt2_prices}
+    participant.investmentOption3Prices = {'p1': slot.opt3_prices}
+    participant.investmentOption4Prices = {'p1': slot.opt4_prices}
+    participant.investmentOption5Prices = {'p1': slot.opt5_prices}
+    participant.advice_d1 = json.loads(slot.adv_w_d1) if slot.adv_w_d1 else []
+    participant.advice_d2 = json.loads(slot.adv_w_d2) if slot.adv_w_d2 else []
+    participant.adviceFactors_d1 = json.loads(slot.adv_factors_d1) if slot.adv_factors_d1 else []
+    participant.adviceFactors_d2 = json.loads(slot.adv_factors_d2) if slot.adv_factors_d2 else []
 
-    if not player.session.config['testing']:
-        ## Otherwise, the treatment is assigned in the welcome app
-        player.participant.treatment = slot.treatment
-    
-    player.participant.investmentOption1Prices = slot.investmentOption1Prices
-    player.participant.investmentOption2Prices = slot.investmentOption2Prices
-    player.participant.investmentOption3Prices = slot.investmentOption3Prices
-    player.participant.investmentOption4Prices = slot.investmentOption4Prices
-    player.participant.investmentOption5Prices = slot.investmentOption5Prices
-    player.participant.assetOrder = slot.assetOrder
+    player.slot_id = slot.slot_id                # also in the player table for the normal export
+    player.block_id = slot.block_id
+    player.arm = slot.arm
+    player.cell = cell
+
+def complete_slot(player):
+    participant = player.participant
+    pool = player.session.config.get('slot_pool', 'test')
+    use = SlotUse.objects_filter(pool=pool, participant_code=participant.code).first()
+    if use is None:
+        return False
+    if use.status == 'released':                 # finished after the timeout: count the data again
+        slot = Slot.objects_filter(pool=pool, slot_id=use.slot_id).first()
+        slot.n_active += 1
+        use.completed_late = True
+    use.status = 'completed'
+    return True
+
+def custom_export(players):
+    yield ['pool', 'slot_id', 'block_id', 'record_id', 'cell', 'arm', 'perm_rank', 'n_active', 'n_released',
+           'participant_code', 'status', 'reserved_at', 'completed_late']
+    uses = {}
+    for u in SlotUse.filter():
+        uses.setdefault((u.pool, u.slot_id), []).append(u)
+    for s in Slot.filter():
+        for u in uses.get((s.pool, s.slot_id), [None]):
+            yield [s.pool, s.slot_id, s.block_id, s.record_id, s.cell, s.arm, s.perm_rank, s.n_active, s.n_released,
+                   u.participant_code if u else '', u.status if u else '', u.reserved_at if u else '',
+                   u.completed_late if u else '']

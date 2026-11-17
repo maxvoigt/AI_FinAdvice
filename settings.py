@@ -4,6 +4,7 @@ SESSION_CONFIGS = [
     dict(
         name='finAdvice',
         app_sequence=[
+            'determineLang',
             'welcome',
             'demographics_before',
             'investmentGame',
@@ -11,20 +12,8 @@ SESSION_CONFIGS = [
             ],
         num_demo_participants=4,
         testing=True,
-    ),
-    dict(
-        name='finAdvice_FP',
-        app_sequence=[
-            'FP_welcome',
-            'FP_trust',
-            'FP_investmentAdvice',
-            'FP_demographics',
-            'FP_payment',
-            ],
-        num_demo_participants=2,
-        testing=True,
-        advisorExchangeRate=500,
-    ),
+        clientExchangeRate=3000,
+    )
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
@@ -62,6 +51,19 @@ PARTICIPANT_FIELDS = [
     'isPaid',
     'paidCustomer',
     'payoffWealth',
+    'beliefsRound',
+    'lang',
+    'url_state',
+    'gender_imputed',
+    'cell',
+    'cell_full',
+    'slot_id',
+    'block_id',
+    'arm',
+    'advice_d1',
+    'advice_d2',
+    'adviceFactors_d1',
+    'adviceFactors_d2',
 ]
 SESSION_FIELDS = []
 
@@ -81,6 +83,8 @@ ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
 DEMO_PAGE_INTRO_HTML = """ """
 
 SECRET_KEY = '8171517305603'
+
+ASSIGNMENT_FILE = '_static/clients/client_slots.csv'
 
 
 RECAPTCHA_SITE_KEY = "6LeTI9QpAAAAAFjvQxfChGZiVVsqRrfSdvhCMhcU"

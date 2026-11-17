@@ -274,17 +274,9 @@
         document.querySelectorAll('input[name="finAdvice_FinAdvisor"]').forEach(function (el) {
         el.addEventListener('change', function () {
             checkAllFields();
-            if (this.value === '1') {
-                // Has financial advisor
-                console.log('yes');
-                document.getElementById('finAdvice_FinAdvisor_Yes_row').classList.add('show');
-                document.getElementById('finAdvice_FinAdvisor_No_row').classList.remove('show');
-            } else {
-                // No financial advisor
-                console.log('no');
-                document.getElementById('finAdvice_FinAdvisor_Yes_row').classList.remove('show');
-                document.getElementById('finAdvice_FinAdvisor_No_row').classList.add('show');
-            }
+            // Follow-ups only for Yes (1) and No (2); none for "I don't know" (3) or "I prefer not to say" (4)
+            document.getElementById('finAdvice_FinAdvisor_Yes_row').classList.toggle('show', this.value === '1');
+            document.getElementById('finAdvice_FinAdvisor_No_row').classList.toggle('show', this.value === '2');
         });
 
     // Add event listener for the "Prefer not to say" checkbox for Investment Amount

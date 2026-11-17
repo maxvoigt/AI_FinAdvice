@@ -42,19 +42,11 @@ def creating_session(subsession):
             player.fruit = random.choice(C.SAMPLE_FRUITS)
             player.audio_file = random.choice(C.SAMPLE_AUDIO)
 
-            ## Determine if asked for beliefs before or after the investment task
-            beliefsBefore = random.choice([True, False])
-            player.participant.beliefsBefore = beliefsBefore
-
-            if player.session.config['testing']:
-                usableID = player.participant.id_in_session - 1
-
-                # Assign treatment
-                treatment = usableID % C.NUM_TREATMENTS ## 0 - No Advice,1 - FP; 2 - FP + ChatGPT; 3 - ChatGPT
-                player.participant.treatment = treatment
+            ## Determine when asked for beliefs
+            player.participant.beliefsRound = random.choice([1, 2]) # Asked after first or second choice
+            
 
 ##### DEFINE FUNCTIONS #####
-
 def recaptcha_valid(response_token):
         # Test if captcha is valid
         res = requests.post("https://www.google.com/recaptcha/api/siteverify", data={
@@ -65,7 +57,6 @@ def recaptcha_valid(response_token):
 
 
 class Player(BasePlayer):
-    prolID = models.StringField(label='Please enter your Prolific ID:', min_length=24, max_length=24)
     priceChart = models.IntegerField()
     trustGameOrder = models.IntegerField()
 
@@ -82,21 +73,24 @@ class Player(BasePlayer):
         choices=[[1, "Tatyana's mother"], [2, "Grandma"], [3, "Tatyana"]],
         widget=widgets.RadioSelect,
     )
-    answer_audio = models.StringField(label='', max_length=10)
+    answer_audio = models.StringField(label='', max_length=15)
 
     attention_fruit = models.BooleanField(initial=False)
     attention_her = models.BooleanField(initial=False)
     attention_audio = models.BooleanField(initial=False)
     all_attention_checks = models.BooleanField(initial=False)
 
+    browser_first = models.StringField(initial='', blank=True)
+
 # PAGES
 class welcomePage(Page):
     form_model = 'player'
-    form_fields = ['prolID']
+    form_fields = ['browser_first']
 
     def vars_for_template(player):
         return {
-            'testing': player.session.config['testing']
+            'testing': player.session.config['testing'],
+            'lang': player.participant.lang
         }
 
     def is_displayed(player):
@@ -226,7 +220,7 @@ class attentionCheck_Audio(Page):
 
     @staticmethod
     def before_next_page(player, timeout_happened):
-        player.attention_audio = (player.audio_file.upper() == player.answer_audio.upper())
+        player.attention_audio = (player.audio_file.strip().upper() == (player.answer_audio or '').strip().upper())
 
         if (player.attention_fruit and player.attention_her and player.attention_audio):
             player.all_attention_checks = True

@@ -7,17 +7,25 @@
         width: 80%;
         min-width: 400px;
     }
+
+    @media (max-width: 575.98px) {
+        .otree-body {
+            width: 100%;
+            min-width: 0;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+    }
 </style>
 
 {% endblock %}
 
+<!--
 {% block global_scripts %}
 
-<!--Load Babel-->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<!--Load React-->
+<script src="https://unpkg.com/@babel/standalone@7.26.9/babel.min.js"></script>
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 
-
 {% endblock %}
+-->

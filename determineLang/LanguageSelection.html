@@ -1,0 +1,264 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+Welcome / Bienvenue
+{% endblock %}
+
+{% block styles %}
+<style>
+    .section-label {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 575.98px) {
+        .lang-page .lang-col-fr {
+            display: none;
+        }
+
+        .lang-page.preview-fr .lang-col-en {
+            display: none;
+        }
+
+        .lang-page.preview-fr .lang-col-fr {
+            display: block;
+        }
+
+        .lang-page .lang-col-en,
+        .lang-page .lang-col-fr {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row my-3 bg-light px-3 py-3 rounded border lang-page" id="langPage">
+    <div class="col-12">
+        <div class="lang-preview-toggle d-md-none btn-group w-100 mb-3" role="group" aria-label="Instruction language preview">
+            <button type="button" class="btn btn-outline-secondary active" data-preview-lang="en">
+                English
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-preview-lang="fr">
+                Français
+            </button>
+        </div>
+    </div>
+
+
+    <div class="col-12">
+        <div class="row">
+            <div class="col-md-6 lang-col-en">
+                <p>
+                    <strong>
+                    In this survey, 
+                    you can earn a bonus by making investment decisions</strong>.  
+                </p>
+            </div>
+            
+            <div class="col-md-6 lang-col-fr">
+                <p>
+                    <strong>
+                        Dans cette enquête, vous pourrez gagner un bonus en faisant des décisions d'investissement.
+                    </strong>
+                </p>
+            </div>
+
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="row">
+            <div class="col-md-6 lang-col-en">
+                <p>
+                    You will also answer a few additional questions.
+                    The survey should take 20–25 minutes to complete.
+                </p>
+            </div>
+            
+            <div class="col-md-6 lang-col-fr">
+                <p>
+                    Vous répondrez également à quelques questions supplémentaires.
+                    L'enquête devrait prendre de 20 à 25 minutes.
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="col-12">
+        <div class="row">
+            <div class="col-md-6 lang-col-en">
+                <p>
+                    Your responses are important for the quality of the study.
+                    We therefore ask that you read the instructions carefully and complete the survey without interruptions whenever possible.
+                </p>
+            </div>
+            
+            <div class="col-md-6 lang-col-fr">
+                <p>
+                    Vos réponses sont importantes pour la qualité de l’étude. 
+                    Nous vous demandons donc de lire attentivement les instructions et de compléter l'enquête sans interruption dans la mesure du possible.
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+
+    <hr></hr>
+
+    <div class="col-12">
+        <div class="row">
+            <div class="col-md-6 lang-col-en">
+                <h5 class="section-label">Choose your survey language</h5>
+                
+            </div>
+            
+            <div class="col-md-6 lang-col-fr">
+                <h5 class="section-label">Choisissez la langue de l'enquête</h5>
+                
+            </div>
+
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="row">
+            <div class="col-md-6 lang-col-en">
+                <p>
+                    Please select the language in which you can
+                    read and follow instructions most easily.
+                    The rest of the survey will be shown in that language only.
+   
+                </p>
+            </div>
+            
+            <div class="col-md-6 lang-col-fr">
+                <p>
+                    Veuillez sélectionner la langue dans laquelle vous pouvez
+                    lire et suivre les instructions le plus facilement.
+                    Le reste de l'enquête sera présenté uniquement dans cette langue.
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="col-12 mt-2">
+        <div class="row justify-content-center">
+            <div class="col-md-4 d-flex justify-content-center">
+                <div class="alert alert-warning text-center w-100">
+                    <b>{{ form.lang }}</b>
+                </div>
+            </div>
+  
+        </div>
+    </div>
+
+    <hr></hr>
+
+    <div class="col-12">
+        <div class="row">
+            <div class="col-md-6 lang-col-en">
+                <h5 class="section-label">Your bonus payment</h5>
+                
+            </div>
+            
+            <div class="col-md-6 lang-col-fr">
+                <h5 class="section-label">Votre paiement de bonus</h5>
+                
+            </div>
+
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="row">
+            <div class="col-md-6 lang-col-en">
+                <p>
+                    Please note that the value of the Amazon e-gift card 
+                    you may as bonus depends on your investment decisions 
+                    during the survey.  
+                    The average value of the gift card is $5, 
+                    with typical values ranging from $1 to $14. 
+                </p>
+            </div>
+            
+            <div class="col-md-6 lang-col-fr">
+                <p>
+                    Veuillez noter que la valeur de la carte-cadeau électronique 
+                    Amazon que vous pourriez recevoir comme bonus dépend 
+                    de vos décisions d'investissement pendant l'enquête.
+                    La valeur moyenne de la carte-cadeau est de 5$, les montants 
+                    les plus courants se situant entre 1$ et 14$.
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+
+    
+    
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-auto">
+        <button id="next_button" class="otree-btn-next btn btn-primary">Continue / Continuer</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        var page = document.getElementById('langPage');
+        if (!page) return;
+
+        page.querySelectorAll('[data-preview-lang]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var lang = btn.getAttribute('data-preview-lang');
+                page.classList.toggle('preview-fr', lang === 'fr');
+
+                page.querySelectorAll('[data-preview-lang]').forEach(function (b) {
+                    b.classList.toggle('active', b === btn);
+                });
+            });
+        });
+    })();
+
+    (function () {
+        var page = document.getElementById('langPage');
+        var btn = document.getElementById('next_button');
+        if (!page || !btn) return;
+
+        function setButtonLabel(lang) {
+            btn.textContent = lang === 'fr' ? 'Continuer' : 'Continue';
+        }
+
+        // Default until they choose
+        setButtonLabel('en'); // or keep 'Continue / Continuer' until first click
+
+        page.querySelectorAll('input[name="lang"]').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                setButtonLabel(radio.value);
+            });
+        });
+
+        // Optional: sync with mobile preview toggle too
+        page.querySelectorAll('[data-preview-lang]').forEach(function (previewBtn) {
+            previewBtn.addEventListener('click', function () {
+                // preview only — or also check matching radio if you want
+            });
+        });
+    })();
+</script>
+{% endblock %}

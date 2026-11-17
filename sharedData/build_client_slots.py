@@ -29,6 +29,8 @@ import pandas as pd
 # ---------------------------------------------------------------- settings
 SEED = 20261117
 ADVISEES = '_static/clients/advisees.csv'
+
+##### NOTE: NEVER USE MASTER IN LIVE DATA!
 AI_SOURCE = 'master'               # 'generated' = ai_advice.csv from generate_ai_advice.py
                                        # 'master'    = old genAdvice columns of the FP master tables
 AI_ADVICE = '_static/clients/ai_advice.csv'
@@ -45,7 +47,7 @@ BALANCE_WITHIN_CELL = True             # replicate records so both FP arms have 
 ADVICE_PERIODS = {'d1': 0, 'd2': 5}    # advice decision -> period (key used in the master table)
 FIRST_INVEST_INDEX = 10                # price index of period 0 (indices 0..20 = periods -10..10)
 INITIAL_WEALTH = 10000
-FACTORS = ['risk', 'age', 'gender', 'divers', 'payoffs', 'skew', 'prices', 'experience']  # shown factors (no 'ai', no 'other')
+FACTORS = ['risk', 'age', 'gender', 'divers', 'payoffs', 'skew', 'prices', 'experience', 'other']  # shown factors (no 'ai'; 'other' without its text)
 
 ARM_LABELS = {0: 'none', 1: 'fp', 2: 'fp_ai', 3: 'ai'}
 
@@ -111,7 +113,6 @@ adv['client_arm'] = np.where(adv['treatment'] == 1, 2, 1)       # advisees: 0 = 
 adv['cell'] = adv['gender'] + '-' + adv['age'] + '-' + adv['riskAversion']
 adv['record_id'] = np.arange(len(adv))
 
-print(adv.head())
 
 # ---------------------------------------------------------------- 2. AI advice for the T3 twin
 def situation_key(row):

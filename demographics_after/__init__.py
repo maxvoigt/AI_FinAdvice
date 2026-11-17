@@ -255,10 +255,21 @@ class finLit(Page):
             'testing': player.session.config['testing'],
         }
 
+class finalPage(Page):
+    @staticmethod
+    def vars_for_template(player):
+        wealth = player.participant.vars.get('payoffWealth') or 0
+        return {
+            'finalWealth': wealth,
+            'bonus': wealth / player.session.config['clientExchangeRate'],
+            'completion_url': player.session.config.get('prolific_completion_url', ''),
+        }
+
 page_sequence = [
     #startPage,
     aiLiteracy,
     chatbotSurvey,
     financialAdvice,
     finLit,
+    finalPage,
 ]

@@ -15,22 +15,68 @@
     <div class="col">
         <div class="row">
             <div class="col">
+                {% if lang == 'en' %}
+                <p>
+                    Please consider the following hypothetical situation while making your decision as you would in a real situation.
+                </p>
                 <p>You have been randomly and 
                 anonymously paired with <strong>{{ partner_type }}</strong>.
                 </p>
+
                 <p>
-                    In addition, you have been randomly <strong>selected to be Participant A</strong>,
-                    while your paired {{ partner_type_text }} will be Participant B.  
+                    You receive $1,000, while the {{ partner_type_text }} receives no initial amount.
+                </p>
+
+                <p>
+                    You can choose to send any amount that is a multiple of $100
+                    ($0, $100, $200, …, $900, or $1,000) to the {{ partner_type_text }}.
+                    Any amount that you do not send remains yours.
+                </p>
+
+                <p>
+                    The amount that you send to the {{ partner_type_text }} will be tripled before it reaches the {{ partner_type_text }}.
+                    For example:
+                    <ul>
+                        <li>if you send $0, the {{ partner_type_text }} receives $0;</li>
+                        <li>if you send $500, the {{ partner_type_text }} receives $1,500;</li>
+                        <li>if you send $1,000, the {{ partner_type_text }} receives $3,000.</li>
+                    </ul>
+                    The {{ partner_type_text }} may then return any amount between $0 and the tripled amount to you,
+                    in increments of $100.
+                </p>
+
+                <p>
+                    At the end, you keep the amount you did not send plus any amount returned to you by the {{ partner_type_text }}.
+                </p>
+
+                {% elif lang == 'fr' %}
+                <p>
+                    Veuillez considérer la situation hypothétique suivante lorsque vous faites votre décision comme vous le feriez dans une situation réelle.
                 </p>
                 <p>
-                    Participant A will begin with $1,000, 
-                    while Participant B begins without an additional amount.
-                    Participant A can send any amount that is a multiple of 
-                    $100 (e.g, $0, $100, $200, …, $900, $1,000) to Participant B. 
-                    The amount that Participant B receives will be tripled. 
-                    Participant B can then decide to return any amount that is a multiple of $100
-                    to Participant A.
+                    Vous avez été apparié anonymement avec <strong>{{ partner_type }}</strong>.
                 </p>
+                <p>
+                    Vous recevez $1,000, tandis que le {{ partner_type_text }} reçoit aucun montant initial.
+                </p>
+
+                <p>
+                    Vous pouvez choisir d'envoyer n'importe quel montant qui est un multiple de $100
+                    ($0, $100, $200, …, $900, ou $1,000) au {{ partner_type_text }}.
+                    Tout montant que vous ne envoyez pas reste à vous.
+                </p>
+                
+                <p>
+                    Le montant que vous envoyez au {{ partner_type_text }} sera triplé avant qu'il atteigne le {{ partner_type_text }}.
+                </p>
+                <p>
+                    Le {{ partner_type_text }} peut alors retourner n'importe quel montant entre $0 et le montant triplé,
+                    en incréments de $100.
+                </p>
+                <p>
+                    À la fin, vous conservez le montant que vous n'avez pas envoyé plus tout montant retourné à vous par le {{ partner_type_text }}.
+                </p>
+                {% endif %}
             </div>
         </div>
         <div class="row">

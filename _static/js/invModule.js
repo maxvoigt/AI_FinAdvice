@@ -120,7 +120,7 @@ function InvModule({ pageStatus, phase }) {
     }, [pageStatus]);
 
     const canEdit =
-        (js_vars.isAdvisor && !js_vars.isAdviceRound)
+        (js_vars.isAdvisor && !js_vars.isInvestRound)
             ? false
             : ((pageStatus === 'New' && phase === 'Investment'));
     
@@ -137,27 +137,28 @@ function InvModule({ pageStatus, phase }) {
         <div className="d-flex gap-3 align-items-stretch">
             <div className="card flex-grow-1">
                 <div className="card-body p-2">
+                    <div className="inv-table-scroll">
                     <table className="table table-sm table-striped table-hover align-middle mb-0 text-center">
                         <thead>
                             <tr>
                                 <th colSpan="2" style={{ borderBottom: 'none' }} />
-                                <th colSpan="3">Current</th>
+                                <th colSpan="3">{js_vars.lang == 'en' ? 'Current' : 'Actuel'}</th>
                                 <th style={{ width: '2px', border: 'none', background: 'transparent' }} />
-                                <th colSpan="3">New</th>
+                                <th colSpan="3">{js_vars.lang == 'en' ? 'New' : 'Nouveau'}</th>
                             </tr>
                             <tr>
                                 <th></th>
-                                <th>Price ($)</th>
-                                <th>Holdings</th>
-                                <th style={{ whiteSpace: 'nowrap' }}>Value ($)</th>
+                                <th> {js_vars.lang == 'en' ? 'Price ($)' : 'Prix ($)'} </th>
+                                <th>{js_vars.lang == 'en' ? 'Holdings' : 'Positions'}</th>
+                                <th style={{ whiteSpace: 'nowrap' }}>{js_vars.lang == 'en' ? 'Value ($)' : 'Valeur ($)'}</th>
                                 <th>
-                                    Share (%)
+                                    {js_vars.lang == 'en' ? 'Share (%)' : 'Part (%)'}
                                 </th>
                                 <th> </th>
-                                <th>Holdings</th>
-                                <th style={{ whiteSpace: 'nowrap' }}>Value ($)</th>
+                                <th>{js_vars.lang == 'en' ? 'Holdings' : 'Positions'}</th>
+                                <th style={{ whiteSpace: 'nowrap' }}>{js_vars.lang == 'en' ? 'Value ($)' : 'Valeur ($)'}</th>
                                 <th>
-                                    Share (%)
+                                    {js_vars.lang == 'en' ? 'Share (%)' : 'Part (%)'}
                                 </th>
                             </tr>
                         </thead>
@@ -196,7 +197,7 @@ function InvModule({ pageStatus, phase }) {
                                             {isAdvisor ? (
                                                 <span>{holdingsInputStr}</span>
                                             ) : (
-                                                <div className="input-group input-group-sm justify-content-center">
+                                                <div className="input-group input-group-sm justify-content-center inv-share-input-group">
                                                     <button
                                                         type="button"
                                                         className="btn btn-outline-secondary"
@@ -211,7 +212,8 @@ function InvModule({ pageStatus, phase }) {
                                                         name={'investmentOption' + num + 'Holdings'}
                                                         type="number"
                                                         min={0}
-                                                        className="form-control text-center"
+                                                        //className="form-control text-center"
+                                                        className="form-control text-center inv-num-input"
                                                         step="any"
                                                         style={INV_INPUT_STYLE}
                                                         value={holdingsInputStr}
@@ -263,7 +265,7 @@ function InvModule({ pageStatus, phase }) {
                                             <span id={'newVal' + num}>{formatNumber2(pv)}</span>
                                         </td>
                                         <td id={'newShare' + num + 'Cell'}>
-                                            <div className="input-group input-group-sm justify-content-center">
+                                            <div className="input-group input-group-sm justify-content-center inv-share-input-group">
                                                 <button
                                                     type="button"
                                                     className="btn btn-outline-secondary"
@@ -280,7 +282,8 @@ function InvModule({ pageStatus, phase }) {
                                                     min={0}
                                                     max={100}
                                                     step="any"
-                                                    className="form-control text-center"
+                                                    //className="form-control text-center"
+                                                    className="form-control text-center inv-num-input"
                                                     style={INV_INPUT_STYLE}
                                                     value={shareInputStr}
                                                     disabled={!canEdit}
@@ -372,6 +375,7 @@ function InvModule({ pageStatus, phase }) {
                             </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         </div>

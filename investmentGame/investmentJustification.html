@@ -1,0 +1,324 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+    {% if lang == 'en' %}
+    A few questions <span class="inv-period-subtitle" style="font-size:60%;">(Period {{ currentPeriod }} of {{ totalRounds }})</span>
+    {% elif lang == 'fr' %}
+    Quelques questions <span class="inv-period-subtitle" style="font-size:60%;">(Période {{ currentPeriod }} sur {{ totalRounds }})</span>
+    {% endif %}
+{% endblock %}
+
+{% block styles %}
+<style>
+    @media (max-width: 575.98px) {
+        .otree-body {
+            width: 100% !important;
+            min-width: 0 !important;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .inv-page.container-fluid {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+
+        #myChart {
+            height: 280px !important;
+            max-height: 280px !important;
+        }
+
+        .inv-page-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .inv-page-actions .btn {
+            width: 100%;
+        }
+
+        .inv-period-subtitle {
+            display: block;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid bg-light my-3 px-3 py-3 rounded border inv-page">
+
+    <div class="row">
+        <div class="col-md-8 d-flex mb-3 mb-md-0">
+            <div class="card w-100">
+                <div class="card-body p-2">
+                    <div id="myChart" style="width: 100%; height: 320px; max-height: 320px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 d-flex">
+            <div class="card w-100">
+                <div class="card-body">
+                    <h5 class="fw-semibold">
+                        {% if lang == 'en' %}
+                        Your portfolio
+                        {% elif lang == 'fr' %}
+                        Votre portefeuille
+                        {% endif %}
+                    </h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover align-middle mb-0 text-center w-100">
+                            <thead>
+                                <tr>
+                                    {% if lang == 'en' %}
+                                    <th class="text-start">Name</th>
+                                    <th>Share (%)</th>
+                                    {% elif lang == 'fr' %}
+                                    <th class="text-start">Nom</th>
+                                    <th>Part (%)</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in allocation_rows %}
+                                <tr>
+                                    <th class="text-start" style="color: {{ row.color }}; font-weight: bold;">{{ row.label }}</th>
+                                    <td>{{ row.weight }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <th class="text-start" style="color: gray; font-weight: bold;">
+                                        {% if lang == 'en' %}Not invested{% elif lang == 'fr' %}Non investi{% endif %}
+                                    </th>
+                                    <td>{{ notInvested }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reasons (multi-select, at least one required) -->
+    <div class="card mb-3 mt-3">
+        <div class="card-body">
+            <h5 class="fw-semibold">
+                {% if lang == 'en' %}
+                Which of the following factors did you take into account when choosing your portfolio?
+                <span class="text-muted fw-normal">(select all that apply)</span>
+                {% elif lang == 'fr' %}
+                Quels facteurs avez-vous pris en compte lors du choix de votre portefeuille?
+                <span class="text-muted fw-normal">(cochez tout ce qui s'applique)</span>
+                {% endif %}
+            </h5>
+            {% for opt in reason_options %}
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="True"
+                       name="{{ opt.field }}" id="id_{{ opt.field }}">
+                <label class="form-check-label" for="id_{{ opt.field }}">{{ opt.label }}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Optional free text (required only if 'Other' is checked; enforced server-side) -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="fw-semibold">
+                {% if lang == 'en' %}
+                Did you consider any other factors that are not listed above? <span class="text-muted fw-normal">(optional)</span>
+                {% elif lang == 'fr' %}
+                Avez-vous considéré d'autres facteurs qui ne sont pas listés ci-dessus? <span class="text-muted fw-normal">(facultatif)</span>
+                {% endif %}
+            </h5>
+            <textarea name="adviceReasonOther" id="id_adviceReasonOther" class="form-control"
+                      rows="2" maxlength="500"></textarea>
+        </div>
+    </div>
+
+</div>
+
+<div class="inv-page-actions d-flex flex-wrap gap-2 justify-content-center mt-3">
+    {{ next_button }}
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script src="{% static 'js/highcharts.js' %}"></script>
+<script src="{% static 'js/accessibility.js' %}"></script>
+
+<script>
+    const firstRound = js_vars.firstRound;
+    const maxRounds = js_vars.maxRounds;
+    const investmentOptions = js_vars.investmentOptions;
+    const allPrices = investmentOptions.map(option => option.allPrices);
+
+    $(document).ready(function() {
+        initChart();
+    });
+
+    function initChart() {
+        var dataLength;
+
+        if (Array.isArray(allPrices[0])) {
+            dataLength = allPrices[0].length;
+        } else {
+            dataLength = 1;
+        }
+
+        var series = [];
+        for (var s = 1; s <= 5; s++) {
+            var idx = s - 1;
+            var seriesPrices = allPrices[idx];
+            var plotData = [];
+            if (Array.isArray(seriesPrices)) {
+                for (var i = 0; i < dataLength; i++) {
+                    plotData.push([firstRound + i, seriesPrices[i]]);
+                }
+            } else {
+                plotData.push([firstRound, seriesPrices]);
+            }
+            series.push({
+                name: investmentOptions[s - 1].label,
+                color: investmentOptions[s - 1].color,
+                data: plotData,
+                marker: { radius: 5, enabled: true },
+            });
+        }
+
+        if (js_vars.lang == 'en') {
+            Highcharts.chart('myChart', chartOptionsForViewport({
+                chart: {type: 'line', animation: false, spacingBottom: 4},
+                title: {text: 'Prices of the investment options'},
+                xAxis: {
+                    title: {text: 'Period'},
+                    min: firstRound,
+                    max: maxRounds,
+                    plotBands: [{
+                        from: firstRound - 0.5,
+                        to:   firstRound + js_vars.obsRounds - 0.5,
+                        color: 'rgba(200, 200, 200, 0.3)',
+                    }]
+                },
+                yAxis: {
+                    title: {text: 'Price ($)'},
+                    min: 0,
+                    max: js_vars.price_max,
+                },
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom',
+                    y: -8,
+                    margin: 4,
+                    padding: 2,
+                    itemMarginTop: 0,
+                    itemMarginBottom: 0,
+                    itemWidth: 160
+                },
+                series: series,
+                tooltip: {
+                    valueDecimals: 2,
+                    valuePrefix: '$',
+                    headerFormat: '<b>Period {point.key}</b><br/>',
+                    pointFormat: '<span style="color:{series.color}"><b>{point.y}</b></span>'
+                }
+            }));
+        } else if (js_vars.lang == 'fr') {
+            Highcharts.chart('myChart', chartOptionsForViewport({
+                chart: {type: 'line', animation: false, spacingBottom: 4},
+                title: {text: 'Prix des options d’investissement'},
+                xAxis: {
+                    title: {text: 'Période'},
+                    min: firstRound,
+                    max: maxRounds,
+                    plotBands: [{
+                        from: firstRound - 0.5,
+                        to:   firstRound + js_vars.obsRounds - 0.5,
+                        color: 'rgba(200, 200, 200, 0.3)',
+                    }]
+                },
+                yAxis: {
+                    title: {text: 'Prix ($)'},
+                    min: 0,
+                    max: js_vars.price_max,
+                },
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom',
+                    y: -8,
+                    margin: 4,
+                    padding: 2,
+                    itemMarginTop: 0,
+                    itemMarginBottom: 0,
+                    itemWidth: 160
+                },
+                series: series,
+                tooltip: {
+                    valueDecimals: 2,
+                    valuePrefix: '$',
+                    headerFormat: '<b>Période {point.key}</b><br/>',
+                    pointFormat: '<span style="color:{series.color}"><b>{point.y}</b></span>'
+                }
+            }));
+        }
+    }
+
+    function chartOptionsForViewport(baseOptions) {
+        baseOptions.chart = baseOptions.chart || {};
+        baseOptions.chart.reflow = true;
+
+        baseOptions.responsive = {
+            rules: [{
+                condition: { maxWidth: 576 },
+                chartOptions: {
+                    chart: {
+                        spacing: [8, 4, 8, 4],
+                    },
+                    title: {
+                        style: { fontSize: '14px' },
+                        margin: 8,
+                    },
+                    legend: {
+                        layout: 'horizontal',
+                        align: 'center',
+                        verticalAlign: 'bottom',
+                        itemWidth: undefined,
+                        itemStyle: { fontSize: '10px' },
+                        symbolWidth: 10,
+                        symbolHeight: 10,
+                        margin: 4,
+                    },
+                    xAxis: {
+                        labels: { style: { fontSize: '10px' } },
+                        title: { style: { fontSize: '11px' } },
+                    },
+                    yAxis: {
+                        labels: { style: { fontSize: '10px' } },
+                        title: {
+                            text: null,
+                        },
+                    },
+                    plotOptions: {
+                        series: {
+                            marker: { radius: 3 },
+                        },
+                    },
+                },
+            }],
+        };
+
+        return baseOptions;
+    }
+</script>
+
+{% endblock %}
