@@ -1,0 +1,135 @@
+
+        Your advisee is female and between 18 and 34 years old.
+        
+        In addition, when asked "Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?"
+        your advisee answered "I am willing to take average financial risks expecting to earn average returns".
+
+        Your advisee has five different investment options (Option 1 to Option 5). 
+        Uninvested wealth does not earn any interest.
+        
+        In each period, the price of each option can either increase or decrease with a known probability.
+        {
+  "Option 1": {
+    "Price increase (%)": 25.0,
+    "Price decrease (%)": -15.0,
+    "Chance of price increase (%)": 50.0
+  },
+  "Option 2": {
+    "Price increase (%)": 15.0,
+    "Price decrease (%)": -35.0,
+    "Chance of price increase (%)": 80.0
+  },
+  "Option 3": {
+    "Price increase (%)": 25.0,
+    "Price decrease (%)": -15.0,
+    "Chance of price increase (%)": 50.0
+  },
+  "Option 4": {
+    "Price increase (%)": 15.0,
+    "Price decrease (%)": -25.0,
+    "Chance of price increase (%)": 50.0
+  },
+  "Option 5": {
+    "Price increase (%)": 45.0,
+    "Price decrease (%)": -5.0,
+    "Chance of price increase (%)": 20.0
+  }
+}
+
+        The price changes of all investment options except for Options 
+        1 and 3 are independent of each other. 
+        Options 1 and 3 are 
+        correlated with a correlation coefficient of -0.5, 
+        which means that the
+        price of Option 1 
+        tends to decrease when the price of Option 3 increases,
+        and vice versa.
+
+        Moreover, all price changes are independent of previous periods. 
+        Before the survey, a computer has 
+        randomly determined the price changes for each period according to the 
+        specific probabilities of each investment option. 
+        This also means that the advisee's choices do not influence how prices change.
+
+        All this information is known to you and your advisee.
+
+        **Recent price history:**
+        {
+  "Option 1": [
+    100.0,
+    125.0,
+    106.25,
+    132.81,
+    166.02,
+    141.11,
+    176.39,
+    149.93,
+    127.44,
+    108.33,
+    92.08
+  ],
+  "Option 2": [
+    100.0,
+    115.0,
+    132.25,
+    152.09,
+    174.9,
+    201.14,
+    130.74,
+    150.35,
+    172.9,
+    198.84,
+    228.66
+  ],
+  "Option 3": [
+    100.0,
+    85.0,
+    72.25,
+    90.31,
+    112.89,
+    141.11,
+    119.95,
+    149.93,
+    187.42,
+    234.27,
+    199.13
+  ],
+  "Option 4": [
+    100.0,
+    75.0,
+    56.25,
+    42.19,
+    31.64,
+    36.39,
+    41.84,
+    31.38,
+    23.54,
+    27.07,
+    31.13
+  ],
+  "Option 5": [
+    100.0,
+    145.0,
+    137.75,
+    199.74,
+    189.75,
+    180.26,
+    171.25,
+    162.69,
+    154.55,
+    224.1,
+    212.9
+  ]
+}
+
+        Your advisee has also reviewed a chart of the price history (attached), and knows 
+        the properties of the investment options.
+
+        ---
+
+        Based on this, write a brief, personalized recommendation for your advisee. 
+
+        - **Allocation**: For each option, specify the recommended portfolio weight in percentage of total wealth. The remaining wealth is not invested. 
+        - **Justification**: Please give a short explanation for your recommendation, mentioning the reasons you used to make your recommendation.
+
+        
