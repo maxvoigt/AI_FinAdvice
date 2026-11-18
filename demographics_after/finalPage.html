@@ -2,15 +2,22 @@
 
 {% load otree static %}
 
-{% block title %}Thank you for participating{% endblock %}
+{% block title %}
+    {% if lang == 'en' %}Thank you for participating{% elif lang == 'fr' %}Merci beaucoup pour votre participation{% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
-        <p>Your final wealth in the investment task is <b>${{ finalWealth|to2 }}</b>, so your bonus is <b>${{ bonus|to2 }}</b>.
-        </p>
-        <p>Please click the button below to be forwarded to SAGO for the payment.</p>
-        <a class="btn btn-primary" href="{{ completion_url }}">Complete on SAGO</a>
+        {% if lang == 'en' %}
+            <p>Your final wealth in the investment task is <b>${{ finalWealth|to2 }}</b>, so your bonus is <b>${{ bonus|to2 }}</b>.</p>
+            <p>Please click the button below to be forwarded to SAGO for the payment.</p>
+            <a class="btn btn-primary" href="{{ completion_url }}">Complete on SAGO</a>
+        {% elif lang == 'fr' %}
+            <p>Votre richesse finale dans la tâche d’investissement est de <b>{{ finalWealthTxt }}</b>. Ainsi, votre bonus est de <b>{{ bonusTxt }}</b>.</p>
+            <p>Veuillez cliquer sur le bouton ci-dessous pour être redirigé(e) vers Sago pour le paiement.</p>
+            <a class="btn btn-primary" href="{{ completion_url }}">Terminer sur Sago</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -26,37 +26,13 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    gender = models.IntegerField(label='What is your gender?', 
-        choices=[
-            [1, 'Male'],
-            [2, 'Female'],
-            [3, 'Prefer to self-describe'],
-            [4, 'Prefer not to say'],
-        ]
-    )
+    gender = models.IntegerField(label='What is your gender?')
 
     gender_other = models.StringField(label='If you prefer to self-describe, please specify:', blank=True)
 
     age = models.IntegerField(label='What is your age?', min=18, max=100)
 
-    territory = models.IntegerField(label='Which province or territory do you live in?',
-        choices=[
-            [1, 'British Columbia'],
-            [2, 'Alberta'],
-            [3, 'Saskatchewan'],
-            [4, 'Manitoba'],
-            [5, 'Ontario'],
-            [6, 'Quebec'],
-            [7, 'New Brunswick'],
-            [8, 'Nova Scotia'],
-            [9, 'Prince Edward Island'],
-            [10, 'Newfoundland and Labrador'],
-            [11, 'Northwest Territories'],
-            [12, 'Nunavut'],
-            [13, 'Yukon'],
-            [14, 'None of the above'],
-        ]
-    )
+    territory = models.IntegerField(label='Which province or territory do you live in?')
 
     income = models.IntegerField(
         label='What is your best estimate of your personal income for 2025, from all sources, before taxes and deductions?',
@@ -69,97 +45,24 @@ class Player(BasePlayer):
 
     income_bracket = models.IntegerField(
         label='If you are not sure of the exact amount, please select the range that best describes your total household income in 2025, before taxes and deductions.',
-        choices=[
-            [0, 'Less than $30,000'],
-            [1, '$30,000 - $59,999'],
-            [2, '$60,000 - $89,999'],
-            [3, '$90,000 - $119,999'],
-            [4, 'More than $120,000'],
-            [30, 'I do not know'],
-            [40, 'I prefer not to say'],
-        ],
         blank=True
     )
 
     householdSize = models.IntegerField(
-        label='Including yourself, how many people living in your household are supported by this income?',
-        choices=[
-            [1, '1'],
-            [2, '2'],
-            [3, '3'],
-            [4, '4'],
-            [5, '5'],
-            [6, '6'],
-            [7, '7'],
-            [8, '8'],
-            [9, '9'],
-            [10, '10'],
-            [11, '11'],
-            [12, '12'],
-            [13, '13'],
-            [14, '14'],
-            [15, '15'],
-            [16, '16'],
-            [17, '17'],
-            [18, '18'],
-            [19, '19'],
-            [20, '20'],
-            [30, 'I do not know'],
-            [40, 'I prefer not to say'],
-        ]
+        label='Including yourself, how many people living in your household are supported by this income?'
     )
 
     patience = models.IntegerField(
-        label = "Please evaluate your patience when it comes to making financial decisions for yourself or your household.",
-        choices = [
-            [1, 'Very impatient'],
-            [2, 'Impatient'],
-            [3, 'Patient'],
-            [4, 'Very patient'],
-            [5, 'I don\'t know'],
-        ])
+        label = "Please evaluate your patience when it comes to making financial decisions for yourself or your household.")
     
     finRiskTaking = models.IntegerField(
-        label = "Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?",
-        choices = [
-            [1, 'I am willing to take above average financial risks expecting to earn above-average returns.'],
-            [2, 'I am willing to take average financial risks expecting to earn average returns.'],
-            [3, 'I am willing to take below average financial risks expecting to earn below-average returns.'],
-        ])
+        label = "Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?",)
 
     amount_to_send_finAdvisor = models.IntegerField(
-        label = 'In this situation, how much of your $1,000 do you want to send?',
-        choices = [
-            [0, '$0'],
-            [100, '$100'],
-            [200, '$200'],
-            [300, '$300'],
-            [400, '$400'],
-            [500, '$500'],
-            [600, '$600'],
-            [700, '$700'],
-            [800, '$800'],
-            [900, '$900'],
-            [1000, '$1000'],
-        ]
-    )
+        label = 'In this situation, how much of your $1,000 do you want to send?')
     
     amount_to_send_AI = models.IntegerField(
-        label = 'In this situation, how much of your $1,000 do you want to send?',
-        choices = [
-            [0, '$0'],
-            [100, '$100'],
-            [200, '$200'],
-            [300, '$300'],
-            [400, '$400'],
-            [500, '$500'],
-            [600, '$600'],
-            [700, '$700'],
-            [800, '$800'],
-            [900, '$900'],
-            [1000, '$1000'],
-        ]
-    )
+        label = 'In this situation, how much of your $1,000 do you want to send?')
 
     slot_id = models.StringField(blank=True)
     block_id = models.StringField(blank=True)
@@ -183,12 +86,102 @@ def client_cell(player):
         gender, imputed = random.choice(['M', 'F']), True
     return f'{gender}-{age}-{risk}', imputed
 
+### French language responses
+LABELS = {
+    'en': {
+        'gender': 'What is your gender?',
+        'gender_other': 'If you prefer to self-describe, please specify:',
+        'age': 'What is your age?',
+        'territory': 'Which province or territory do you live in?',
+        'income': 'What is your best estimate of your personal income for 2025, from all sources, before taxes and deductions?',
+        'income_bracket': 'If you are not sure of the exact amount, please select the range that best describes your total household income in 2025, before taxes and deductions.',
+        'householdSize': 'Including yourself, how many people living in your household are supported by this income?',
+        'patience': 'Please evaluate your patience when it comes to making financial decisions for yourself or your household.',
+        'finRiskTaking': 'Which of the following statements comes closest to describing the amount of financial risk that you are willing to take when you save or make investments?',
+        'prefer_not': 'Prefer not to say',
+    },
+    'fr': {
+        'gender': 'Quel est votre sexe?',
+        'gender_other': 'Si vous préférez vous décrire, veuillez préciser:',
+        'age': 'Quel âge avez-vous?',
+        'territory': 'Dans quelle province ou quel territoire habitez-vous?',
+        'income': 'Quelle est votre meilleure estimation de votre revenu personnel en 2025, toutes sources confondues, avant impôts et déductions?',
+        'income_bracket': "Si vous n'êtes pas certain(e) du montant exact, veuillez sélectionner la tranche qui décrit le mieux le revenu total de votre ménage en 2025, avant impôts et déductions.",
+        'householdSize': 'En vous incluant, combien de personnes de votre ménage vivent de ce revenu?',
+        'patience': "Veuillez évaluer votre patience lorsqu'il s'agit de prendre des décisions financières pour vous-même ou votre ménage.",
+        'finRiskTaking': 'Lequel des énoncés suivants décrit le mieux le niveau de risque financier que vous êtes prêt(e) à prendre lorsque vous épargnez ou investissez?',
+        'prefer_not': 'Je préfère ne pas répondre',
+    },
+}
 
+CHOICES = {
+    'gender': {
+        'en': [[1, 'Male'], [2, 'Female'], [3, 'Prefer to self-describe'], [4, 'Prefer not to say']],
+        'fr': [[1, 'Homme'], [2, 'Femme'], [3, "Je préfère m'auto-décrire"], [4, 'Je préfère ne pas répondre']],
+    },
+    'territory': {
+        'en': [[1, 'British Columbia'], [2, 'Alberta'], [3, 'Saskatchewan'], [4, 'Manitoba'], [5, 'Ontario'],
+               [6, 'Quebec'], [7, 'New Brunswick'], [8, 'Nova Scotia'], [9, 'Prince Edward Island'],
+               [10, 'Newfoundland and Labrador'], [11, 'Northwest Territories'], [12, 'Nunavut'], [13, 'Yukon'],
+               [14, 'None of the above']],
+        'fr': [[1, 'Colombie-Britannique'], [2, 'Alberta'], [3, 'Saskatchewan'], [4, 'Manitoba'], [5, 'Ontario'],
+               [6, 'Québec'], [7, 'Nouveau-Brunswick'], [8, 'Nouvelle-Écosse'], [9, 'Île-du-Prince-Édouard'],
+               [10, 'Terre-Neuve-et-Labrador'], [11, 'Territoires du Nord-Ouest'], [12, 'Nunavut'], [13, 'Yukon'],
+               [14, 'Aucun de ces choix']],
+    },
+    'income_bracket': {
+        'en': [[0, 'Less than $30,000'], [1, '$30,000 - $59,999'], [2, '$60,000 - $89,999'],
+               [3, '$90,000 - $119,999'], [4, 'More than $120,000'], [30, 'I do not know'], [40, 'I prefer not to say']],
+        'fr': [[0, 'Moins de 30 000$'], [1, '30 000$ - 59 999$'], [2, '60 000$ - 89 999$'],
+               [3, '90 000$ - 119 999$'], [4, 'Plus de 120 000$'], [30, 'Je ne sais pas'], [40, 'Je préfère ne pas répondre']],
+    },
+    'householdSize': {
+        'en': [[i, str(i)] for i in range(1, 21)] + [[30, 'I do not know'], [40, 'I prefer not to say']],
+        'fr': [[i, str(i)] for i in range(1, 21)] + [[30, 'Je ne sais pas'], [40, 'Je préfère ne pas répondre']],
+    },
+    'patience': {
+        'en': [[1, 'Patient'], [2, 'Neither patient nor impatient'], [3, 'Impatient'], [4, "I don't know"]],
+        'fr': [[1, 'Patient(e)'], [2, 'Ni patient(e) ni impatient(e)'], [3, 'Impatient(e)'], [4, 'Je ne sais pas']],
+    },
+    'finRiskTaking': {
+        'en': [[1, 'I am willing to take above average financial risks expecting to earn above-average returns.'],
+               [2, 'I am willing to take average financial risks expecting to earn average returns.'],
+               [3, 'I am willing to take below average financial risks expecting to earn below-average returns.']],
+        'fr': [[1, 'Je suis prêt(e) à prendre des risques financiers supérieurs à la moyenne et je m’attends à des rendements supérieurs à la moyenne.'],
+               [2, 'Je suis prêt(e) à prendre des risques financiers moyens et je m’attends à des rendements moyens.'],
+               [3, 'Je suis prêt(e) à prendre des risques financiers inférieurs à la moyenne et je m’attends à des rendements inférieurs à la moyenne.']],
+    },
+    'amount_to_send': {
+        'en': [[v, f'${v:,}'.replace(',', '')] for v in range(0, 1001, 100)],   # '$0' … '$1000' as now
+        'fr': [[v, f'{v:,}$'.replace(',', ' ')] for v in range(0, 1001, 100)],  # '0$' … '1 000$' as FP
+    },
+}
+
+def gender_choices(player):         return CHOICES['gender'][player.participant.lang]
+def territory_choices(player):      return CHOICES['territory'][player.participant.lang]
+def income_bracket_choices(player): return CHOICES['income_bracket'][player.participant.lang]
+def householdSize_choices(player):  return CHOICES['householdSize'][player.participant.lang]
+def patience_choices(player):       return CHOICES['patience'][player.participant.lang]
+def finRiskTaking_choices(player):  return CHOICES['finRiskTaking'][player.participant.lang]
+def amount_to_send_finAdvisor_choices(player): return CHOICES['amount_to_send'][player.participant.lang]
+def amount_to_send_AI_choices(player):         return CHOICES['amount_to_send'][player.participant.lang]
+
+ERRORS = {
+    'en': {'bracket': 'Please select an income range.', 'income': 'Please enter your income.',
+           'gender': 'Please specify your gender.'},
+    'fr': {'bracket': 'Veuillez sélectionner une tranche de revenu.', 'income': 'Veuillez entrer votre revenu.',
+           'gender': 'Veuillez préciser votre sexe.'},
+}
 
 # PAGES
 class startPage(Page):
+    @staticmethod
     def is_displayed(player):
         return player.round_number == 1
+
+    @staticmethod
+    def vars_for_template(player):
+        return {'lang': player.participant.lang}
 
 class demographicsPage(Page):
     preserve_unsubmitted_inputs = True
@@ -203,10 +196,13 @@ class demographicsPage(Page):
     def vars_for_template(player):
         return {
             'testing': player.session.config['testing'],
+            'lang': player.participant.lang,
+            'L': LABELS[player.participant.lang],
         }
     
     @staticmethod
     def error_message(player, values):
+        E = ERRORS[player.participant.lang]
         choice = values.get('income_choice')
         income = values.get('income')
         bracket = values.get('income_bracket')
@@ -221,14 +217,14 @@ class demographicsPage(Page):
         # against `is None` (not truthiness).
         if choice is True:
             if bracket is None:
-                return "Please select an income range."
+                return E['bracket']
         elif choice is False:
             if income is None:
-                return "Please enter your income."
+                return E['income']
         
         if gender == 3:
             if not (isinstance(gender_other, str) and gender_other.strip()):
-                return "Please specify your gender."
+                return E['gender']
 
     @staticmethod
     def before_next_page(player, timeout_happened):
@@ -250,20 +246,25 @@ class trustGame(Page):
 
     @staticmethod
     def vars_for_template(player):
-        if player.participant.trustGameOrder + 1 == player.round_number:
-            partner_type = 'a financial advisor'
-            partner_type_text = 'financial advisor'
-        else:
-            partner_type = 'a generative AI system, such as ChatGPT'
-            partner_type_text = 'generative AI system'
+        lang = player.participant.lang
         
-
+        if player.participant.trustGameOrder + 1 == player.round_number:
+            field_name = 'amount_to_send_finAdvisor'
+            partner_type, partner_type_text = (
+                ('un conseiller financier', 'conseiller financier') if lang == 'fr'
+                else ('a financial advisor', 'financial advisor'))
+        else:
+            field_name = 'amount_to_send_AI'
+            partner_type, partner_type_text = (
+                ("un système d'IA générative, comme ChatGPT", "système d'IA générative") if lang == 'fr'
+                else ('a generative AI system, such as ChatGPT', 'generative AI system'))
         return {
             'partner_type': partner_type,
             'partner_type_text': partner_type_text,
             'round_number': player.round_number,
+            'field_name': field_name,
+            'lang': lang,
             'testing': player.session.config['testing'],
-            'lang': player.participant.lang
         }
     
     @staticmethod

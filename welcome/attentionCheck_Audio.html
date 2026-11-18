@@ -17,7 +17,11 @@
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
         <p>
-            Please listen to the audio file below and type the word that you hear into the space.
+            {% if lang == 'en' %}
+                Please listen to the audio file below and type the word that you hear into the space.
+                {% elif lang == 'fr' %}
+                Veuillez écouter le fichier audio ci-dessous et saisir le mot que vous entendez dans l'espace prévu.
+            {% endif %}
         </p>
 
         <div class="d-flex align-items-center justify-content-center" style="gap: 40px;">
@@ -31,7 +35,7 @@
     </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+<button id="next_button" class="otree-btn-next btn btn-primary">{% if lang == 'en' %}Next{% elif lang == 'fr' %}Suivant{% endif %}</button>
 
 {% if testing %}
     <br></br>

@@ -2,7 +2,11 @@
 {% load otree static %}
 
 {% block title %}
+    {% if lang == 'en' %}
     A few questions about AI chatbots
+    {% elif lang == 'fr' %}
+    Quelques questions sur les agents conversationnels IA
+    {% endif %}
 {% endblock %}
 
 {% block styles %}
@@ -26,80 +30,119 @@
 </div>
 
 <div class="row my-3 bg-light px-3 py-3 rounded border">
-    <p class="mb-3">Generative AI models (like ChatGPT, also known as AI chatbots) use artificial intelligence to read and write text. We will now ask about your experiences with AI chatbots.</p>
+    <p class="mb-3">
+        {% if lang == 'en' %}
+        Generative AI tools (like ChatGPT, also known as AI chatbots) use artificial intelligence to read and write text. We will now ask about your experiences with AI tools.
+        {% elif lang == 'fr' %}
+        Les outils d’IA générative (comme ChatGPT, également connus sous le nom d’agents conversationnels IA) utilisent l’intelligence artificielle pour lire et écrire du texte. Nous allons maintenant vous poser quelques questions sur vos expériences avec les outils d’IA.
+        {% endif %}
+    </p>
 
     <hr>
     <div class = "row">
-    <p>Have you had heard of the following generative AI tools before this survey? Please select all that apply.</p>
+    <p>
+        {% if lang == 'en' %}
+        Have you heard of the following generative AI tools before this survey? Please select all that apply.
+        {% elif lang == 'fr' %}
+        Aviez-vous entendu parler des outils d’IA générative suivants avant cette enquête? Veuillez sélectionner toutes les réponses qui s’appliquent.
+        {% endif %}
+    </p>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="ChatGPT" id="ChatGPT" onchange="updateGenAIHeardOf(this.id)">
         <label class="form-check-label" for="ChatGPT">
-          ChatGPT (developed by OpenAI)
+            {% if lang == 'en' %} ChatGPT (developed by OpenAI) 
+            {% elif lang == 'fr' %} ChatGPT (développé par OpenAI)
+            {% endif %}
         </label>
     </div>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="Claude" id="Claude" onchange="updateGenAIHeardOf(this.id)">
         <label class="form-check-label" for="Claude">
-          Claude (developed by Anthropic)
+            {% if lang == 'en' %} Claude (developed by Anthropic)
+            {% elif lang == 'fr' %} Claude (développé par Anthropic)
+            {% endif %}
         </label>
     </div>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="Copilot" id="Copilot" onchange="updateGenAIHeardOf(this.id)">
         <label class="form-check-label" for="Copilot">
-          Copilot (developed by Microsoft)
+            {% if lang == 'en' %} Copilot (developed by Microsoft)
+            {% elif lang == 'fr' %} Copilot (développé par Microsoft)
+            {% endif %}
         </label>
     </div>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="Gemini" id="Gemini" onchange="updateGenAIHeardOf(this.id)">
         <label class="form-check-label" for="Gemini">
-          Gemini (developed by Google)
+            {% if lang == 'en' %} Gemini (developed by Google)
+            {% elif lang == 'fr' %} Gemini (développé par Google)
+            {% endif %}
         </label>
     </div>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="Perplexity" id="Perplexity" onchange="updateGenAIHeardOf(this.id)">
         <label class="form-check-label" for="Perplexity">
-          Perplexity (developed by Perplexity AI)
+            {% if lang == 'en' %} Perplexity (developed by Perplexity AI)
+            {% elif lang == 'fr' %} Perplexity (développé par Perplexity AI)
+            {% endif %}
         </label>
     </div>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="Other" id="Other" onchange="updateGenAIHeardOf(this.id)">
         <label class="form-check-label" for="Other">
-          Other AI chatbots
+            {% if lang == 'en' %} Other AI tools
+            {% elif lang == 'fr' %} Autres outils d’IA
+            {% endif %}
         </label>
     </div>
     <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" value="None" id="None" onchange="updateGenAIHeardOf(this.id)">
         <label class="form-check-label" for="None">
-          None of the above
+            {% if lang == 'en' %} None of the above
+            {% elif lang == 'fr' %} Aucune de ces réponses
+            {% endif %}
         </label>
     </div>
     </div>
 
     <hr>
     <div class="row">
-    <p>Have you used one of the generative AI tools above before this survey? Please select all that apply.</p>
+        {% if lang == 'en' %}
+            <p>Have you used one of the generative AI tools above before this survey? Please select all that apply.</p>
+        {% elif lang == 'fr' %}
+            <p>Aviez-vous utilisé l’un des outils d’IA générative ci-dessus avant cette enquête? Veuillez sélectionner toutes les réponses qui s’appliquent.</p>
+        {% endif %}
+    </p>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="used_personal_finances" id="used_personal_finances" onchange="updateUsedGenAI(this.id)">
         <label class="form-check-label" for="used_personal_finances">
-          Yes, for my personal finances
+            {% if lang == 'en' %} Yes, for my personal finances
+            {% elif lang == 'fr' %} Oui, pour mes finances personnelles
+            {% endif %}
         </label>
     </div>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="used_work" id="used_work" onchange="updateUsedGenAI(this.id)">
         <label class="form-check-label" for="used_work">
-          Yes, for my work
+            {% if lang == 'en' %} Yes, for my work
+            {% elif lang == 'fr' %} Oui, pour mon travail
+            {% endif %}
         </label>
     </div>
     <div class="form-check">
         <input class="form-check-input" type="checkbox" value="used_leisure" id="used_leisure" onchange="updateUsedGenAI(this.id)">
         <label class="form-check-label" for="used_leisure">
-          Yes, for my leisure
+            {% if lang == 'en' %} Yes, for my leisure
+            {% elif lang == 'fr' %} Oui, pour mon loisir
+            {% endif %}
         </label>
     </div>
     <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" value="not_used_any" id="not_used_any" onchange="updateUsedGenAI(this.id)">
         <label class="form-check-label" for="not_used_any">
-          No, I have not used any of the generative AI tools
+            {% if lang == 'en' %} No, I have not used any of the generative AI tools
+            {% elif lang == 'fr' %} Non, je n’ai pas utilisé d’outil d’IA générative
+            {% endif %}
         </label>
     </div>
     </div>
@@ -107,96 +150,136 @@
     <!-- No usage reason -->
     <div id="noUsage_Reason_row" class="row align-items-center mb-3 collapse">
         <hr>
-        <p>Why haven’t you used a generative AI tool? Please select all that apply.</p>
+        {% if lang == 'en' %}
+            <p>Why haven’t you used a generative AI tool? Please select all that apply.</p>
+        {% elif lang == 'fr' %}
+            <p>Pourquoi n’avez-vous pas utilisé d’outil d’IA générative? Veuillez sélectionner toutes les réponses qui s’appliquent.</p>
+        {% endif %}
         <div class="form-check">
             <input name="noGenAI_ReasonBox" class="form-check-input" type="checkbox" value="no_need" id="no_need" onchange="updateNoGenAIReason(this.id)">
             <label class="form-check-label" for="no_need">
-            No need
+                {% if lang == 'en' %} No need
+                {% elif lang == 'fr' %} Pas besoin
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="noGenAI_ReasonBox" class="form-check-input" type="checkbox" value="not_relevant" id="not_relevant" onchange="updateNoGenAIReason(this.id)">
             <label class="form-check-label" for="not_relevant">
-            Not relevant
+                {% if lang == 'en' %} Not relevant
+                {% elif lang == 'fr' %} Pas pertinent
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="noGenAI_ReasonBox" class="form-check-input" type="checkbox" value="dont_trust" id="dont_trust" onchange="updateNoGenAIReason(this.id)">
             <label class="form-check-label" for="dont_trust">
-            I don't trust it
+                {% if lang == 'en' %} I don't trust it
+                {% elif lang == 'fr' %} Je n’y fais pas confiance
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="noGenAI_ReasonBox" class="form-check-input" type="checkbox" value="dont_know_what_to_do" id="dont_know_what_to_do" onchange="updateNoGenAIReason(this.id)">
             <label class="form-check-label" for="dont_know_what_to_do">
-            I don't know what to do with it
+                {% if lang == 'en' %} I don't know what to do with it
+                {% elif lang == 'fr' %} Je ne sais pas quoi en faire
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="noGenAI_ReasonBox" class="form-check-input" type="checkbox" value="dont_know_how" id="dont_know_how" onchange="updateNoGenAIReason(this.id)">
             <label class="form-check-label" for="dont_know_how">
-            I don't know how to use it
+                {% if lang == 'en' %} I don't know how to use it
+                {% elif lang == 'fr' %} Je ne sais pas comment l’utiliser
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="noGenAI_ReasonBox" class="form-check-input" type="checkbox" value="dont_like" id="dont_like" onchange="updateNoGenAIReason(this.id)">
             <label class="form-check-label" for="dont_like">
-            I don't like it
+                {% if lang == 'en' %} I don't like it
+                {% elif lang == 'fr' %} Je ne l’aime pas
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="noGenAI_ReasonBox" class="form-check-input" type="checkbox" value="no_time" id="no_time" onchange="updateNoGenAIReason(this.id)">
             <label class="form-check-label" for="no_time">
-            I don't have time
+                {% if lang == 'en' %} I don't have time
+                {% elif lang == 'fr' %} Je n’ai pas le temps
+                {% endif %}
             </label>
         </div>
         <div class="form-check mb-3">
-            <input type="text" class="form-control mt-1" id="noGenAI_Reason_text" name="noGenAI_Reason_text" placeholder="Other" onblur="updateNoGenAIReason(this.id)">
+            <input type="text" class="form-control mt-1" id="noGenAI_Reason_text" name="noGenAI_Reason_text" placeholder="{% if lang == 'en' %}Other{% elif lang == 'fr' %}Autre{% endif %}" onblur="updateNoGenAIReason(this.id)">
         </div>
     </div>
 
     <!-- Usage -->
     <div id="Usage_row" class="row align-items-center mb-3 collapse">
         <hr>
-        <p>Have you used a generative AI tool to perform any of the following tasks? Please select all that apply.</p>
+        <p>
+            {% if lang == 'en' %}
+            Have you used a generative AI tool to perform any of the following tasks? Please select all that apply.
+            {% elif lang == 'fr' %}
+            Avez-vous utilisé un outil d’IA générative pour effectuer l’une des tâches suivantes? Veuillez sélectionner toutes les réponses qui s’appliquent.
+            {% endif %}
+        </p>
         <div class="form-check">
             <input name="genAI_ApplicationsBox" class="form-check-input" type="checkbox" value="simple_questions" id="genAI_used_simple_questions" onchange="updateGenAIApplications(this.id)">
             <label class="form-check-label" for="genAI_used_simple_questions">
-            Answering simple questions (instead of using a search engine)
+                {% if lang == 'en' %} Answering simple questions (instead of using a search engine)
+                {% elif lang == 'fr' %} Répondre à des questions simples, plutôt que d’utiliser un moteur de recherche 
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="genAI_ApplicationsBox" class="form-check-input" type="checkbox" value="writing_text" id="genAI_used_writing_text" onchange="updateGenAIApplications(this.id)">
             <label class="form-check-label" for="genAI_used_writing_text">
-            Writing text (documents, email, etc.)
+                {% if lang == 'en' %} Writing text (documents, email, etc.)
+                {% elif lang == 'fr' %} Rédiger du texte, par exemple des documents, des courriels, etc. 
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="genAI_ApplicationsBox" class="form-check-input" type="checkbox" value="budget_plan" id="genAI_used_budget_plan" onchange="updateGenAIApplications(this.id)">
             <label class="form-check-label" for="genAI_used_budget_plan">
-            Making a budget or financial plan
+                {% if lang == 'en' %} Making a budget or financial plan
+                {% elif lang == 'fr' %} Établir un budget ou un plan financier 
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="genAI_ApplicationsBox" class="form-check-input" type="checkbox" value="portfolio_analysis" id="genAI_used_portfolio_analysis" onchange="updateGenAIApplications(this.id)">
             <label class="form-check-label" for="genAI_used_portfolio_analysis">
-            Portfolio analysis and investment recommendations
+                {% if lang == 'en' %} Portfolio analysis and investment recommendations
+                {% elif lang == 'fr' %} Effectuer une analyse de portefeuille et formuler des recommandations de placement 
+                {% endif %}
             </label>
         </div>
         <div class="form-check">
             <input name="genAI_ApplicationsBox" class="form-check-input" type="checkbox" value="retirement_plan" id="genAI_used_retirement_plan" onchange="updateGenAIApplications(this.id)">
             <label class="form-check-label" for="genAI_used_retirement_plan">
-            Making a retirement plan
+                {% if lang == 'en' %} Making a retirement plan
+                {% elif lang == 'fr' %} Élaborer un plan de retraite
+                {% endif %}
             </label>
         </div>
         <div class="form-check mb-3">
-            <input type="text" class="form-control mt-1" id="genAI_Applications_text" name="genAI_Applications_text" placeholder="Other" onblur="updateGenAIApplications(this.id)">
+            <input type="text" class="form-control mt-1" id="genAI_Applications_text" name="genAI_Applications_text" placeholder="{% if lang == 'en' %}Other{% elif lang == 'fr' %}Autre{% endif %}" onblur="updateGenAIApplications(this.id)">
         </div>
 
         <hr>
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.genAI_usefulness.label }}</label>
+                <label class="col-form-label mb-0">
+                    {% if lang == 'en' %}
+                    In general, how useful have generative AI tools been for you?
+                    {% elif lang == 'fr' %}
+                    En général, à quel point les outils d’IA générative vous ont-ils été utiles?
+                    {% endif %}
+                </label>
             </div>
             <div class="col-auto">
                 {{ form.genAI_usefulness }}
@@ -206,7 +289,11 @@
     </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary" disabled>Next</button>
+<button id="next_button" class="otree-btn-next btn btn-primary" disabled>
+    {% if lang == 'en' %} Next
+    {% elif lang == 'fr' %} Suivant
+    {% endif %}
+</button>
 
 {% if testing %}
     <br><br>

@@ -2,7 +2,11 @@
 {% load otree static %}
 
 {% block title %}
+{% if lang == 'en' %}
 Many thanks for completing the investment task!
+{% elif lang == 'fr' %}
+Merci beaucoup d'avoir complété la tâche d'investissement!
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -10,6 +14,7 @@ Many thanks for completing the investment task!
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
         <div class="row">
+            {% if lang == 'en' %}
             <div class="col text-center">
                 <p>
                     <b>Your final wealth is ${{ finalWealth|to2 }}</b>.
@@ -21,6 +26,19 @@ Many thanks for completing the investment task!
                     Please answer these questions as truthfully as possible.
                 </div>
             </div>
+            {% elif lang == 'fr' %}
+            <div class="col text-center">
+                <p>
+                    <b>Votre richesse finale est de {{ finalWealthTxt }}</b>.
+                </p>
+            </div>
+            <div class="row">
+                <div class="col">
+                    Dans les prochaines pages, nous vous poserons quelques questions supplémentaires avant que vous receviez votre paiement.
+                    Veuillez répondre à ces questions le plus honnêtement possible.
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -28,7 +46,13 @@ Many thanks for completing the investment task!
 </br>
 
 <div class="col center center-align text-center">
-    <button id="next_page_btn" class="btn btn-primary px-3">Continue</button>
+    <button id="next_page_btn" class="btn btn-primary px-3">
+        {% if lang == 'en' %}
+        Continue
+        {% elif lang == 'fr' %}
+        Suivant
+        {% endif %}
+    </button>
 </div>
 
 

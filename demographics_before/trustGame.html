@@ -3,9 +3,9 @@
 
 {% block title %}
     {% if round_number == 1 %}
-    Please imagine the following situation
+    {% if lang == 'en' %}Please imagine the following situation{% elif lang == 'fr' %}Veuillez imaginer la situation suivante{% endif %}
     {% else %}
-    Now, please imagine the following new situation
+    {% if lang == 'en' %}Now, please imagine the following new situation{% elif lang == 'fr' %}Veuillez maintenant imaginer la nouvelle situation suivante{% endif %}
     {% endif %}
 {% endblock %}
 
@@ -50,44 +50,40 @@
                 </p>
 
                 {% elif lang == 'fr' %}
-                <p>
-                    Veuillez considérer la situation hypothétique suivante lorsque vous faites votre décision comme vous le feriez dans une situation réelle.
-                </p>
-                <p>
-                    Vous avez été apparié anonymement avec <strong>{{ partner_type }}</strong>.
-                </p>
-                <p>
-                    Vous recevez $1,000, tandis que le {{ partner_type_text }} reçoit aucun montant initial.
-                </p>
-
-                <p>
-                    Vous pouvez choisir d'envoyer n'importe quel montant qui est un multiple de $100
-                    ($0, $100, $200, …, $900, ou $1,000) au {{ partner_type_text }}.
-                    Tout montant que vous ne envoyez pas reste à vous.
-                </p>
-                
-                <p>
-                    Le montant que vous envoyez au {{ partner_type_text }} sera triplé avant qu'il atteigne le {{ partner_type_text }}.
-                </p>
-                <p>
-                    Le {{ partner_type_text }} peut alors retourner n'importe quel montant entre $0 et le montant triplé,
-                    en incréments de $100.
-                </p>
-                <p>
-                    À la fin, vous conservez le montant que vous n'avez pas envoyé plus tout montant retourné à vous par le {{ partner_type_text }}.
-                </p>
+                    <p>Veuillez considérer la situation hypothétique suivante et prendre votre décision comme vous le feriez dans une situation réelle.</p>
+                    <p>Vous avez été jumelé(e) de façon aléatoire et anonyme à <strong>{{ partner_type }}</strong>.</p>
+                    <p>Vous recevez 1&nbsp;000$, tandis que le {{ partner_type_text }} ne reçoit aucun montant initial.</p>
+                    <p>
+                        Vous pouvez choisir d’envoyer au {{ partner_type_text }} n’importe quel montant en multiples de 100$
+                        (0$, 100$, 200$, …, 900$ ou 1&nbsp;000$). Tout montant que vous n’envoyez pas reste à votre disposition.
+                    </p>
+                    <p>
+                        Le montant que vous envoyez au {{ partner_type_text }} sera triplé avant d’être reçu par celui-ci.
+                        Par exemple:
+                        <ul>
+                            <li>si vous envoyez 0$, le {{ partner_type_text }} reçoit 0$;</li>
+                            <li>si vous envoyez 500$, le {{ partner_type_text }} reçoit 1&nbsp;500$;</li>
+                            <li>si vous envoyez 1&nbsp;000$, le {{ partner_type_text }} reçoit 3&nbsp;000$.</li>
+                        </ul>
+                        Le {{ partner_type_text }} peut ensuite vous renvoyer n'importe quel montant compris entre 0$ et le montant triplé, en multiples de 100$.
+                    </p>
+                    <p>À la fin, vous conservez le montant que vous n’avez pas envoyé ainsi que tout montant que le {{ partner_type_text }} vous a retourné.</p>
                 {% endif %}
             </div>
         </div>
         <div class="row">
             <div class="col">
-                {{ formfields }}
+                <p><strong>
+                    {% if lang == 'en' %}In this situation, how much of your $1,000 do you want to send?
+                    {% elif lang == 'fr' %}Dans cette situation, quelle portion de vos 1&nbsp;000$ souhaiteriez-vous envoyer?{% endif %}
+                    </strong></p>
+                    {% if field_name == 'amount_to_send_AI' %}{{ form.amount_to_send_AI }}{% else %}{{ form.amount_to_send_finAdvisor }}{% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+<button id="next_button" class="otree-btn-next btn btn-primary">{% if lang == 'en' %}Next{% elif lang == 'fr' %}Suivant{% endif %}</button>
 
 {% if testing %}
     <br></br>

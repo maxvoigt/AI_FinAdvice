@@ -2,7 +2,11 @@
 {% load otree static %}
 
 {% block title %}
+    {% if lang == 'en' %}
     Before we begin, please demonstrate that you are human!
+    {% elif lang == 'fr' %}
+    Avant de commencer, veuillez confirmer que vous n'êtes pas un robot!
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -17,14 +21,19 @@
         
         <div class="row">
             <div id="fail_alert" class="col-sm justify-content-center alert alert-danger d-none">
-                You did not complete the CAPTCHA verification properly and cannot proceed with the study. 
-                Please click the button below to return your submission.
+                {% if lang == 'en' %}
+                    You did not complete the CAPTCHA verification properly and cannot proceed with the study.
+                    Please click the button below to return your submission.
+                {% elif lang == 'fr' %}
+                    Vous n'avez pas complété correctement la vérification du CAPTCHA et ne pouvez pas poursuivre l'étude.
+                    Veuillez cliquer sur le bouton ci-dessous pour retourner votre soumission.
+                {% endif %}
             </div>
         </div>
 
         <div class="row" style="display: none;">
             <div class="col-sm">
-                <button id="next_page_btn" class="btn btn-primary mt-2">Proceed</button>
+                <button id="next_page_btn" class="btn btn-primary mt-2">{% if lang == 'en' %}Proceed{% elif lang == 'fr' %}Continuer{% endif %}</button>
             </div>
         </div>
     </div>

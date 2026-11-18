@@ -2,7 +2,7 @@
 {% load otree static %}
 
 {% block title %}
-    Comprehension questions
+    {% if lang == 'en' %}Comprehension questions{% elif lang == 'fr' %}Questions de compréhension{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -10,16 +10,27 @@
 
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
+        {% if lang == 'en' %}
         <p>
             Please answer the following comprehension questions. 
             If you answer a question incorrectly, you can try again after a short delay.
         </p>
+        {% elif lang == 'fr' %}
+        <p>
+            Veuillez répondre aux questions de compréhension suivantes. 
+            Si vous répondez à une question incorrectement, vous pouvez réessayer après un court délai.
+        </p>
+        {% endif %}
         <hr>
 
         <!-- CompQ_1 -->
         <div class="row align-items-center">
             <div class="col-auto">
-                <label class="col-form-label">{{ form.compQ_1.label }}</label>
+                <label class="col-form-label">
+                    {% if lang == 'en' %}Do your investment choices affect the price changes of the options?
+                    {% elif lang == 'fr' %}Vos choix de placement influencent-ils les variations de prix des options?
+                    {% endif %}
+                </label>
             </div>
             <div class="col-auto">
                 {{ form.compQ_1 }}
@@ -34,14 +45,24 @@
             </div>
             <div id="compQ1_False" class="row alert alert-danger d-none" style="margin-top:15px;">
                 <div class="col">
+                    {% if lang == 'en' %}    
                     Your answer is not correct.
                     Remember that the computer randomly determined the price changes before the experiment started. 
                     Your investment choices thus cannot affect the price changes.
+                    {% elif lang == 'fr' %}
+                    Votre réponse n’est pas correcte. 
+                    N’oubliez pas que l’ordinateur a déterminé aléatoirement les variations de prix avant le début de l’expérience. 
+                    Vos choix de placement ne peuvent donc pas influencer les variations de prix.
+                    {% endif %}
                 </div>
             </div>
             <div id="compQ1_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
                 <div class="col">
+                    {% if lang == 'en' %}
                     Your answer is correct.
+                    {% elif lang == 'fr' %}
+                    Votre réponse est correcte.
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -50,7 +71,11 @@
         <hr>
         <div class="row align-items-center">
             <div class="col-auto">
-                <label class="col-form-label">{{ form.compQ_2.label }}</label>
+                <label class="col-form-label">
+                    {% if lang == 'en' %}Are the price changes of all options independent of each other?
+                    {% elif lang == 'fr' %}Les variations de prix de toutes les options sont-elles indépendantes les unes des autres?
+                    {% endif %}
+                </label>
             </div>
             <div class="col-auto">
                 {{ form.compQ_2 }}
@@ -65,13 +90,27 @@
             </div>
             <div id="compQ2_False" class="row alert alert-danger d-none" style="margin-top:15px;">
                 <div class="col">
-                    Your answer is not correct.
-                    Remember that the price changes of the investment options 1 to 4 are independent of each other, while the price changes of Investment Option 5 are always the opposite of the price changes of Investment Option 1. Thus, not all price changes are independent of each other.
+                    {% if lang == 'en' %}
+                        Your answer is not correct.
+                        Remember that the price changes of the Options {{ correlatedAssets.0 }} and {{ correlatedAssets.1 }} are correlated with each other, while 
+                        the price changes of all other options are 
+                        independent of each other.
+                    {% elif lang == 'fr' %}
+                        Votre réponse n’est pas correcte. 
+                        N’oubliez pas que les variations de prix des Options {{ correlatedAssets.0 }} et {{ correlatedAssets.1 }}
+                        sont corrélées entre elles, 
+                        tandis que les variations de prix de toutes les autres options 
+                        sont indépendantes les unes des autres.
+                    {% endif %}
                 </div>
             </div>
             <div id="compQ2_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
                 <div class="col">
+                    {% if lang == 'en' %}
                     Your answer is correct.
+                    {% elif lang == 'fr' %}
+                    Votre réponse est correcte.
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -80,7 +119,11 @@
          <hr>
         <div class="row align-items-center">
             <div class="col-auto">
-                <label class="col-form-label">{{ form.compQ_3.label }}</label>
+                <label class="col-form-label">
+                    {% if lang == 'en' %}Do all options have the same price changes?
+                    {% elif lang == 'fr' %}Toutes les options ont-elles les mêmes variations de prix?
+                    {% endif %}
+                </label>
             </div>
             <div class="col-auto">
                 {{ form.compQ_3 }}
@@ -95,13 +138,21 @@
             </div>
             <div id="compQ3_False" class="row alert alert-danger d-none" style="margin-top:15px;">
                 <div class="col">
+                    {% if lang == 'en' %}
                     Your answer is not correct.
-                    The price changes of the investment options are different, as is the chance of a price increase for each investment option.
+                    The price changes of the options are different, as is the chance of a price increase for each option.
+                    {% elif lang == 'fr' %}
+                    Votre réponse n’est pas correcte. Les variations de prix des options sont différentes, tout comme la probabilité d’une augmentation du prix pour chaque option.
+                    {% endif %}
                 </div>
             </div>
             <div id="compQ3_Correct" class="row alert alert-success d-none" style="margin-top:15px;">
                 <div class="col">
+                    {% if lang == 'en' %}
                     Your answer is correct.
+                    {% elif lang == 'fr' %}
+                    Votre réponse est correcte.
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -112,13 +163,23 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body text-center">
-          You can continue in <span id="countdown">10 seconds</span>.
+            {% if lang == 'en' %}
+                You can continue in <span id="countdown">10 seconds</span>.
+                {% elif lang == 'fr' %}
+                Vous pouvez continuer dans <span id="countdown">10 secondes</span>.
+            {% endif %}
         </div>
       </div>
     </div>
   </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary disabled">Next</button>
+<button id="next_button" class="otree-btn-next btn btn-primary disabled">
+    {% if lang == 'en' %}
+    Next
+    {% elif lang == 'fr' %}
+    Suivant
+    {% endif %}
+</button>
 
 {% if testing %}
     <br></br>
@@ -168,7 +229,7 @@
         }
     }
 
-    function blockPage(seconds = 10) {
+    function blockPage(seconds = 3) {
         $('#staticBackdrop').modal('show');
 
         let remaining = seconds;
@@ -177,9 +238,17 @@
         const interval = setInterval(() => {
             remaining--;
             if (remaining == 1) {
-                $('#countdown').text(remaining + ' second');
+                if (js_vars.lang == 'en') {
+                    $('#countdown').text(remaining + ' second');
+                } else {
+                    $('#countdown').text(remaining + ' seconde');
+                }
             } else {
-                $('#countdown').text(remaining + ' seconds');
+                if (js_vars.lang == 'en') {
+                    $('#countdown').text(remaining + ' seconds');
+                } else {
+                    $('#countdown').text(remaining + ' secondes');
+                }
             }
 
             if (remaining < 1) {

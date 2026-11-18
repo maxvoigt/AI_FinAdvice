@@ -22,7 +22,11 @@
 
     <p>
         <br>
-        Please type the letter that is written on the picture of the {{ fruit }}:
+        {% if lang == 'en' %}
+            Please type the letter that is written on the picture of the {{ fruit }}:
+        {% elif lang == 'fr' %}
+            Veuillez saisir la lettre inscrite sur l'image {{ fruit }}:
+        {% endif %}
     </p>
 
     <p>
@@ -33,7 +37,7 @@
 
     <p>
     <!-- .otree-btn-next is the CSS/jQuery selector for this button -->
-    <button class="otree-btn-next btn btn-primary">Next</button>
+    <button class="otree-btn-next btn btn-primary">{% if lang == 'en' %}Next{% elif lang == 'fr' %}Suivant{% endif %}</button>
     </p>
 </div>
 {% if testing %}

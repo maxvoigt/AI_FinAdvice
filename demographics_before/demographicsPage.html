@@ -2,7 +2,11 @@
 {% load otree static %}
 
 {% block title %}
-    A few questions about you
+    {% if lang == 'en' %}
+        A few questions about you
+    {% elif lang == 'fr' %}
+        Quelques questions sur vous
+    {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -15,7 +19,7 @@
     <div class="col">
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.gender.label }}</label>
+                <label class="col-form-label mb-0">{{ L.gender }}</label>
             </div>
             <div class="col-auto">
                 {{ form.gender }}
@@ -25,7 +29,7 @@
         <div id="gender_other_row" class="row align-items-center mb-3 collapse">
             <div class="col-auto" style="padding-left: 2em;">
                 <label class="col-form-label mb-0">
-                    {{ form.gender_other.label }}
+                    {{ L.gender_other }}
                 </label>
             </div>
             <div class="col-auto">
@@ -35,7 +39,7 @@
 
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.age.label }}</label>
+                <label class="col-form-label mb-0">{{ L.age }}</label>
             </div>
             <div class="col-auto">
                 {{ form.age }}
@@ -44,7 +48,7 @@
         
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.territory.label }}</label>
+                <label class="col-form-label mb-0">{{ L.territory }}</label>
             </div>
             <div class="col-auto">
                 {{ form.territory }}
@@ -52,12 +56,16 @@
         </div>
         
         <hr>
-        <p>We are now asking about your financial situation for the year 2025. It may help to have your latest tax records at hand. 
-        </p>
+            {% if lang == 'en' %}
+                We are now asking about your financial situation for the year 2025. It may help to have your latest tax records at hand.
+            {% elif lang == 'fr' %}
+                Nous vous posons maintenant des questions sur votre situation financière pour l'année 2025. 
+                Il pourrait être utile d'avoir vos plus récents documents fiscaux à portée de main.
+            {% endif %}
         
         <div class="row align-items-center mb-3">
             <div class="col-12">
-                <label class="col-form-label mb-0">{{ form.income.label }}</label>
+                <label class="col-form-label mb-0">{{ L.income }}</label>
             </div>
             <div class="col-3" style="padding-left: 2em;">
                 {{ form.income }}
@@ -65,7 +73,7 @@
             <div class="col-auto">
                 <!-- UI-only checkbox; the real submitted value comes from {{ form.income_choice }} -->
                 <input id="income_choice_checkbox" type="checkbox" />
-                <label for="income_choice_checkbox">Prefer not to say</label>
+                <label for="income_choice_checkbox">{{ L.prefer_not }}</label>
 
                 <div class="d-none">
                     {{ form.income_choice }}
@@ -76,7 +84,7 @@
         <div id="income_bracket_row" class="row align-items-center mb-3 collapse">
             <div class="col-12" style="padding-left: 2em;">
                 <label class="col-form-label mb-0">
-                    {{ form.income_bracket.label }}
+                    {{ L.income_bracket }}
                 </label>
             </div>
             <div class="col-12" style="padding-left: 2em;">
@@ -86,7 +94,7 @@
 
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.householdSize.label }}</label>
+                <label class="col-form-label mb-0">{{ L.householdSize }}</label>
             </div>
             <div class="col-auto">
                 {{ form.householdSize }}
@@ -94,13 +102,15 @@
         </div>
 
         <hr>
-        <p>
+        {% if lang == 'en' %}
             Finally, we would like to ask you a few questions about how you make financial decisions in your daily life.
-        </p>
+        {% elif lang == 'fr' %}
+            Enfin, nous aimerions vous poser quelques questions sur la façon dont vous prenez des décisions financières dans votre vie quotidienne.
+        {% endif %}
 
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.patience.label }}</label>
+                <label class="col-form-label mb-0">{{ L.patience }}</label>
             </div>
             <div class="col-auto">
                 {{ form.patience }}
@@ -109,7 +119,7 @@
         
         <div class="row align-items-center mb-3">
             <div class="col-auto">
-                <label class="col-form-label mb-0">{{ form.finRiskTaking.label }}</label>
+                <label class="col-form-label mb-0">{{ L.finRiskTaking }}</label>
             </div>
             <div class="col-auto">
                 {{ form.finRiskTaking }}
@@ -119,7 +129,7 @@
     </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+<button id="next_button" class="otree-btn-next btn btn-primary">{% if lang == 'en' %}Next{% elif lang == 'fr' %}Suivant{% endif %}</button>
 
 {% if testing %}
     <br></br>

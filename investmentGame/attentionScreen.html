@@ -4,17 +4,26 @@
 {% block content %}
 
 <div class="row rounded border alert alert-info center text-center">
-        <h4>Next, you will complete the <b>Investment Task</b>.</h4>
-        <br></br>
-        <p>Remember that the Investment Task determines 
-        your entire bonus from this survey.</p>
+    {% if lang == 'en' %}
+    <h4>Next, you will complete the <b>Investment Task</b>.</h4>
+    <p>Remember that the Investment Task determines your entire bonus from this survey.</p>
+    {% elif lang == 'fr' %}
+    <h4>Ensuite, vous effectuerez la <b>tâche d'investissement</b>.</h4>
+    <p>N'oubliez pas que la tâche d'investissement détermine l'entièreté de votre bonus dans cette enquête.</p>
+    {% endif %}
 </div>
 
 
 </br>
 
 <div class="col center center-align text-center">
-    <button id="next_page_btn" class="btn btn-primary px-3">Start the Investment Task</button>
+    <button id="next_page_btn" class="btn btn-primary px-3">
+        {% if lang == 'en' %}
+        Start the Investment Task
+        {% elif lang == 'fr' %}
+        Commencer la tâche d'investissement
+        {% endif %}
+    </button>
 </div>
 
 

@@ -2,29 +2,93 @@
 {% load otree static %}
 
 {% block title %}
+    {% if lang == 'en' %}
     A few questions about artificial intelligence
+    {% elif lang == 'fr' %}
+    Quelques questions sur l’intelligence artificielle
+    {% endif %}
+{% endblock %}
+
+{% block styles %}
+<style>
+    @media (max-width: 575.98px) {
+        .stack-on-phone > [class*="col"] {
+            width: 100%;
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        .stack-on-phone .col-form-label {
+            margin-bottom: 0.35rem;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
 <div class="row my-3 bg-light px-3 py-3 rounded border">
     <div class="col">
-        <div class="mb-4">
-            {{ formfield 'aiLit_1' }}
+        <div class="row align-items-center mb-3 stack-on-phone">
+            <label class="col-form-label mb-0">
+                    {% if lang == 'en' %}
+                    Which of the following is NOT powered by AI?
+                    {% elif lang == 'fr' %}
+                    Parmi les éléments suivants, lequel ne fonctionne PAS grâce à l’IA?
+                    {% endif %}
+            </label>
+            <div class="col-auto">
+                {{ form.aiLit_1 }}
+            </div>
         </div>
-        <div class="mb-4">
-            {{ formfield 'aiLit_2' }}
+        
+        <div class="row align-items-center mb-3 stack-on-phone">
+            <label class="col-form-label mb-0">
+                    {% if lang == 'en' %}
+                    In which area does AI typically excel?
+                    {% elif lang == 'fr' %}
+                    Dans quel domaine l’IA excelle-t-elle généralement?
+                    {% endif %}
+            </label>
+            <div class="col-auto">
+                {{ form.aiLit_2 }}
+            </div>
         </div>
-        <div class="mb-4">
-            {{ formfield 'aiLit_3' }}
+        
+        <div class="row align-items-center mb-3 stack-on-phone">
+            <label class="col-form-label mb-0">
+                    {% if lang == 'en' %}
+                    What is a common form of knowledge representation in AI?
+                    {% elif lang == 'fr' %}
+                    Parmi ce qui suit, laquelle est une forme courante de représentation des connaissances en IA?
+                    {% endif %}
+            </label>
+            <div class="col-auto">
+                {{ form.aiLit_3 }}
+            </div>
         </div>
-        <div class="mb-4">
-            {{ formfield 'aiLit_4' }}
+        
+        <div class="row align-items-center mb-3 stack-on-phone">
+            <label class="col-form-label mb-0">
+                    {% if lang == 'en' %}
+                    Which is a key ethical issue surrounding AI?
+                    {% elif lang == 'fr' %}
+                    Parmi ce qui suit, lequel est un enjeu éthique important entourant l’IA?
+                    {% endif %}
+            </label>
+            <div class="col-auto">
+                {{ form.aiLit_4 }}
+            </div>
         </div>
     </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+<button id="next_button" class="otree-btn-next btn btn-primary">
+    {% if lang == 'en' %}
+    Next
+    {% elif lang == 'fr' %}
+    Suivant
+    {% endif %}
+</button>
 
 {% if testing %}
     <br></br>

@@ -28,7 +28,12 @@ AI_REASONS_TIMEOUT_SEC = 30  # used inside generate_ai_reasons (copied from FP);
 
 #ADVICE_SOURCE = {1: "a financial advisor", 2: "a financial advisor who could use ChatGPT", 3: "ChatGPT"}
 ADVICE_SOURCE = {1: "a financial advisor", 2: "a financial advisor", 3: "ChatGPT"}
-        
+
+ADVICE_TITLE = {
+    'en': {1: 'Advice from a financial advisor', 2: 'Advice from a financial advisor', 3: 'Advice from ChatGPT'},
+    'fr': {1: "Conseil d'un conseiller financier", 2: "Conseil d'un conseiller financier", 3: 'Conseil de ChatGPT'},
+}        
+
 class C(BaseConstants):
     NAME_IN_URL = 'investmentTask'
     PLAYERS_PER_GROUP = None
@@ -214,7 +219,7 @@ REASON_LABELS = {
     },
     'fr': {
         'reason_risk': "Ma tolérance au risque financier",
-        'reason_age': "Mon âge / mon horizon de placement",
+        'reason_age': "Mon âge",
         'reason_gender': "Mon genre",
         'reason_divers': "La diversification ou la couverture entre les options",
         'reason_payoffs': "Les probabilités et les rendements des options",
@@ -382,7 +387,6 @@ class explanations(Page):
             'adviceRounds': C.ADVICE_ROUNDS,
             'adviceHint': advice_hint_text(player),
             'lang': player.participant.lang,
-            'adviceHint': advice_hint_text(player),
             'lastInvestRound': C.NUM_INVESTMENT_ROUNDS - 1,
         }
 
@@ -415,11 +419,12 @@ class atnQuest(Page):
         return {
             'attention_done': player.attention_check_done,
             'attention_correct': player.attention_check_correct,
+            'skip_text': ATTENTION_TARGETS[player.participant.lang],
         }
 
     @staticmethod
     def live_method(player, answerText):
-        is_correct = check_attention_answer(answerText)
+        is_correct = check_attention_answer(answerText, player.participant.lang)
         player.attention_check_done = True
         player.attention_check_correct = is_correct
 
@@ -430,7 +435,8 @@ class atnQuest(Page):
     @staticmethod
     def vars_for_template(player):
         return {
-            'testing': player.session.config['testing']
+            'testing': player.session.config['testing'],
+            'lang': player.participant.lang,
         }
 
 
@@ -452,6 +458,19 @@ class attentionScreen(Page):
 def advice_hint_text(player, when='this period'):
     """One sentence describing the advice; same structure in all advice arms."""
     arm = player.participant.treatment
+    
+    if player.participant.lang == 'fr':
+        when_fr = 'cette période' if when == 'this period' else when
+        if arm == 3:
+            return ("ChatGPT générera ce conseil pour une personne ayant la même catégorie d'âge, le même sexe et "
+                    "la même tolérance au risque financier que vous, à partir exactement des mêmes variations de prix "
+                    f"que celles que vous avez observées jusqu'à {when_fr}.")
+        if arm in (1, 2):
+            return ("Un conseiller financier a donné ce conseil pour une personne ayant la même catégorie d'âge, le même sexe "
+                    "et la même tolérance au risque financier que vous, et qui a observé exactement les mêmes variations de prix "
+                    f"que vous jusqu'à {when_fr}.")
+        return ""
+    
     if arm == 3:
         return ("ChatGPT will generate this advice for a person with the same age group, gender, and "
                 "willingness to take financial risks as you, based on exactly the same price changes "
@@ -692,6 +711,7 @@ class invPage(Page):
             'beliefsPeriod': is_beliefs_round(player),
             'showAdvice': show_advice(player),
             'adviceSource': ADVICE_SOURCE.get(player.participant.treatment, ''),
+            'adviceTitle': ADVICE_TITLE[player.participant.lang].get(player.participant.treatment, ''),
             'adviceHintText': advice_hint_text(player),
             'factorsHeading': FACTORS_HEADING[player.participant.lang].get(player.participant.treatment, ''),
             'factorsIntro': FACTORS_INTRO[player.participant.lang].get(player.participant.treatment, ''),
@@ -858,6 +878,7 @@ class invResults(Page):
         return {
             'testing': player.session.config['testing'],
             'finalWealth': player.wealthBOP,
+            'finalWealthTxt': money(player.wealthBOP, player.participant.lang),
             'bonus': player.wealthBOP / player.session.config['clientExchangeRate'],
             'lang': player.participant.lang,
         }
@@ -1159,7 +1180,7 @@ AI_REASON_FIELDS = ['ai_reason_risk', 'ai_reason_age', 'ai_reason_gender', 'ai_r
 AI_REASON_LABELS = {
     'en': {
         'ai_reason_risk': "The client's risk tolerance",
-        'ai_reason_age': "The client's age / investment horizon",
+        'ai_reason_age': "The client's age",
         'ai_reason_gender': "The client's gender",
         'ai_reason_divers': "Diversification or hedging across the options",
         'ai_reason_payoffs': "The options' probabilities and payoffs",
@@ -1170,7 +1191,7 @@ AI_REASON_LABELS = {
     },
     'fr': {
         'ai_reason_risk': "La tolérance au risque de la personne conseillée",
-        'ai_reason_age': "L'âge / l'horizon de placement de la personne conseillée",
+        'ai_reason_age': "L'âge de la personne conseillée",
         'ai_reason_gender': "Le genre de la personne conseillée",
         'ai_reason_divers': "La diversification ou la couverture entre les options",
         'ai_reason_payoffs': "Les probabilités et les rendements des options",
@@ -1775,3 +1796,32 @@ def save_finished_advice(player, delivered=True):
         else:
             player.adviceOrigin += '_not_shown'
     ADVICE_CACHE.pop(key, None)
+
+
+### French language helper
+def money(x, lang):
+    """$12,345.67 (en) / 12 345,67$ (fr, FP style: no space before $)."""
+    x = float(x or 0)
+    if lang == 'fr':
+        return f"{x:,.2f}".replace(',', '\u00a0').replace('.', ',') + '$'
+    return f"${x:,.2f}"
+
+import unicodedata
+
+ATTENTION_TARGETS = {
+    'en': "i read the explanation",
+    'fr': "j'ai lu les explications",
+}
+
+def _normalize_attention_text(text: str) -> str:
+    if text is None:
+        return ""
+    text = text.replace('’', "'").replace('`', "'")            # French keyboards / Mac autocorrect
+    text = unicodedata.normalize('NFKD', text)
+    text = ''.join(c for c in text if not unicodedata.combining(c))   # no-op for English
+    text = text.lower().strip()
+    return re.sub(r"\s+", " ", text)
+
+def check_attention_answer(text: str, lang: str = 'en', max_distance: int = 2) -> bool:
+    target = _normalize_attention_text(ATTENTION_TARGETS.get(lang, ATTENTION_TARGETS['en']))
+    return _levenshtein(_normalize_attention_text(text), target) <= max_distance

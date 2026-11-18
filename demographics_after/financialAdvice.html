@@ -2,7 +2,11 @@
 {% load otree static %}
 
 {% block title %}
-    A few questions about artificial intelligence
+    {% if lang == 'en' %}
+    A few questions about financial advice
+    {% elif lang == 'fr' %}
+    Quelques questions sur les conseils financiers
+    {% endif %}
 {% endblock %}
 
 {% block styles %}
@@ -65,7 +69,7 @@
 <div class="col">
     <div class="row align-items-center mb-3">
         <div class="col-auto">
-            <label class="col-form-label mb-0">{{ form.finAdvice_who.label }}</label>
+            <label class="col-form-label mb-0">{{ L.finAdvice_who }}</label>
         </div>
         <div class="col-auto" style="padding-left: 2em;">
             {{ form.finAdvice_who }}
@@ -75,7 +79,7 @@
     <hr>
     <div class="row align-items-center mb-3">
         <div class="col-auto">
-            <label class="col-form-label mb-0">{{ form.finAdvice_FinAdvisor.label }}</label>
+            <label class="col-form-label mb-0">{{ L.finAdvice_FinAdvisor }}</label>
         </div>
         <div class="col-auto" style="padding-left: 2em;">
             {{ form.finAdvice_FinAdvisor }}
@@ -85,7 +89,7 @@
     <div id="finAdvice_FinAdvisor_Yes_row" class="row align-items-center mb-3 collapse">
         <div class="col-12" style="padding-left: 2em;">
             <label class="col-form-label mb-0">
-                {{ form.finAdvice_FinAdvisor_Compensation.label }}
+                {{ L.finAdvice_FinAdvisor_Compensation }}
             </label>
         </div>
         <div class="col-12" style="padding-left: 4em;">
@@ -94,7 +98,7 @@
       
         <div class="col-12" style="padding-left: 2em;">
             <label class="col-form-label mb-0">
-                {{ form.finAdvice_FinAdvisor_FinInstitution.label }}
+                {{ L.finAdvice_FinAdvisor_FinInstitution }}
             </label>
         </div>
         <div class="col-12" style="padding-left: 4em;">
@@ -103,50 +107,74 @@
     </div>
     
     <div id="finAdvice_FinAdvisor_No_row" class="row align-items-center mb-3 collapse">
-        <p style="padding-left: 2em;">Why? Please select all that apply.</p>
+        <p style="padding-left: 2em;">
+            {% if lang == 'en' %}
+            Why? Please select all that apply.
+            {% elif lang == 'fr' %}
+            Pourquoi? Veuillez sélectionner toutes les réponses qui s’appliquent.
+            {% endif %}
+        </p>
         <div class="form-check form-check-sub">
             <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="enough_knowledge" id="enough_knowledge" onchange="updateFinAdvisorReasonsNo(this.id)">
             <label class="form-check-label" for="enough_knowledge">
-                I have enough financial and savings knowledge to forego the services of a financial advisor
+                {% if lang == 'en' %} I have enough financial and savings knowledge to forego the services of a financial advisor
+                {% elif lang == 'fr' %} J’ai suffisamment de connaissances en finances et en épargne pour me passer des services d’un(e) conseiller(-ère)
+                {% endif %}
             </label>
         </div>
         <div class="form-check form-check-sub">
             <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="too_costly" id="too_costly" onchange="updateFinAdvisorReasonsNo(this.id)">
             <label class="form-check-label" for="too_costly">
-                The services of a financial advisor are too costly 
+                {% if lang == 'en' %} The services of a financial advisor are too costly 
+                {% elif lang == 'fr' %} Les services d’un(e) conseiller(-ère) sont trop coûteux
+                {% endif %}
             </label>
         </div>
         <div class="form-check form-check-sub">
             <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="cannot_afford" id="cannot_afford" onchange="updateFinAdvisorReasonsNo(this.id)">
             <label class="form-check-label" for="cannot_afford">
-                I do not have enough money to afford the services of a financial advisor 
+                {% if lang == 'en' %} I do not have enough money to afford the services of a financial advisor 
+                {% elif lang == 'fr' %} Je n’ai pas assez d’argent pour me payer les services d’un(e) conseiller(-ère)
+                {% endif %}
             </label>
         </div>
         <div class="form-check form-check-sub ">
             <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="do_not_trust" id="do_not_trust" onchange="updateFinAdvisorReasonsNo(this.id)">
             <label class="form-check-label" for="do_not_trust">
-                I do not trust financial advisors 
+                {% if lang == 'en' %} I do not trust financial advisors 
+                {% elif lang == 'fr' %} Je ne fais pas confiance aux conseillers(-ères)
+                {% endif %}
             </label>
         </div>
         <div class="form-check form-check-sub">
             <input name="finAdvice_FinAdvisor_ReasonsNoBox" class="form-check-input" type="checkbox" value="relative_helps" id="relative_helps" onchange="updateFinAdvisorReasonsNo(this.id)">
             <label class="form-check-label" for="relative_helps">
-                A relative helps me with my financial matters
+                {% if lang == 'en' %} A relative helps me with my financial matters
+                {% elif lang == 'fr' %} Un membre de ma famille m’aide dans mes questions financières
+                {% endif %}
             </label>
         </div>
         <div class="form-check form-check-sub mb-3">
-            <input type="text" class="form-control mt-1" id="finAdvice_FinAdvisor_ReasonsNo_text" name="finAdvice_FinAdvisor_ReasonsNo_text" placeholder="Other" onblur="updateFinAdvisorReasonsNo(this.id)">
+            <input type="text" class="form-control mt-1" id="finAdvice_FinAdvisor_ReasonsNo_text" name="finAdvice_FinAdvisor_ReasonsNo_text" placeholder="{% if lang == 'en' %}Other{% elif lang == 'fr' %}Autre{% endif %}" onblur="updateFinAdvisorReasonsNo(this.id)">
         </div>
     </div>
 
     <hr>
 
     <div class="col">
-        <p class="mb-1">Please rank the following components of an investment strategy in your personal order of importance.
-        Drag each row by the grip (<span aria-hidden="true">⠿</span>) on the left to reorder the options from most important (top) to least important (bottom).
-        Note that you must make at least one change to the ranking to proceed.</p>
+        <p class="mb-1">
+            {% if lang == 'en' %} Please rank the following components of an investment strategy in your personal order of importance.
+                Drag each row by the grip (<span aria-hidden="true">⠿</span>) on the left to reorder the options from most important (top) to least important (bottom).
+                Note that you must make at least one change to the ranking to proceed.
+            {% elif lang == 'fr' %} 
+                Veuillez classer les éléments suivants d’une stratégie de placement selon l’importance que vous leur accordez personnellement. 
+                Faites glisser chaque ligne à l’aide de la poignée (<span aria-hidden="true">⠿</span>) à gauche pour les classer de la plus importante 
+                (en haut) à la moins importante (en bas). 
+                Notez que vous devez modifier le classement au moins une fois pour continuer.
+            {% endif %}
+        </p>
         <div class="d-flex justify-content-between align-items-baseline small text-muted mb-1 px-1" style="max-width: 30rem;">
-            <span>Most important</span>
+            <span>{% if lang == 'en' %}Most important{% elif lang == 'fr' %}Plus important{% endif %}</span>
         </div>
         <ul id="sortable-investment-strategy" class="list-unstyled mb-0 ps-0">
             <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Diversification">
@@ -155,31 +183,31 @@
             </li>
             <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Picking Good Fund Managers">
                 <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">Picking good fund managers</span>
+                <span class="ps-1">{% if lang == 'en' %}Picking good fund managers{% elif lang == 'fr' %}Choisir de bons gestionnaires de fonds{% endif %}</span>
             </li>
             <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Picking Good Stocks">
                 <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">Picking good stocks</span>
+                <span class="ps-1">{% if lang == 'en' %}Picking good stocks{% elif lang == 'fr' %}Choisir de bonnes actions{% endif %}</span>
             </li>
             <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Timing the Market">
                 <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">Timing the market</span>
+                <span class="ps-1">{% if lang == 'en' %}Timing the market{% elif lang == 'fr' %}Anticiper les mouvements du marché{% endif %}</span>
             </li>
             <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Minimizing Risks">
                 <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">Minimizing risks</span>
+                <span class="ps-1">{% if lang == 'en' %}Minimizing risks{% elif lang == 'fr' %}Minimiser les risques{% endif %}</span>
             </li>
             <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Minimizing Fees">
                 <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">Minimizing fees</span>
+                <span class="ps-1">{% if lang == 'en' %}Minimizing fees{% elif lang == 'fr' %}Minimiser les frais{% endif %}</span>
             </li>
             <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Selling Funds That Had Bad Performance Last Year">
                 <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">Selling funds that had bad performance last year</span>
+                <span class="ps-1">{% if lang == 'en' %}Selling funds that had bad performance last year{% elif lang == 'fr' %}Vendre les fonds qui ont eu un mauvais rendement l’année dernière{% endif %}</span>
             </li>
         </ul>
         <div class="d-flex justify-content-between align-items-baseline small text-muted mb-1 px-1" style="max-width: 30rem;">
-            <span>Least important</span>
+            <span>{% if lang == 'en' %}Least important{% elif lang == 'fr' %}Moins important{% endif %}</span>
         </div>
     </div>
 
@@ -187,21 +215,21 @@
 
     <div class="row align-items-center mb-3">
         <div class="col-12">
-            <label class="col-form-label mb-0">{{ form.finAdvice_InvestmentAmount.label }}</label>
+            <label class="col-form-label mb-0">{{ L.finAdvice_InvestmentAmount }}</label>
         </div>
         <div class="col-3" style="padding-left: 2em;">
             {{ form.finAdvice_InvestmentAmount }}
         </div>
         <div class="col-auto">
             <input id="finAdvice_InvestmentAmount_Range_checkbox" type="checkbox" onchange="checkAllFields()"/>
-            <label for="finAdvice_InvestmentAmount_Range_checkbox">Prefer not to say</label>
+            <label for="finAdvice_InvestmentAmount_Range_checkbox">{% if lang == 'en' %}Prefer not to say{% elif lang == 'fr' %}Je préfère ne pas répondre{% endif %}</label>
         </div>
     </div>
 
     <div id="investment_amount_range_row" class="row align-items-center mb-3 collapse">
         <div class="col-12" style="padding-left: 2em;">
             <label class="col-form-label mb-0">
-                {{ form.finAdvice_InvestmentAmount_Range.label }}
+                {{ L.finAdvice_InvestmentAmount_Range }}
             </label>
         </div>
         <div class="col-12" style="padding-left: 2em;">
@@ -214,7 +242,7 @@
 </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary" disabled>Next</button>
+<button id="next_button" class="otree-btn-next btn btn-primary" disabled>{% if lang == 'en' %}Next{% elif lang == 'fr' %}Suivant{% endif %}</button>
 
 {% if testing %}
     <br></br>

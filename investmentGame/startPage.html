@@ -11,7 +11,9 @@
         <div class="row">
             <div class="col text-center">
                <b>
-                   Many thanks for answering the questions. We will now explain and start your main task, the investment task.
+                   {% if lang == 'en' %}Many thanks for answering the questions. We will now explain and start your main task, the investment task.
+                   {% elif lang == 'fr' %}Merci d'avoir répondu aux questions. Nous allons maintenant expliquer et commencer votre tâche principale, la tâche d'investissement.
+                   {% endif %}
                </b>
             </div>
         </div>

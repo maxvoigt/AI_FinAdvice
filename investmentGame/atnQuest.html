@@ -2,7 +2,11 @@
 {% load otree static %}
 
 {% block title %}
-Please read carefully
+    {% if lang == 'en' %}
+    Please read carefully
+    {% elif lang == 'fr' %}
+    Veuillez lire attentivement
+    {% endif %}
 {% endblock %}
 
 
@@ -10,6 +14,7 @@ Please read carefully
 <div class="container-fluid bg-light my-3 px-3 py-3 rounded border">
 <div class="row">
     <div class="col">
+        {% if lang == 'en' %}
         <p>
         Most modern theories of decision making recognize the fact that decisions 
         do not take place in a vacuum. 
@@ -22,22 +27,39 @@ Please read carefully
         type 'I read the explanation' (no quotes) in the text box and ignore 
         the exact question being asked.
         </p>
+        {% elif lang == 'fr' %}
+        <p>
+            La plupart des théories modernes de la prise de décision reconnaissent que les décisions
+            ne se prennent pas en vase clos. Les préférences et les connaissances individuelles, ainsi que
+            des variables situationnelles, peuvent grandement influencer le processus de décision.
+            Afin de faciliter notre recherche, nous souhaitons connaître certains facteurs vous concernant.
+            Plus précisément, nous voulons savoir si vous prenez réellement le temps de lire les explications.
+            Ainsi, pour démontrer que vous avez lu les explications, veuillez écrire «J'ai lu les explications»
+            (sans les guillemets) dans la zone de texte et ignorer la question posée.
+        </p>
+        {% endif %}
     </div>
 </div>
 
 <div class="row">
     <div class="col">
         <hr>
+        {% if lang == 'en' %}
         <b>Question:</b>
         <p>
             Before starting, please provide a short description of the strategy that you would like to follow during the Investment Task.
         </p>
+        {% elif lang == 'fr' %}
+        <b>Question:</b> 
+        <p>Avant de commencer, veuillez décrire brièvement la stratégie que vous souhaitez suivre pendant la tâche d’investissement.</p>
+        {% endif %}
         <input type="text" id="attention_input" name="attention_check" class="form-control" autocomplete="off" />
 </div>
 </div>
 
 <div class = "row alert alert-danger d-none" id="attention_wrong" style="margin-top: 15px;">
     <div class="col">
+        {% if lang == 'en' %}
         <p>
             Your answer to this attention check is incorrect. 
             Therefore, you will not be able to participate in the survey.
@@ -45,6 +67,15 @@ Please read carefully
         <p>
             Thank you for considering this survey. You can now close this window and leave the website.
         </p>
+        {% elif lang == 'fr' %}
+        <p>
+            Votre réponse à cette vérification d’attention est incorrecte.
+            Par conséquent, vous ne pourrez pas participer à l’enquête.
+        </p>
+        <p>
+            Merci de considérer cette enquête. Vous pouvez maintenant fermer cette fenêtre et quitter le site web.
+        </p>
+        {% endif %}
     </div>
 </div>
 
@@ -52,9 +83,20 @@ Please read carefully
 
 <div class="row">
     <div class="col center center-align">
-        <button type="button" onclick="submitAnswer()" id="submitAnswerBtn" class="btn btn-primary px-3">Submit answer</button>
-        <button id="next_page_btn" class="btn btn-primary px-3 d-none" >Continue</button>
-        <button id="exit_btn" class="btn btn-primary px-3 d-none" >Okay</button>
+        <button type="button" onclick="submitAnswer()" id="submitAnswerBtn" class="btn btn-primary px-3">
+            {% if lang == 'en' %}
+            Submit answer
+            {% elif lang == 'fr' %}
+            Soumettre la réponse
+            {% endif %}
+        </button>
+        <button id="next_page_btn" class="btn btn-primary px-3 d-none" >
+            {% if lang == 'en' %}
+            Continue
+            {% elif lang == 'fr' %}
+            Continuer
+            {% endif %}
+        </button>
     </div>
 </div>
 
@@ -116,7 +158,7 @@ Please read carefully
     }
 
     function skipPage() {
-        document.getElementById('attention_input').value = "I read the explanation";
+        document.getElementById('attention_input').value = js_vars.skip_text;
         submitAnswer();
     }
 

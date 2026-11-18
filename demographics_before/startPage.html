@@ -10,24 +10,32 @@
     <div class="col">
         <div class="row">
             <div class="col text-center">
-               <b>
-                   Many thanks for passing the language checks. You are now ready to begin the survey.
-               </b>
+                {% if lang == 'en' %}
+                    <b>Many thanks for passing the language checks. You are now ready to begin the survey.</b>
+                {% elif lang == 'fr' %}
+                    <b>Merci d'avoir réussi les vérifications de langue. Vous êtes prêt(e) à commencer l'enquête.</b>
+                {% endif %}
             </div>
         </div>
         <br></br>
         <div class="row">
             <div class="col">
-                On the next three pages, we will ask you a few questions about your background and preferences.
-                Please answer these questions as truthfully as possible, as they might
-                affect the bonus that you can receive in the survey.
+                {% if lang == 'en' %}
+                    On the next three pages, we will ask you a few questions about your background and preferences.
+                    Please answer these questions as truthfully as possible, as they might
+                    affect the bonus that you can receive in the survey.
+                {% elif lang == 'fr' %}
+                    Dans les trois prochaines pages, nous vous poserons quelques questions sur votre profil et vos préférences.
+                    Veuillez répondre à ces questions le plus honnêtement possible, car elles pourraient
+                    influencer le bonus que vous pouvez recevoir dans cette enquête.
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
 <div class="d-flex justify-content-center">
-    <button id="next_button" class="otree-btn-next btn btn-primary">Okay, let's begin</button>
+    <button id="next_button" class="otree-btn-next btn btn-primary">{% if lang == 'en' %}Okay, let's begin{% elif lang == 'fr' %}Ok, commençons{% endif %}</button>
 </div>
 
 {% endblock %}

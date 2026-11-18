@@ -2,7 +2,7 @@
 {% load otree static %}
 
 {% block title %}
-    Final questions
+    {% if lang == 'en' %}Final questions{% elif lang == 'fr' %}Dernières questions{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -11,7 +11,9 @@
 <div class="row my-3 bg-light px-3 py-3 rounded border">
 <div class="col">
     <p>
-        We will now ask you a few questions concerning your familiarity with certain numerical concepts. Please answer the questions as best you can. 
+        {% if lang == 'en' %}We will now ask you a few questions concerning your familiarity with certain numerical concepts. Please answer the questions as best you can. 
+        {% elif lang == 'fr' %}Nous allons maintenant vous poser quelques questions sur votre familiarité avec certains concepts numériques. Veuillez répondre aux questions du mieux que vous le pouvez. 
+        {% endif %}
     </p>
 
     <hr>
@@ -46,7 +48,7 @@
 </div>
 </div>
 
-<button id="next_button" class="otree-btn-next btn btn-primary">Next</button>
+<button id="next_button" class="otree-btn-next btn btn-primary">{% if lang == 'en' %}Next{% elif lang == 'fr' %}Suivant{% endif %}</button>
 
 {% if testing %}
     <br></br>
