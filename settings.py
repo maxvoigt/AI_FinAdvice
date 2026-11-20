@@ -60,6 +60,7 @@ PARTICIPANT_FIELDS = [
     'slot_id',
     'block_id',
     'arm',
+    'advisor_sample',
     'advice_d1',
     'advice_d2',
     'adviceFactors_d1',

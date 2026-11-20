@@ -183,7 +183,8 @@ adv = pd.concat([adv, adv.apply(record_fields, axis=1)], axis=1)
 # ---------------------------------------------------------------- 4. blocks (balanced across FP arms within cell)
 rng = np.random.default_rng(SEED)
 blocks = []
-for cell, g in adv.groupby('cell'):
+#for cell, g in adv.groupby('cell'):
+for (cell, source), g in adv.groupby(['cell', 'source']): # Balancing
     target = g['client_arm'].value_counts().max() if BALANCE_WITHIN_CELL else None
     for arm, ga in g.groupby('client_arm'):
         ids = list(ga['record_id'])

@@ -293,6 +293,7 @@ class Slot(ExtraModel):
     record_id = models.IntegerField()
     cell = models.StringField()
     arm = models.IntegerField()
+    source = models.StringField()               # 'field' = certified financial planner, 'prolific' = financial advisor
     perm_rank = models.IntegerField()
     assetOrder = models.StringField()
     opt1_prices = models.LongStringField()
@@ -324,7 +325,7 @@ def load_slots(pool):
     for r in df.itertuples():
         Slot.create(
             pool=pool, slot_id=r.slot_id, block_id=r.block_id, record_id=int(r.record_id),
-            cell=r.cell, arm=int(r.arm), perm_rank=int(r.perm_rank), assetOrder=r.assetOrder,
+            cell=r.cell, arm=int(r.arm), source=r.source, perm_rank=int(r.perm_rank), assetOrder=r.assetOrder,
             opt1_prices=r.opt1_prices, opt2_prices=r.opt2_prices, opt3_prices=r.opt3_prices,
             opt4_prices=r.opt4_prices, opt5_prices=r.opt5_prices,
             adv_w_d1=r.adv_w_d1, adv_w_d2=r.adv_w_d2,
@@ -375,6 +376,7 @@ def assign_slot(player):
     participant.slot_id = slot.slot_id
     participant.block_id = slot.block_id
     participant.treatment = slot.arm
+    participant.advisor_sample = slot.source # 'field' = certified financial planner, 'prolific' = financial advisor
     participant.assetOrder = json.loads(slot.assetOrder)
     participant.investmentOption1Prices = {'p1': slot.opt1_prices}
     participant.investmentOption2Prices = {'p1': slot.opt2_prices}
@@ -405,7 +407,7 @@ def complete_slot(player):
     return True
 
 def custom_export(players):
-    yield ['pool', 'slot_id', 'block_id', 'record_id', 'cell', 'arm', 'perm_rank', 'n_active', 'n_released',
+    yield ['pool', 'slot_id', 'block_id', 'record_id', 'cell', 'arm', 'source', 'perm_rank', 'n_active', 'n_released',
            'participant_code', 'status', 'reserved_at', 'completed_late']
     uses = {}
     for u in SlotUse.filter():

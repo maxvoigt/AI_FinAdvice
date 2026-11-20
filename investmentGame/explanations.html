@@ -24,11 +24,12 @@
             <h4>Structure of the investment task</h4>
             <p>
                 You can invest an initial wealth of $10,000 across five different investment options, labelled 
-                Option 1 to Option 5, over {{ totalRounds }} periods, from Period {{ firstRound }} to {{ investRounds }}.
+                Option 1 to Option 5.
                 <br></br>
                 The task has two phases. 
                 Periods {{ firstRound }} to -1 are observation periods, during which you can only observe how the prices of the options evolve. 
-                Periods 0 to {{ investRounds }} are investment periods, during which you can invest. Uninvested wealth does not earn any interest. 
+                Periods 0 to {{ investRounds }} are investment periods, during which you can invest. 
+                </br>Uninvested wealth does not earn any interest. 
             </p>
         {% elif lang == 'fr' %}
             <p>
@@ -40,12 +41,12 @@
             <h4>Structure de la tâche d'investissement</h4>
             <p>
                 Vous pouvez investir une richesse initiale de 10&nbsp;000$ dans cinq options d’investissement différentes,
-                désignées Option 1 à Option 5, au cours de {{ totalRounds }} périodes, de la période {{ firstRound }} à la période {{ investRounds }}.
+                désignées Option 1 à Option 5.
                 <br></br>
                 La tâche comporte deux phases.
                 Les périodes {{ firstRound }} à -1 sont des périodes d’observation, pendant lesquelles vous pouvez uniquement observer l’évolution des prix des options.
                 Les périodes 0 à {{ investRounds }} sont des périodes d’investissement, pendant lesquelles vous pouvez investir.
-                La richesse qui n’est pas investie ne rapporte aucun intérêt.
+                </br>La richesse qui n’est pas investie ne rapporte aucun intérêt.
             </p>
         {% endif %}
 
@@ -169,14 +170,11 @@
                     or the number of units you want to hold. Any remaining wealth is not invested.
                 </p>
                 <p>
-                    Your portfolio keeps the wealth share (in %) from one period to the next 
-                    until you change them: after prices
-                    have moved, your portfolio is automatically rebalanced to the same percentages. 
-                    In Period {{ investRounds }},
-                    all units are sold at the prices of that period.
+                    From one period to the next, the number of units of each option that you hold stays the same until you change it. 
+                    Because prices change, the share of your wealth (in %) invested in each option changes from one period to the next. 
                 </p>
             
-                {{ if treatment == 1 or treatment == 2 }}
+                {{ if treatment == 1 }}
                 <hr>
                 <h4>Investment advice</h4>
                 <p>
@@ -186,14 +184,25 @@
                     seen until the respective period. In addition, your financial advisor has 
                     given the advice to someone with the category of age, gender, and risk tolerance that you fall into.
                 </p>
+                {{ elif treatment == 2 }}
+                <hr>
+                <h4>Investment advice</h4>
+                <p>
+                    In Periods 0 and 5, you have the option to receive investment advice from a financial advisor. <br></br>
+                    We have run a similar survey previously with actual financial advisors. 
+                    Your financial advisor has seen exactly the same price changes as you will have
+                    seen until the respective period. In addition, your financial advisor has 
+                    given the advice to someone with the category of age, gender, and risk tolerance that you fall into.
+                    Your financial advisor could consult ChatGPT while preparing the advice.
+                </p>
                 {{ elif treatment == 3 }}
                 <hr>
                 <h4>Investment advice</h4>
                 <p>
                     In Periods 0 and 5, you have the option to receive investment advice from ChatGPT. <br></br>
                     ChatGPT has seen exactly the same price changes as you will have
-                    seen until the respective period. In addition, ChatGPT knows 
-                    in which category of age, gender, and risk tolerance you fall, as well as the explanations on this page.
+                    seen until the respective period. In addition, ChatGPT knows in which category of age, 
+                    gender, and risk tolerance you fall, as well as the characteristics of the investment options.
                 </p>
                 {{ endif }} 
             {% elif lang == 'fr' %}
@@ -204,12 +213,11 @@
                     soit le nombre d’unités que vous souhaitez détenir. La richesse restante n’est pas investie.
                 </p>
                 <p>
-                    Votre portefeuille conserve les mêmes pondérations (en %) d’une période à l’autre jusqu’à ce que vous les modifiiez:
-                    après les variations de prix, votre portefeuille est automatiquement rééquilibré selon les mêmes pourcentages.
-                    À la période {{ investRounds }}, toutes les unités sont vendues aux prix de cette période.
+                    D’une période à l’autre, le nombre d’unités de chaque option que vous détenez reste le même jusqu’à ce que vous le modifiiez. 
+                    Comme les prix varient, la part de votre richesse (en %) investie dans chaque option change donc d’une période à l’autre. 
                 </p>
 
-                {{ if treatment == 1 or treatment == 2 }}
+                    {{ if treatment == 1 }}
                     <hr>
                     <h4>Conseil d’investissement</h4>
                     <p>
@@ -219,13 +227,24 @@
                         jusqu’à la période correspondante. De plus, votre conseiller financier a donné ce conseil à une personne
                         ayant la même catégorie d’âge, le même sexe et la même tolérance au risque que vous.
                     </p>
+                    {{ elif treatment == 2 }}
+                    <hr>
+                    <h4>Conseil d’investissement</h4>
+                    <p>
+                        Aux périodes {{ adviceRounds.0 }} et {{ adviceRounds.1 }}, vous avez la possibilité de recevoir un conseil d’investissement d’un conseiller financier. <br></br>
+                        Nous avons mené précédemment une enquête semblable auprès de véritables conseillers financiers.
+                        Votre conseiller financier a observé exactement les mêmes variations de prix que celles que vous aurez observées
+                        jusqu’à la période correspondante. De plus, votre conseiller financier a donné ce conseil à une personne
+                        ayant la même catégorie d’âge, le même sexe et la même tolérance au risque que vous.
+                        Votre conseiller financier avait la possibilité de consulter ChatGPT lors de la préparation de son conseil.
+                    </p>
                     {{ elif treatment == 3 }}
                     <hr>
                     <h4>Conseil d’investissement</h4>
                     <p>
                         Aux périodes {{ adviceRounds.0 }} et {{ adviceRounds.1 }}, vous avez la possibilité de recevoir un conseil d’investissement de ChatGPT. <br></br>
                         ChatGPT aura observé exactement les mêmes variations de prix que celles que vous aurez observées jusqu’à la période correspondante.
-                        De plus, ChatGPT connaît votre catégorie d’âge, votre sexe et votre tolérance au risque, ainsi que les explications de cette page.
+                        De plus, ChatGPT connaît votre catégorie d’âge, votre sexe et votre tolérance au risque, ainsi que les caractéristiques des options d’investissement.
                     </p>
                     {{ endif }}
                 {% endif %}

@@ -87,8 +87,6 @@ class Player(BasePlayer):
 
     finAdvice_FinAdvisor_ReasonsNo = models.StringField(blank=True)
 
-    finAdvice_InvestmentStrategy_Ranking = models.StringField(blank=True)
-
     finAdvice_InvestmentAmount = models.IntegerField(
         label= "Please provide your best estimate of the current value of any investments you own (including in registered and non-registered investment accounts; in $).",
         min = 0,
@@ -309,7 +307,7 @@ class chatbotSurvey(Page):
 
 class financialAdvice(Page):
     form_model = 'player'
-    form_fields = ['finAdvice_who', 'finAdvice_FinAdvisor', 'finAdvice_FinAdvisor_Compensation', 'finAdvice_FinAdvisor_FinInstitution', 'finAdvice_FinAdvisor_ReasonsNo', 'finAdvice_InvestmentStrategy_Ranking', 'finAdvice_InvestmentAmount', 'finAdvice_InvestmentAmount_Range']
+    form_fields = ['finAdvice_who', 'finAdvice_FinAdvisor', 'finAdvice_FinAdvisor_Compensation', 'finAdvice_FinAdvisor_FinInstitution', 'finAdvice_FinAdvisor_ReasonsNo', 'finAdvice_InvestmentAmount', 'finAdvice_InvestmentAmount_Range']
 
     @staticmethod
     def vars_for_template(player):

@@ -1,4 +1,5 @@
 from otree.api import *
+import math
 import pandas as pd
 import re
 import ast
@@ -26,13 +27,17 @@ ADVICE_TOTAL_SEC = 30        # arm 3: advice + reason coding must be done within
                              # pre-generated pair (allocation + reasons) from the slot is shown
 AI_REASONS_TIMEOUT_SEC = 30  # used inside generate_ai_reasons (copied from FP); the overall limit above applies on top
 
-#ADVICE_SOURCE = {1: "a financial advisor", 2: "a financial advisor who could use ChatGPT", 3: "ChatGPT"}
 ADVICE_SOURCE = {1: "a financial advisor", 2: "a financial advisor", 3: "ChatGPT"}
 
 ADVICE_TITLE = {
-    'en': {1: 'Advice from a financial advisor', 2: 'Advice from a financial advisor', 3: 'Advice from ChatGPT'},
-    'fr': {1: "Conseil d'un conseiller financier", 2: "Conseil d'un conseiller financier", 3: 'Conseil de ChatGPT'},
-}        
+    'en': {1: 'Advice from a financial advisor', 2: 'Advice from a financial advisor who could use ChatGPT', 3: 'Advice from ChatGPT'},
+    'fr': {1: "Conseil d'un conseiller financier", 2: "Conseil d'un conseiller financier qui pourrait utiliser ChatGPT", 3: 'Conseil de ChatGPT'},
+}   
+
+ADVISOR_NOUN = {
+    'en': {'field': 'certified financial planner', 'prolific': 'financial advisor'},
+    'fr': {'field': 'planificateur financier certifié', 'prolific': 'conseiller financier'},
+}
 
 class C(BaseConstants):
     NAME_IN_URL = 'investmentTask'
@@ -145,6 +150,13 @@ class Player(BasePlayer):
     w4 = models.FloatField(initial=0) # Portfolio weight of the fourth asset
     w5 = models.FloatField(initial=0) # Portfolio weight of the fifth asset
     w6 = models.FloatField(initial=100) # Portfolio weight of the risk-free asset
+
+    w1_start = models.FloatField(initial=0) # Portfolio weight of the first asset at the start of the period
+    w2_start = models.FloatField(initial=0) # Portfolio weight of the second asset at the start of the period
+    w3_start = models.FloatField(initial=0) # Portfolio weight of the third asset at the start of the period
+    w4_start = models.FloatField(initial=0) # Portfolio weight of the fourth asset at the start of the period
+    w5_start = models.FloatField(initial=0) # Portfolio weight of the fifth asset at the start of the period
+    w6_start = models.FloatField(initial=100) # Portfolio weight of the risk-free asset at the start of the period
     
     ## AI Advice
     adviceChat = models.LongStringField(initial="", blank=True)
@@ -579,7 +591,7 @@ class invPage(Page):
         currentDollarHoldings = [prevHoldings[i] * currentPrices[i] for i in range(len(prevHoldings))]
         currentWealth = sum(currentDollarHoldings)
         
-        ## Rebalance to new allocations
+        ## Holdings at the start of the period --> we already changed the weights in the drifted_weights function
         tmpAllocation = [player.w1, player.w2, player.w3, player.w4, player.w5, player.w6]
         newDollarHoldings = [tmpAllocation[i] * currentWealth / 100 for i in range(len(tmpAllocation))]
         newHoldings = [newDollarHoldings[i] / currentPrices[i] for i in range(len(newDollarHoldings))]
@@ -694,6 +706,7 @@ class invPage(Page):
         indexAsset = next((row['option_num'] for row in asset_rows if row['name'] == 'IndAsset'), None)
         hedgeAsset = next((row['option_num'] for row in asset_rows if row['name'] == 'Hedge'), None)
 
+        texts = advice_texts(player)
         return {
             'testing': player.session.config['testing'],
             'totalRounds': C.NUM_INVESTMENT_ROUNDS,
@@ -711,10 +724,11 @@ class invPage(Page):
             'beliefsPeriod': is_beliefs_round(player),
             'showAdvice': show_advice(player),
             'adviceSource': ADVICE_SOURCE.get(player.participant.treatment, ''),
-            'adviceTitle': ADVICE_TITLE[player.participant.lang].get(player.participant.treatment, ''),
             'adviceHintText': advice_hint_text(player),
-            'factorsHeading': FACTORS_HEADING[player.participant.lang].get(player.participant.treatment, ''),
-            'factorsIntro': FACTORS_INTRO[player.participant.lang].get(player.participant.treatment, ''),
+            'adviceTitle': texts['title'],
+            'factorsHeading': texts['heading'],
+            'factorsIntro': texts['intro'],
+            'adviceAccessText': texts['access'],
             'showHint': show_hint(player),
         }
 
@@ -757,12 +771,11 @@ class invPage(Page):
 
         if player.round_number < C.NUM_ROUNDS:
             next_player = player.in_round(player.round_number + 1)
-            next_player.w1 = player.w1
-            next_player.w2 = player.w2
-            next_player.w3 = player.w3
-            next_player.w4 = player.w4
-            next_player.w5 = player.w5
-            next_player.w6 = player.w6
+            start = drifted_weights(player)
+            (next_player.w1, next_player.w2, next_player.w3,
+             next_player.w4, next_player.w5, next_player.w6) = start
+            (next_player.w1_start, next_player.w2_start, next_player.w3_start,
+             next_player.w4_start, next_player.w5_start, next_player.w6_start) = start
             next_player.wealthBOP = get_wealth_update(next_player)
 
     @staticmethod
@@ -936,7 +949,7 @@ def show_advice(player):
 
 def show_hint(player):
     period = player.round_number - C.NUM_PREVRROUNDS
-    return is_advice_round(player) or period == C.ADVICE_ROUNDS[0]
+    return show_advice(player) or period == C.ADVICE_ROUNDS[0]
 
 def current_advice(player):
     """Weights shown in this round: [Option 1..5, Not invested] in display order."""
@@ -987,6 +1000,15 @@ def get_wealth_update(player):
     currentWealth = sum(currentHoldings)
 
     return currentWealth
+
+def drifted_weights(player):
+    """Weights after one period of price moves when the number of units stays the same (buy and hold)."""
+    old = inv_trade_prices(player, 1, player.round_number)
+    new = inv_trade_prices(player, 1, player.round_number + 1)
+    w = [player.w1, player.w2, player.w3, player.w4, player.w5, player.w6]
+    values = [w[i] * new[i] / old[i] for i in range(6)]        # cash has price 1.0
+    total = sum(values)
+    return [v / total * 100 for v in values] if total > 0 else w
 
 def get_max_price(player, thisClient):
     listIndex = player.round_number - (thisClient - 1) * C.NUM_ROUNDS_PER_CLIENT # This is the index for the end of the period
@@ -1082,8 +1104,18 @@ def updatePortfolio(player, data, inType):
         ## Button was used to change holdings / shares
         changedAsset = int(data['asset']) - 1
         direction = data['direction']
+        step = C.PORTION_SHARES_CHANGE
 
-        targetTransfer = direction * C.PORTION_SHARES_CHANGE * totalWealth / 100
+        currentShare = dollarHoldings[changedAsset] / totalWealth * 100
+        onGrid = abs(currentShare / step - round(currentShare / step)) < 1e-6   # tolerance for float noise
+        if onGrid:
+            targetShare = round(currentShare / step) * step + direction * step
+        elif direction < 0:
+            targetShare = math.floor(currentShare / step) * step
+        else:
+            targetShare = math.ceil(currentShare / step) * step
+
+        targetTransfer = targetShare / 100 * totalWealth - dollarHoldings[changedAsset]
         maxBuy = dollarHoldings[-1] # Last element is risk-free asset, available cash
         maxSell = -dollarHoldings[changedAsset]
 
@@ -1136,7 +1168,15 @@ def updatePortfolio(player, data, inType):
         changedAsset = int(data['asset']) - 1
         price = currentPrices[changedAsset]
         if inType == 'changeHoldings':
-            targetNumShares = numShares[changedAsset] + data['direction']  # one share per click
+            direction = 1 if data['direction'] > 0 else -1
+            current = numShares[changedAsset]
+            onGrid = abs(current - round(current)) < 1e-6        # tolerance for float noise
+            if onGrid:
+                targetNumShares = round(current) + direction
+            elif direction < 0:
+                targetNumShares = math.floor(current)
+            else:
+                targetNumShares = math.ceil(current)
         else:
             targetNumShares = data['targetHoldings']
         # Cannot go below zero or buy more than the uninvested cash allows
@@ -1825,3 +1865,28 @@ def _normalize_attention_text(text: str) -> str:
 def check_attention_answer(text: str, lang: str = 'en', max_distance: int = 2) -> bool:
     target = _normalize_attention_text(ATTENTION_TARGETS.get(lang, ATTENTION_TARGETS['en']))
     return _levenshtein(_normalize_attention_text(text), target) <= max_distance
+
+
+def advice_texts(player):
+    """Texts in the advice pop-up. Arms 1/2: name the sample and whether the FP could consult ChatGPT."""
+    lang, arm = player.participant.lang, player.participant.treatment
+    if arm not in (1, 2):
+        return dict(title=ADVICE_TITLE[lang].get(arm, ''), heading=FACTORS_HEADING[lang].get(arm, ''),
+                    intro=FACTORS_INTRO[lang].get(arm, ''), access='')
+    noun = ADVISOR_NOUN[lang][player.participant.advisor_sample]
+    if lang == 'fr':
+        return dict(
+            title=f"Conseil d'un {noun}",
+            heading=f"Ce que le {noun} a pris en compte",
+            intro=f"En donnant ce conseil, le {noun} a indiqué avoir pris en compte les facteurs suivants :",
+            access=(f"En plus, le {noun} avait la possibilité de consulter ChatGPT lors de la préparation de ce conseil."
+                    if arm == 2 else
+                    ""),
+        )
+    return dict(
+        title=f"Advice from a {noun}",
+        heading=f"What the {noun} took into account",
+        intro=f"When giving this advice, the {noun} indicated that they took the following factors into account:",
+        access=(f"In addition, the {noun} could consult ChatGPT while preparing this advice." if arm == 2
+                else ""),
+    )

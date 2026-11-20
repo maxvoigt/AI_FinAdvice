@@ -61,8 +61,6 @@
 <div class="d-none">
     {{ formfield_errors 'finAdvice_FinAdvisor_ReasonsNo' }}
     <input type="hidden" name="finAdvice_FinAdvisor_ReasonsNo" id="finAdvice_FinAdvisor_ReasonsNo" />
-    {{ formfield_errors 'finAdvice_InvestmentStrategy_Ranking' }}
-    <input type="hidden" name="finAdvice_InvestmentStrategy_Ranking" id="finAdvice_InvestmentStrategy_Ranking" />
 </div>
 
 <div class="row my-3 bg-light px-3 py-3 rounded border">
@@ -161,58 +159,6 @@
 
     <hr>
 
-    <div class="col">
-        <p class="mb-1">
-            {% if lang == 'en' %} Please rank the following components of an investment strategy in your personal order of importance.
-                Drag each row by the grip (<span aria-hidden="true">⠿</span>) on the left to reorder the options from most important (top) to least important (bottom).
-                Note that you must make at least one change to the ranking to proceed.
-            {% elif lang == 'fr' %} 
-                Veuillez classer les éléments suivants d’une stratégie de placement selon l’importance que vous leur accordez personnellement. 
-                Faites glisser chaque ligne à l’aide de la poignée (<span aria-hidden="true">⠿</span>) à gauche pour les classer de la plus importante 
-                (en haut) à la moins importante (en bas). 
-                Notez que vous devez modifier le classement au moins une fois pour continuer.
-            {% endif %}
-        </p>
-        <div class="d-flex justify-content-between align-items-baseline small text-muted mb-1 px-1" style="max-width: 30rem;">
-            <span>{% if lang == 'en' %}Most important{% elif lang == 'fr' %}Plus important{% endif %}</span>
-        </div>
-        <ul id="sortable-investment-strategy" class="list-unstyled mb-0 ps-0">
-            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Diversification">
-                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">Diversification</span>
-            </li>
-            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Picking Good Fund Managers">
-                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">{% if lang == 'en' %}Picking good fund managers{% elif lang == 'fr' %}Choisir de bons gestionnaires de fonds{% endif %}</span>
-            </li>
-            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Picking Good Stocks">
-                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">{% if lang == 'en' %}Picking good stocks{% elif lang == 'fr' %}Choisir de bonnes actions{% endif %}</span>
-            </li>
-            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Timing the Market">
-                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">{% if lang == 'en' %}Timing the market{% elif lang == 'fr' %}Anticiper les mouvements du marché{% endif %}</span>
-            </li>
-            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Minimizing Risks">
-                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">{% if lang == 'en' %}Minimizing risks{% elif lang == 'fr' %}Minimiser les risques{% endif %}</span>
-            </li>
-            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Minimizing Fees">
-                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">{% if lang == 'en' %}Minimizing fees{% elif lang == 'fr' %}Minimiser les frais{% endif %}</span>
-            </li>
-            <li class="sortable-item d-flex align-items-center border rounded-2 bg-white px-2 py-2 mb-2" data-value="Selling Funds That Had Bad Performance Last Year">
-                <span class="sortable-handle text-muted" title="Drag to reorder" aria-hidden="true">⠿</span>
-                <span class="ps-1">{% if lang == 'en' %}Selling funds that had bad performance last year{% elif lang == 'fr' %}Vendre les fonds qui ont eu un mauvais rendement l’année dernière{% endif %}</span>
-            </li>
-        </ul>
-        <div class="d-flex justify-content-between align-items-baseline small text-muted mb-1 px-1" style="max-width: 30rem;">
-            <span>{% if lang == 'en' %}Least important{% elif lang == 'fr' %}Moins important{% endif %}</span>
-        </div>
-    </div>
-
-    <hr>
-
     <div class="row align-items-center mb-3">
         <div class="col-12">
             <label class="col-form-label mb-0">{{ L.finAdvice_InvestmentAmount }}</label>
@@ -286,7 +232,8 @@
             });
         });
 
-        document.querySelectorAll('input[name="finAdvice_InvestmentAmount_Range"]').forEach(function (el) {
+        // The range is rendered as a <select>, not an <input>
+        document.querySelectorAll('[name="finAdvice_InvestmentAmount_Range"]').forEach(function (el) {
             el.addEventListener('change', function () {
                 checkAllFields();
             });
@@ -331,20 +278,6 @@
 
     });
 
-    function syncInvestmentStrategyRanking() {
-        var order = $("#sortable-investment-strategy li.sortable-item").map(function () {
-            return $(this).data("value");
-        }).get();
-        $("#finAdvice_InvestmentStrategy_Ranking").val(order.join(","));
-        checkAllFields();
-    }
-
-    $("#sortable-investment-strategy").sortable({
-        handle: ".sortable-handle",
-        placeholder: "sortable-placeholder",
-        tolerance: "pointer",
-        update: syncInvestmentStrategyRanking,
-    });
 
     // Page logics
 
@@ -453,10 +386,6 @@
             }
         }
 
-        // Check if the investment strategy ranking is empty
-        const rankingElem = document.getElementById('finAdvice_InvestmentStrategy_Ranking');
-        const rankingIsEmpty = !rankingElem || !rankingElem.value || rankingElem.value.trim().length === 0;
-
         // Check if there is a value in finAdvice_InvestmentAmount or a selection in finAdvice_InvestmentAmount_Range
         const investmentAmountElem = document.getElementById('id_finAdvice_InvestmentAmount');
         const investmentAmountRangeElem = document.getElementById('id_finAdvice_InvestmentAmount_Range');
@@ -493,7 +422,7 @@
         // Apply final condition: Must have EITHER investment amount, OR investment amount range filled/selected
         const investmentAmountFilled = hasInvestmentAmount || hasInvestmentAmountRange;
 
-        if (finAdviceWhoClicked && finAdvisorClicked && conditionalFirst && !rankingIsEmpty && investmentAmountFilled) {
+        if (finAdviceWhoClicked && finAdvisorClicked && conditionalFirst &&  investmentAmountFilled) {
             document.getElementById('next_button').disabled = false;
         } else {
             document.getElementById('next_button').disabled = true;
