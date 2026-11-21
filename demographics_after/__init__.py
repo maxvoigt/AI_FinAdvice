@@ -337,8 +337,9 @@ class finalPage(Page):
         return {
             'finalWealth': wealth, 'bonus': bonus,
             'finalWealthTxt': money(wealth, lang), 'bonusTxt': money(bonus, lang),
-            'completion_url': player.session.config.get('prolific_completion_url', ''),
+            'completion_url': player.session.config.get('completion_url', ''),
             'lang': lang,
+            'recruiter': player.session.config.get('recruiter'),
         }
 
 page_sequence = [

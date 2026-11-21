@@ -11,9 +11,16 @@ SESSION_CONFIGS = [
             'demographics_after',
             ],
         num_demo_participants=4,
-        testing=True,
         clientExchangeRate=3000,
+        testing=True,            # otherwise the CAPTCHA is skipped and force_arm stays active
+        slot_pool='pilot',        # pilot uses its own copy of the slots; the live pool stays untouched
+        completion_url='https://app.prolific.com/submissions/complete?cc=XXXXXXX',
+        recruiter = 'sago',
     )
+]
+
+ROOMS = [
+    dict(name='clientsS', display_name='Clients pilot (Prolific)'),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs

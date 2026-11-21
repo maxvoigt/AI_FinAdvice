@@ -37,9 +37,21 @@ class LanguageSelection(Page):
     form_fields = ['lang']
 
     @staticmethod
-    def before_next_page(player, timeout_happened):
-        player.participant.lang = player.lang
+    def is_displayed(player):
         player.participant.url_state = player.participant.label or 'genericURL'
         player.participantID = player.participant.label
+        if player.session.config.get('recruiter') == 'prolific':
+            player.participant.lang = 'en'
+            return False
+        else:
+            return True
+
+    @staticmethod
+    def before_next_page(player, timeout_happened):
+        if player.session.config.get('recruiter') == 'prolific':
+            player.participant.lang = 'en'
+        else:
+            player.participant.lang = player.lang
+        
 
 page_sequence = [LanguageSelection]

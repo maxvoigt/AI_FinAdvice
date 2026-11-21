@@ -64,6 +64,18 @@
             Your answer to this attention check is incorrect. 
             Therefore, you will not be able to participate in the survey.
         </p>
+            {% if recruiter == 'prolific' %}
+            <p>
+                Please return your submission on Prolific. 
+                This ensures that neither your Prolific score nor your ability to 
+                participate in more studies on Prolific is affected.
+                Returning your submission also allows another Prolific member to participate in this study. 
+            </p>
+            <p>
+                Please find further details on returning your submission 
+                <a href="https://participant-help.prolific.com/en/articles/445041-how-to-return-a-submission-on-prolific">here</a>.
+            </p>
+            {% endif %}
         <p>
             Thank you for considering this survey. You can now close this window and leave the website.
         </p>

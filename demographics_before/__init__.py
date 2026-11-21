@@ -186,7 +186,13 @@ class startPage(Page):
 class demographicsPage(Page):
     preserve_unsubmitted_inputs = True
     form_model = 'player'
-    form_fields = ['age', 'gender', 'gender_other', 'territory', 'income', 'income_choice', 'income_bracket', 'householdSize', 'patience', 'finRiskTaking']
+
+    @staticmethod
+    def get_form_fields(player):
+        if player.session.config.get('recruiter') == 'prolific':
+            return ['age', 'gender', 'gender_other', 'income', 'income_choice', 'income_bracket', 'householdSize', 'patience', 'finRiskTaking']
+        else:
+            return ['age', 'gender', 'gender_other', 'territory', 'income', 'income_choice', 'income_bracket', 'householdSize', 'patience', 'finRiskTaking']
 
     @staticmethod
     def is_displayed(player):
@@ -198,6 +204,7 @@ class demographicsPage(Page):
             'testing': player.session.config['testing'],
             'lang': player.participant.lang,
             'L': LABELS[player.participant.lang],
+            'recruiter': player.session.config.get('recruiter'),
         }
     
     @staticmethod
@@ -414,6 +421,6 @@ def custom_export(players):
         uses.setdefault((u.pool, u.slot_id), []).append(u)
     for s in Slot.filter():
         for u in uses.get((s.pool, s.slot_id), [None]):
-            yield [s.pool, s.slot_id, s.block_id, s.record_id, s.cell, s.arm, s.perm_rank, s.n_active, s.n_released,
+            yield [s.pool, s.slot_id, s.block_id, s.record_id, s.cell, s.arm, s.source, s.perm_rank, s.n_active, s.n_released,
                    u.participant_code if u else '', u.status if u else '', u.reserved_at if u else '',
                    u.completed_late if u else '']

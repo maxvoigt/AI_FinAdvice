@@ -17,11 +17,25 @@
         <div>
             {% if lang == 'en' %}
                 <p>Unfortunately, the survey has terminated because you failed to pass the language and attention checks. You cannot continue the survey.</p>
+                
+                {% if recruiter == 'prolific' %}
+                    <p>
+                        Please return your submission on Prolific. 
+                        This ensures that neither your Prolific score nor your ability to 
+                        participate in more studies on Prolific is affected.
+                        Returning your submission also allows another Prolific member to participate in this study. 
+                    </p>
+                    <p>
+                        Please find further details on returning your submission 
+                        <a href="https://participant-help.prolific.com/en/articles/445041-how-to-return-a-submission-on-prolific">here</a>.
+                    </p>
+                {% endif %}
+                
                 <p>You can now close this window and leave the website.</p>
-                {% elif lang == 'fr' %}
+            {% elif lang == 'fr' %}
                 <p>Malheureusement, l'enquête a pris fin, car vous n'avez pas réussi les vérifications de langue et d'attention. Vous ne pouvez pas poursuivre l'enquête.</p>
                 <p>Vous pouvez maintenant fermer cette fenêtre et quitter le site web.</p>
-                {% endif %}
+            {% endif %}
         </div>
     </div>
 </div>

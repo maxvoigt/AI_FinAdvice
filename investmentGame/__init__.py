@@ -449,6 +449,7 @@ class atnQuest(Page):
         return {
             'testing': player.session.config['testing'],
             'lang': player.participant.lang,
+            'recruiter': player.session.config.get('recruiter'),
         }
 
 

@@ -103,14 +103,30 @@ class welcomePage(Page):
     form_model = 'player'
     form_fields = ['browser_first']
 
+    @staticmethod
+    def is_displayed(player):
+        return player.session.config.get('recruiter') != 'prolific'
+
     def vars_for_template(player):
         return {
             'testing': player.session.config['testing'],
             'lang': player.participant.lang
         }
 
+class welcomePage_Prolific(Page):
+    form_model = 'player'
+    form_fields = ['browser_first']
+
+    @staticmethod
     def is_displayed(player):
-        return True
+        return player.session.config.get('recruiter') == 'prolific'
+
+    def vars_for_template(player):
+        return {
+            'testing': player.session.config['testing'],
+            'lang': player.participant.lang
+        }
+
 
 class enterCaptcha(Page):
     def vars_for_template(player):
@@ -213,10 +229,12 @@ class attentionCheck_Results(Page):
     def vars_for_template(player):
         return {
             'lang': player.participant.lang,
+            'recruiter': player.session.config.get('recruiter'),
         }
 
 page_sequence = [
     welcomePage,
+    welcomePage_Prolific,
     enterCaptcha,
     attentionCheck_Fruit,
     attentionCheck_Her,

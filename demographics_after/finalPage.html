@@ -11,9 +11,16 @@
     <div class="col">
         {% if lang == 'en' %}
             <p>Your final wealth in the investment task is <b>${{ finalWealth|to2 }}</b>, so your bonus is <b>${{ bonus|to2 }}</b>.</p>
-            <p>Please click the button below to be forwarded to SAGO for the payment.</p>
-            <a class="btn btn-primary" href="{{ completion_url }}">Complete on SAGO</a>
-        {% elif lang == 'fr' %}
+
+                {% if recruiter == 'prolific' %}
+                    <p>Please click the button below to be redirected to Prolific for the payment.</p>
+                    <a class="btn btn-primary" href="{{ completion_url }}">Redirect to Prolific</a>
+                {% else %}
+                    <p>Please click the button below to be redirected to SAGO for the payment.</p>
+                    <a class="btn btn-primary" href="{{ completion_url }}">Redirect to SAGO</a>
+                {% endif %}
+
+            {% elif lang == 'fr' %}
             <p>Votre richesse finale dans la tâche d’investissement est de <b>{{ finalWealthTxt }}</b>. Ainsi, votre bonus est de <b>{{ bonusTxt }}</b>.</p>
             <p>Veuillez cliquer sur le bouton ci-dessous pour être redirigé(e) vers Sago pour le paiement.</p>
             <a class="btn btn-primary" href="{{ completion_url }}">Terminer sur Sago</a>
